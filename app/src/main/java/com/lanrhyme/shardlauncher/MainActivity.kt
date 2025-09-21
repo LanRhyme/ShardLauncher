@@ -231,7 +231,7 @@ fun MainScreen(isDarkTheme: Boolean, onThemeToggle: () -> Unit) {
 
     Box(modifier = Modifier.fillMaxSize()) {
         Row(modifier = Modifier.fillMaxSize()) {
-            // ---- START: 临时添加的 Box 用于测试 ----
+            // ---- START: 临时添加的 Box 用于测试 ---
             Box(
                 modifier = Modifier
                     .width(sidebarWidth)
