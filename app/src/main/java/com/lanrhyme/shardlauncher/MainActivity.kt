@@ -1,12 +1,13 @@
 package com.lanrhyme.shardlauncher
 
-import android.app.Activity
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.*
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,10 +23,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -44,6 +46,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
+
+        val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
+        windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
+        windowInsetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
 
         setContent {
             val systemIsDark = isSystemInDarkTheme()
@@ -82,7 +88,6 @@ fun MainScreen(
         animationSpec = spring(stiffness = Spring.StiffnessMedium)
     )
 
-    // The root is now a Box, not a Surface, to prevent double backgrounds.
     Box(modifier = Modifier.fillMaxSize()) {
         MainContent(
             modifier = Modifier.fillMaxSize(),
@@ -126,16 +131,28 @@ fun MainContent(
     onPositionChange: (SidebarPosition) -> Unit
 ) {
     val collapsedSidebarWidth = 72.dp
-    val contentPadding = when (sidebarPosition) {
-        SidebarPosition.Left -> PaddingValues(start = collapsedSidebarWidth)
-        SidebarPosition.Right -> PaddingValues(end = collapsedSidebarWidth)
-    }
+    val paddingStart by animateDpAsState(
+        targetValue = if (sidebarPosition == SidebarPosition.Left) collapsedSidebarWidth else 0.dp,
+        animationSpec = spring(stiffness = Spring.StiffnessMedium)
+    )
+    val paddingEnd by animateDpAsState(
+        targetValue = if (sidebarPosition == SidebarPosition.Right) collapsedSidebarWidth else 0.dp,
+        animationSpec = spring(stiffness = Spring.StiffnessMedium)
+    )
+    val contentPadding = PaddingValues(start = paddingStart, end = paddingEnd)
 
     Box(
         modifier = modifier.blur(radius = contentBlurRadius)
     ) {
         Box(modifier = Modifier.padding(contentPadding)) {
-            NavHost(navController = navController, startDestination = Screen.Home.route) {
+            NavHost(
+                navController = navController,
+                startDestination = Screen.Home.route,
+                enterTransition = { slideInVertically(animationSpec = tween(500)) { it } + fadeIn(animationSpec = tween(500)) },
+                exitTransition = { slideOutVertically(animationSpec = tween(500)) { -it } + fadeOut(animationSpec = tween(500)) },
+                popEnterTransition = { slideInVertically(animationSpec = tween(500)) { -it } + fadeIn(animationSpec = tween(500)) },
+                popExitTransition = { slideOutVertically(animationSpec = tween(500)) { it } + fadeOut(animationSpec = tween(500)) }
+            ) {
                 composable(Screen.Home.route) { HomePage() }
                 composable(Screen.Settings.route) {
                     SettingsPage(
@@ -175,13 +192,11 @@ fun SideBar(
         SidebarPosition.Right -> RoundedCornerShape(topStart = 28.dp, bottomStart = 28.dp)
     }
 
-    Card(
+    Surface(
         modifier = modifier.fillMaxHeight(),
         shape = cardShape,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f)
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
+        tonalElevation = 0.dp,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
     ) {
         Column(
