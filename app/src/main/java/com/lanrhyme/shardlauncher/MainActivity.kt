@@ -26,6 +26,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.lanrhyme.shardlauncher.ui.home.HomePage
 import com.lanrhyme.shardlauncher.ui.navigation.Screen
@@ -168,7 +169,8 @@ fun SideBar(
     onToggleExpand: () -> Unit,
     navController: NavController
 ) {
-    var currentScreen by remember { mutableStateOf<Screen>(Screen.Home) }
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
 
     Card(
         modifier = modifier
@@ -202,10 +204,9 @@ fun SideBar(
                 SideBarButton(
                     screen = screen,
                     isExpanded = isExpanded,
-                    isSelected = currentScreen.route == screen.route,
+                    isSelected = currentRoute == screen.route,
                     onClick = {
-                        if (currentScreen.route != screen.route) {
-                            currentScreen = screen
+                        if (currentRoute != screen.route) {
                             navController.navigate(screen.route) {
                                 popUpTo(navController.graph.startDestinationId)
                                 launchSingleTop = true
