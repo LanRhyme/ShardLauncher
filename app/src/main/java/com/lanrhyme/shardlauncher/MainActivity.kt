@@ -88,33 +88,36 @@ fun MainScreen(
         animationSpec = spring(stiffness = Spring.StiffnessMedium)
     )
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        MainContent(
-            modifier = Modifier.fillMaxSize(),
-            isSidebarExpanded = isSidebarExpanded,
-            contentBlurRadius = contentBlurRadius,
-            onSidebarExpandToggle = { isSidebarExpanded = !isSidebarExpanded },
-            navController = navController,
-            isDarkTheme = isDarkTheme,
-            onThemeToggle = onThemeToggle,
-            sidebarPosition = sidebarPosition,
-            onPositionChange = onPositionChange
-        )
+    // Re-introduce the root Surface to provide a stable, single background
+    Surface(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            MainContent(
+                modifier = Modifier.fillMaxSize(),
+                isSidebarExpanded = isSidebarExpanded,
+                contentBlurRadius = contentBlurRadius,
+                onSidebarExpandToggle = { isSidebarExpanded = !isSidebarExpanded },
+                navController = navController,
+                isDarkTheme = isDarkTheme,
+                onThemeToggle = onThemeToggle,
+                sidebarPosition = sidebarPosition,
+                onPositionChange = onPositionChange
+            )
 
-        val sidebarAlignment = when (sidebarPosition) {
-            SidebarPosition.Left -> Alignment.CenterStart
-            SidebarPosition.Right -> Alignment.CenterEnd
+            val sidebarAlignment = when (sidebarPosition) {
+                SidebarPosition.Left -> Alignment.CenterStart
+                SidebarPosition.Right -> Alignment.CenterEnd
+            }
+
+            SideBar(
+                modifier = Modifier
+                    .align(sidebarAlignment)
+                    .width(sidebarWidth),
+                isExpanded = isSidebarExpanded,
+                onToggleExpand = { isSidebarExpanded = !isSidebarExpanded },
+                navController = navController,
+                position = sidebarPosition
+            )
         }
-
-        SideBar(
-            modifier = Modifier
-                .align(sidebarAlignment)
-                .width(sidebarWidth),
-            isExpanded = isSidebarExpanded,
-            onToggleExpand = { isSidebarExpanded = !isSidebarExpanded },
-            navController = navController,
-            position = sidebarPosition
-        )
     }
 }
 
