@@ -1,11 +1,13 @@
 package com.lanrhyme.shardlauncher
 
+import android.app.Activity
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -20,6 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.navigation.NavController
@@ -78,40 +82,34 @@ fun MainScreen(
         animationSpec = spring(stiffness = Spring.StiffnessMedium)
     )
 
-    Surface(modifier = Modifier.fillMaxSize()) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            Row(modifier = Modifier.fillMaxSize()) {
-                if (sidebarPosition == SidebarPosition.Left) {
-                    SideBar(
-                        modifier = Modifier.width(sidebarWidth),
-                        isExpanded = isSidebarExpanded,
-                        onToggleExpand = { isSidebarExpanded = !isSidebarExpanded },
-                        navController = navController
-                    )
-                }
+    // The root is now a Box, not a Surface, to prevent double backgrounds.
+    Box(modifier = Modifier.fillMaxSize()) {
+        MainContent(
+            modifier = Modifier.fillMaxSize(),
+            isSidebarExpanded = isSidebarExpanded,
+            contentBlurRadius = contentBlurRadius,
+            onSidebarExpandToggle = { isSidebarExpanded = !isSidebarExpanded },
+            navController = navController,
+            isDarkTheme = isDarkTheme,
+            onThemeToggle = onThemeToggle,
+            sidebarPosition = sidebarPosition,
+            onPositionChange = onPositionChange
+        )
 
-                MainContent(
-                    modifier = Modifier.weight(1f),
-                    isSidebarExpanded = isSidebarExpanded,
-                    contentBlurRadius = contentBlurRadius,
-                    onSidebarExpandToggle = { isSidebarExpanded = !isSidebarExpanded },
-                    navController = navController,
-                    isDarkTheme = isDarkTheme,
-                    onThemeToggle = onThemeToggle,
-                    sidebarPosition = sidebarPosition,
-                    onPositionChange = onPositionChange
-                )
-
-                if (sidebarPosition == SidebarPosition.Right) {
-                    SideBar(
-                        modifier = Modifier.width(sidebarWidth),
-                        isExpanded = isSidebarExpanded,
-                        onToggleExpand = { isSidebarExpanded = !isSidebarExpanded },
-                        navController = navController
-                    )
-                }
-            }
+        val sidebarAlignment = when (sidebarPosition) {
+            SidebarPosition.Left -> Alignment.CenterStart
+            SidebarPosition.Right -> Alignment.CenterEnd
         }
+
+        SideBar(
+            modifier = Modifier
+                .align(sidebarAlignment)
+                .width(sidebarWidth),
+            isExpanded = isSidebarExpanded,
+            onToggleExpand = { isSidebarExpanded = !isSidebarExpanded },
+            navController = navController,
+            position = sidebarPosition
+        )
     }
 }
 
@@ -127,17 +125,16 @@ fun MainContent(
     sidebarPosition: SidebarPosition,
     onPositionChange: (SidebarPosition) -> Unit
 ) {
-    Box(modifier = modifier.fillMaxHeight()) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .blur(radius = contentBlurRadius)
-                .clickable(enabled = isSidebarExpanded) {
-                    if (isSidebarExpanded) {
-                        onSidebarExpandToggle()
-                    }
-                }
-        ) {
+    val collapsedSidebarWidth = 72.dp
+    val contentPadding = when (sidebarPosition) {
+        SidebarPosition.Left -> PaddingValues(start = collapsedSidebarWidth)
+        SidebarPosition.Right -> PaddingValues(end = collapsedSidebarWidth)
+    }
+
+    Box(
+        modifier = modifier.blur(radius = contentBlurRadius)
+    ) {
+        Box(modifier = Modifier.padding(contentPadding)) {
             NavHost(navController = navController, startDestination = Screen.Home.route) {
                 composable(Screen.Home.route) { HomePage() }
                 composable(Screen.Settings.route) {
@@ -151,10 +148,10 @@ fun MainContent(
             }
         }
 
-        if (isSidebarExpanded && contentBlurRadius > 0.dp) {
+        if (isSidebarExpanded) {
             Box(
                 modifier = Modifier
-                    .matchParentSize()
+                    .fillMaxSize()
                     .background(Color.Black.copy(alpha = 0.3f))
                     .clickable { onSidebarExpandToggle() }
             )
@@ -167,24 +164,29 @@ fun SideBar(
     modifier: Modifier = Modifier,
     isExpanded: Boolean,
     onToggleExpand: () -> Unit,
-    navController: NavController
+    navController: NavController,
+    position: SidebarPosition
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
+    val cardShape = when (position) {
+        SidebarPosition.Left -> RoundedCornerShape(topEnd = 28.dp, bottomEnd = 28.dp)
+        SidebarPosition.Right -> RoundedCornerShape(topStart = 28.dp, bottomStart = 28.dp)
+    }
+
     Card(
-        modifier = modifier
-            .fillMaxHeight()
-            .padding(8.dp),
-        shape = RoundedCornerShape(16.dp),
+        modifier = modifier.fillMaxHeight(),
+        shape = cardShape,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f)
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
     ) {
         Column(
             modifier = Modifier
-                .padding(vertical = 16.dp)
+                .padding(vertical = 16.dp, horizontal = 8.dp)
                 .fillMaxHeight()
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
