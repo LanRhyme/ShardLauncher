@@ -13,7 +13,3 @@
 .externalNativeBuild
 .cxx
 local.properties
-
-# 项目排除路径
-/app/
-/gradle/
