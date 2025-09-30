@@ -191,54 +191,93 @@ fun SideBar(
     val currentRoute = navBackStackEntry?.destination?.route
 
     val cardShape = when (position) {
-        SidebarPosition.Left -> RoundedCornerShape(topEnd = 28.dp, bottomEnd = 28.dp)
+        SidebarPosition.Left  -> RoundedCornerShape(topEnd = 28.dp, bottomEnd = 28.dp)
         SidebarPosition.Right -> RoundedCornerShape(topStart = 28.dp, bottomStart = 28.dp)
     }
 
-    Surface(
-        modifier = modifier.fillMaxHeight(),
-        shape = cardShape,
-        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
-        tonalElevation = 0.dp,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
+    /* ---------- 1. 真·高斯模糊（仅 API 31+） ---------- */
+    val blurRadius = 24.dp              // 想多糊自己调
+    Box(
+        modifier = modifier
+            .fillMaxHeight()
+            .clip(cardShape)            // 圆角裁剪
+            .background(
+                MaterialTheme.colorScheme.surface.copy(alpha = 0.62f)
+            )
+            .blur(blurRadius)           // 官方模糊，低版本自动失效
     ) {
-        Column(
-            modifier = Modifier
-                .padding(vertical = 16.dp, horizontal = 8.dp)
-                .fillMaxHeight()
-                .fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            IconButton(
-                onClick = onToggleExpand,
-                modifier = Modifier.padding(bottom = 20.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Menu,
-                    contentDescription = if (isExpanded) "Collapse Sidebar" else "Expand Sidebar",
-                    tint = MaterialTheme.colorScheme.primary
+        SideBarContent(isExpanded, onToggleExpand, navController, currentRoute)
+    }
+
+    /* ---------- 2. 兼容全版本“假毛玻璃” ---------- */
+    /*
+    Box(
+        modifier = modifier
+            .fillMaxHeight()
+            .clip(cardShape)
+            .background(Color.White.copy(alpha = 0.50f))   // 底色
+            .drawWithContent {                            // 噪点 overlay
+                drawContent()
+                drawRect(
+                    brush = ShaderBrush(
+                        BitmapShader(
+                            ImageBitmap.imageResource(id = R.drawable.noise),
+                            TileMode.Repeated,
+                            TileMode.Repeated
+                        )
+                    ),
+                    blendMode = BlendMode.Overlay,
+                    alpha = 0.07f
                 )
             }
+    ) {
+        SideBarContent(isExpanded, onToggleExpand, navController, currentRoute)
+    }
+    */
+}
 
-            navigationItems.forEach { screen ->
-                SideBarButton(
-                    screen = screen,
-                    isExpanded = isExpanded,
-                    isSelected = currentRoute == screen.route,
-                    onClick = {
-                        if (currentRoute != screen.route) {
-                            navController.navigate(screen.route) {
-                                popUpTo(navController.graph.startDestinationId)
-                                launchSingleTop = true
-                            }
+/* ---------------- 内容部分抽出来，保持整洁 ---------------- */
+@Composable
+private fun SideBarContent(
+    isExpanded: Boolean,
+    onToggleExpand: () -> Unit,
+    navController: NavController,
+    currentRoute: String?
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(vertical = 16.dp, horizontal = 8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        IconButton(onClick = onToggleExpand, modifier = Modifier.padding(bottom = 20.dp)) {
+            Icon(
+                imageVector = Icons.Filled.Menu,
+                contentDescription = if (isExpanded) "Collapse" else "Expand",
+                tint = MaterialTheme.colorScheme.primary
+            )
+        }
+
+        navigationItems.forEach { screen ->
+            SideBarButton(
+                screen = screen,
+                isExpanded = isExpanded,
+                isSelected = currentRoute == screen.route,
+                onClick = {
+                    if (currentRoute != screen.route) {
+                        navController.navigate(screen.route) {
+                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
                         }
                     }
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-            }
+                }
+            )
+            Spacer(modifier = Modifier.height(10.dp))
         }
     }
 }
+
 
 @Composable
 fun SideBarButton(
