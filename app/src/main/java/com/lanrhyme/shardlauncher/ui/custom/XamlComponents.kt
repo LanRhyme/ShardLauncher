@@ -78,11 +78,19 @@ fun RenderCard(node: CardNode) {
     val isSwappedInitially = node.attributes["IsSwapped"] == "True"
     var isSwapped by remember { mutableStateOf(isSwappedInitially) }
 
-    Card(
-        modifier = Modifier.padding(margin).fillMaxWidth(),
-        shape = RoundedCornerShape(22.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    Box(
+        modifier = Modifier
+            .padding(margin)
+            .fillMaxWidth(),
     ) {
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .background(
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f),
+                    shape = RoundedCornerShape(22.dp)
+                )
+        )
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical=8.dp)) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,

@@ -3,6 +3,7 @@ package com.lanrhyme.shardlauncher
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
@@ -11,45 +12,35 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -62,14 +53,19 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.lanrhyme.shardlauncher.common.SidebarPosition
 import com.lanrhyme.shardlauncher.data.SettingsRepository
+import com.lanrhyme.shardlauncher.manager.NotificationManager
 import com.lanrhyme.shardlauncher.ui.SplashScreen
+import com.lanrhyme.shardlauncher.ui.components.NotificationItem
 import com.lanrhyme.shardlauncher.ui.developeroptions.DeveloperOptionsScreen
 import com.lanrhyme.shardlauncher.ui.home.HomeScreen
+import com.lanrhyme.shardlauncher.ui.model.Notification
+import com.lanrhyme.shardlauncher.ui.model.NotificationType
 import com.lanrhyme.shardlauncher.ui.navigation.Screen
 import com.lanrhyme.shardlauncher.ui.navigation.navigationItems
 import com.lanrhyme.shardlauncher.ui.settings.SettingsScreen
 import com.lanrhyme.shardlauncher.ui.theme.ShardLauncherTheme
 import com.lanrhyme.shardlauncher.ui.theme.ThemeColor
+import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
     private val TAG = "MainActivity"
@@ -157,6 +153,7 @@ fun MainScreen(
     onAnimationSpeedChange: (Float) -> Unit
 ) {
     var isSidebarExpanded by remember { mutableStateOf(false) }
+    var showNotificationSidebar by remember { mutableStateOf(false) }
 
     val sidebarWidth by animateDpAsState(
         targetValue = if (isSidebarExpanded) 220.dp else 72.dp,
@@ -165,7 +162,7 @@ fun MainScreen(
     )
 
     val contentBlurRadius by animateDpAsState(
-        targetValue = if (isSidebarExpanded) 8.dp else 0.dp,
+        targetValue = if (isSidebarExpanded || showNotificationSidebar) 8.dp else 0.dp,
         animationSpec = spring(stiffness = Spring.StiffnessMedium),
         label = ""
     )
@@ -200,7 +197,14 @@ fun MainScreen(
                 isExpanded = isSidebarExpanded,
                 onToggleExpand = { isSidebarExpanded = !isSidebarExpanded },
                 navController = navController,
-                position = sidebarPosition
+                position = sidebarPosition,
+                onShowNotificationSidebar = { showNotificationSidebar = true }
+            )
+
+            NotificationOverlay(
+                isDarkTheme = isDarkTheme,
+                showSidebar = showNotificationSidebar,
+                onDismissSidebar = { showNotificationSidebar = false }
             )
         }
     }
@@ -349,7 +353,8 @@ fun SideBar(
     isExpanded: Boolean,
     onToggleExpand: () -> Unit,
     navController: NavController,
-    position: SidebarPosition
+    position: SidebarPosition,
+    onShowNotificationSidebar: () -> Unit
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -359,7 +364,6 @@ fun SideBar(
         SidebarPosition.Right -> RoundedCornerShape(topStart = 28.dp, bottomStart = 28.dp)
     }
 
-    val blurRadius = 24.dp
     Box(
         modifier = modifier
             .fillMaxHeight()
@@ -368,7 +372,7 @@ fun SideBar(
                 MaterialTheme.colorScheme.surface.copy(alpha = 0.62f)
             )
     ) {
-        SideBarContent(isExpanded, onToggleExpand, navController, currentRoute)
+        SideBarContent(isExpanded, onToggleExpand, navController, currentRoute, onShowNotificationSidebar)
     }
 }
 
@@ -377,8 +381,12 @@ private fun SideBarContent(
     isExpanded: Boolean,
     onToggleExpand: () -> Unit,
     navController: NavController,
-    currentRoute: String?
+    currentRoute: String?,
+    onShowNotificationSidebar: () -> Unit
 ) {
+    val notifications by NotificationManager.notifications.collectAsState()
+    val hasPersistentNotifications = notifications.any { it.type != NotificationType.Temporary }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -404,11 +412,18 @@ private fun SideBarContent(
             )
             Spacer(modifier = Modifier.height(10.dp))
         }
+        Spacer(Modifier.weight(1f))
+        ExpandButton(isExpanded = false, onClick = onShowNotificationSidebar, icon = Icons.Default.Notifications, showBadge = hasPersistentNotifications)
     }
 }
 
 @Composable
-fun ExpandButton(isExpanded: Boolean, onClick: () -> Unit) {
+fun ExpandButton(
+    isExpanded: Boolean,
+    onClick: () -> Unit,
+    icon: ImageVector? = null,
+    showBadge: Boolean = false
+) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
@@ -435,13 +450,153 @@ fun ExpandButton(isExpanded: Boolean, onClick: () -> Unit) {
     ) {
         Crossfade(targetState = isExpanded, label = "ToggleIcon") {
             Icon(
-                imageVector = if (it) Icons.Filled.ArrowBack else Icons.Filled.Menu,
+                imageVector = icon ?: if (it) Icons.Filled.ArrowBack else Icons.Filled.Menu,
                 contentDescription = if (it) "Collapse" else "Expand",
                 tint = MaterialTheme.colorScheme.primary
             )
         }
+        if (showBadge) {
+            Box(
+                Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(12.dp)
+                    .size(8.dp)
+                    .background(Color.Red, RoundedCornerShape(4.dp))
+            )
+        }
     }
 }
+
+@Composable
+fun NotificationOverlay(
+    isDarkTheme: Boolean,
+    showSidebar: Boolean,
+    onDismissSidebar: () -> Unit
+) {
+    val allNotifications by NotificationManager.notifications.collectAsState()
+    var popupNotifications by remember { mutableStateOf<List<Notification>>(emptyList()) }
+    val displayedIds = remember { mutableStateListOf<String>() }
+
+    LaunchedEffect(allNotifications) {
+        val newNotifications = allNotifications.filter { it.id !in displayedIds }
+        if (newNotifications.isNotEmpty()) {
+            popupNotifications = popupNotifications + newNotifications
+            newNotifications.forEach { displayedIds.add(it.id) }
+        }
+    }
+
+    // Popup notifications
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 16.dp, end = 16.dp),
+        contentAlignment = Alignment.TopEnd
+    ) {
+        Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            popupNotifications.forEach { notification ->
+                key(notification.id) {
+                    PopupNotificationItem(
+                        notification = notification,
+                        onDismiss = { id, type ->
+                            popupNotifications = popupNotifications.filterNot { it.id == id }
+                            if (type == NotificationType.Temporary) {
+                                NotificationManager.dismiss(id)
+                                displayedIds.remove(id)
+                            }
+                         },
+                        darkTheme = isDarkTheme
+                    )
+                }
+            }
+        }
+    }
+
+    // Notification sidebar scrim
+    AnimatedVisibility(
+        visible = showSidebar,
+        enter = fadeIn(animationSpec = tween(300)),
+        exit = fadeOut(animationSpec = tween(300))
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.4f))
+                .clickable { onDismissSidebar() }
+        )
+    }
+
+    // Notification sidebar content
+    AnimatedVisibility(
+        visible = showSidebar,
+        enter = slideInHorizontally { it },
+        exit = slideOutHorizontally { it }
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) { // This Box provides the scope for .align()
+            Surface(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(0.8f)
+                    .align(Alignment.CenterEnd)
+                    .clickable(enabled = false) {},
+                shape = RoundedCornerShape(topStart = 22.dp, bottomStart = 22.dp),
+                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
+                tonalElevation = 12.dp
+            ) {
+                val persistentNotifications = allNotifications.filter { it.type != NotificationType.Temporary }
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text("Notifications", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(bottom = 16.dp))
+                    if (persistentNotifications.isEmpty()) {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text("No notifications")
+                        }
+                    } else {
+                        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            items(persistentNotifications) { notification ->
+                                NotificationItem(
+                                    notification = notification,
+                                    onDismiss = { NotificationManager.dismiss(it) },
+                                    darkTheme = isDarkTheme,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PopupNotificationItem(
+    notification: Notification,
+    onDismiss: (String, NotificationType) -> Unit,
+    darkTheme: Boolean
+) {
+    var visible by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        visible = true
+        delay(3000)
+        visible = false
+        delay(500) // wait for exit animation
+        onDismiss(notification.id, notification.type)
+    }
+
+    AnimatedVisibility(
+        visible = visible,
+        enter = slideInHorizontally { it } + fadeIn(),
+        exit = slideOutHorizontally { it } + fadeOut()
+    ) {
+        NotificationItem(
+            notification = notification,
+            onDismiss = { onDismiss(notification.id, notification.type) },
+            darkTheme = darkTheme,
+            modifier = Modifier.width(350.dp)
+        )
+    }
+}
+
 
 @Composable
 fun VersionScreen() {

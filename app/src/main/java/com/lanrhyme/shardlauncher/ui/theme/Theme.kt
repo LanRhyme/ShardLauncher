@@ -30,7 +30,7 @@ object ColorPalettes {
             primary = Green40,
             secondary = GreenGrey40,
             tertiary = GreenPink40,
-            error = ErrorColor
+            error = Error80
         ),
         darkColorScheme = darkColorScheme(
             primary = Green80,
@@ -38,7 +38,7 @@ object ColorPalettes {
             tertiary = GreenPink80,
             background = DarkBackgroundColor,
             surface = DarkSurfaceColor,
-            error = ErrorColor
+            error = Error40
         )
     )
 
@@ -47,7 +47,7 @@ object ColorPalettes {
             primary = Blue40,
             secondary = BlueGrey40,
             tertiary = BluePink40,
-            error = ErrorColor
+            error = Error80
         ),
         darkColorScheme = darkColorScheme(
             primary = Blue80,
@@ -55,7 +55,7 @@ object ColorPalettes {
             tertiary = BluePink80,
             background = DarkBackgroundColor,
             surface = DarkSurfaceColor,
-            error = ErrorColor
+            error = Error40
         )
     )
 
@@ -64,7 +64,7 @@ object ColorPalettes {
             primary = Purple40,
             secondary = PurpleGrey40,
             tertiary = Pink40,
-            error = ErrorColor
+            error = Error80
         ),
         darkColorScheme = darkColorScheme(
             primary = Purple80,
@@ -72,7 +72,7 @@ object ColorPalettes {
             tertiary = Pink80,
             background = DarkBackgroundColor,
             surface = DarkSurfaceColor,
-            error = ErrorColor
+            error = Error40
         )
     )
 }
