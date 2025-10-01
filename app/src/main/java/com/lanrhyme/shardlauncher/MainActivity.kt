@@ -244,25 +244,69 @@ fun MainContent(
                 navController = navController,
                 startDestination = Screen.Home.route,
                 enterTransition = {
-                    slideInVertically(animationSpec = tween(animationDuration)) { it } + fadeIn(
-                        animationSpec = tween(animationDuration)
-                    )
-                },
+                    val initialRoute = initialState.destination.route
+                    val targetRoute = targetState.destination.route
+                    val initialIndex = navigationItems.indexOfFirst { it.route == initialRoute }
+                    val targetIndex = navigationItems.indexOfFirst { it.route == targetRoute }
+
+                    if (targetRoute == Screen.Home.route) {
+                        slideInVertically(animationSpec = tween(animationDuration)) { it } + fadeIn(animationSpec = tween(animationDuration))
+                    } else if (initialIndex == -1 || targetIndex == -1) {
+                        slideInVertically(animationSpec = tween(animationDuration)) { it } + fadeIn(animationSpec = tween(animationDuration))
+                    } else if (targetIndex > initialIndex) {
+                        slideInVertically(animationSpec = tween(animationDuration)) { it } + fadeIn(animationSpec = tween(animationDuration))
+                    } else {
+                        slideInVertically(animationSpec = tween(animationDuration)) { -it } + fadeIn(animationSpec = tween(animationDuration))
+                    }
+                 },
                 exitTransition = {
-                    slideOutVertically(animationSpec = tween(animationDuration)) { -it } + fadeOut(
-                        animationSpec = tween(animationDuration)
-                    )
-                },
+                    val initialRoute = initialState.destination.route
+                    val targetRoute = targetState.destination.route
+                    val initialIndex = navigationItems.indexOfFirst { it.route == initialRoute }
+                    val targetIndex = navigationItems.indexOfFirst { it.route == targetRoute }
+
+                    if (targetRoute == Screen.Home.route) {
+                        slideOutVertically(animationSpec = tween(animationDuration)) { -it } + fadeOut(animationSpec = tween(animationDuration))
+                    } else if (initialIndex == -1 || targetIndex == -1) {
+                        slideOutVertically(animationSpec = tween(animationDuration)) { -it } + fadeOut(animationSpec = tween(animationDuration))
+                    } else if (targetIndex > initialIndex) {
+                        slideOutVertically(animationSpec = tween(animationDuration)) { -it } + fadeOut(animationSpec = tween(animationDuration))
+                    } else {
+                        slideOutVertically(animationSpec = tween(animationDuration)) { it } + fadeOut(animationSpec = tween(animationDuration))
+                    }
+                 },
                 popEnterTransition = {
-                    slideInVertically(animationSpec = tween(animationDuration)) { -it } + fadeIn(
-                        animationSpec = tween(animationDuration)
-                    )
-                },
+                    val initialRoute = initialState.destination.route
+                    val targetRoute = targetState.destination.route
+                    val initialIndex = navigationItems.indexOfFirst { it.route == initialRoute }
+                    val targetIndex = navigationItems.indexOfFirst { it.route == targetRoute }
+
+                    if (targetRoute == Screen.Home.route) {
+                        slideInVertically(animationSpec = tween(animationDuration)) { -it } + fadeIn(animationSpec = tween(animationDuration))
+                    } else if (initialIndex == -1 || targetIndex == -1) {
+                        slideInVertically(animationSpec = tween(animationDuration)) { -it } + fadeIn(animationSpec = tween(animationDuration))
+                    } else if (targetIndex > initialIndex) {
+                        slideInVertically(animationSpec = tween(animationDuration)) { -it } + fadeIn(animationSpec = tween(animationDuration))
+                    } else {
+                        slideInVertically(animationSpec = tween(animationDuration)) { it } + fadeIn(animationSpec = tween(animationDuration))
+                    }
+                 },
                 popExitTransition = {
-                    slideOutVertically(animationSpec = tween(animationDuration)) { it } + fadeOut(
-                        animationSpec = tween(animationDuration)
-                    )
-                }
+                    val initialRoute = initialState.destination.route
+                    val targetRoute = targetState.destination.route
+                    val initialIndex = navigationItems.indexOfFirst { it.route == initialRoute }
+                    val targetIndex = navigationItems.indexOfFirst { it.route == targetRoute }
+
+                    if (targetRoute == Screen.Home.route) {
+                        slideOutVertically(animationSpec = tween(animationDuration)) { it } + fadeOut(animationSpec = tween(animationDuration))
+                    } else if (initialIndex == -1 || targetIndex == -1) {
+                        slideOutVertically(animationSpec = tween(animationDuration)) { it } + fadeOut(animationSpec = tween(animationDuration))
+                    } else if (targetIndex > initialIndex) {
+                        slideOutVertically(animationSpec = tween(animationDuration)) { it } + fadeOut(animationSpec = tween(animationDuration))
+                    } else {
+                        slideOutVertically(animationSpec = tween(animationDuration)) { -it } + fadeOut(animationSpec = tween(animationDuration))
+                    }
+                 }
             ) {
                 composable(Screen.Home.route) { HomeScreen() }
                 composable(Screen.Version.route) { VersionScreen() }
