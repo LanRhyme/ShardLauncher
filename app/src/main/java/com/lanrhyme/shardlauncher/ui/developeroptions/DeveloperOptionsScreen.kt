@@ -44,7 +44,7 @@ fun DeveloperOptionsScreen(
         ) {
             TitleAndSummary(
                 title = "开发者选项",
-                summary = "调整应用内动画速率"
+                summary = "一些用于测试的功能，它们在将来可能被移除"
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -72,7 +72,7 @@ private fun TestNotificationSender() {
 
     Box(modifier = Modifier.fillMaxWidth()) {
         Button(onClick = { expanded = true }, modifier = Modifier.align(Alignment.Center)) {
-            Text("Send Test Notification")
+            Text("发送测试通知")
         }
 
         DropdownMenu(
@@ -94,7 +94,7 @@ private fun sendTestNotification(type: NotificationType) {
     val notification = when (type) {
         NotificationType.Temporary -> Notification.Temporary("Temporary Notification", "This is a temporary notification.")
         NotificationType.Normal -> Notification.Normal("Normal Notification", "This is a normal notification.")
-        NotificationType.Progress -> Notification.Progress("Progress Notification", "This is a progress notification.", 0.5f)
+        NotificationType.Progress -> Notification.Progress("Progress Notification", "This is a progress notification.", 0.3f)
         NotificationType.Warning -> Notification.Warning("Warning Notification", "This is a warning notification.")
         NotificationType.Error -> Notification.Error("Error Notification", "This is an error notification.")
     }

@@ -528,15 +528,17 @@ fun NotificationOverlay(
     // Notification sidebar content
     AnimatedVisibility(
         visible = showSidebar,
-        enter = slideInHorizontally { it },
-        exit = slideOutHorizontally { it }
+        enter = slideInHorizontally(initialOffsetX = { it }),
+        exit = slideOutHorizontally(targetOffsetX = { it })
     ) {
-        Box(modifier = Modifier.fillMaxSize()) { // This Box provides the scope for .align()
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            horizontalArrangement = Arrangement.End
+        ) {
             Surface(
                 modifier = Modifier
                     .fillMaxHeight()
                     .fillMaxWidth(0.8f)
-                    .align(Alignment.CenterEnd)
                     .clickable(enabled = false) {},
                 shape = RoundedCornerShape(topStart = 22.dp, bottomStart = 22.dp),
                 color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
