@@ -34,7 +34,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.lanrhyme.shardlauncher.ui.home.HomePage
+import com.lanrhyme.shardlauncher.ui.home.HomeScreen
 import com.lanrhyme.shardlauncher.ui.navigation.Screen
 import com.lanrhyme.shardlauncher.ui.navigation.navigationItems
 import com.lanrhyme.shardlauncher.ui.settings.SettingsPage
@@ -156,7 +156,7 @@ fun MainContent(
                 popEnterTransition = { slideInVertically(animationSpec = tween(500)) { -it } + fadeIn(animationSpec = tween(500)) },
                 popExitTransition = { slideOutVertically(animationSpec = tween(500)) { it } + fadeOut(animationSpec = tween(500)) }
             ) {
-                composable(Screen.Home.route) { HomePage() }
+                composable(Screen.Home.route) { HomeScreen() }
                 composable(Screen.Settings.route) {
                     SettingsPage(
                         isDarkTheme = isDarkTheme,
