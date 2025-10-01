@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -14,6 +15,8 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,9 +33,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -46,6 +49,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -261,6 +265,9 @@ fun MainContent(
                 }
             ) {
                 composable(Screen.Home.route) { HomeScreen() }
+                composable(Screen.Version.route) { VersionScreen() }
+                composable(Screen.Download.route) { DownloadScreen() }
+                composable(Screen.Online.route) { OnlineScreen() }
                 composable(Screen.Settings.route) {
                     SettingsScreen(
                         navController = navController,
@@ -334,14 +341,8 @@ private fun SideBarContent(
             .padding(vertical = 16.dp, horizontal = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        IconButton(onClick = onToggleExpand, modifier = Modifier.padding(bottom = 20.dp)) {
-            Icon(
-                imageVector = Icons.Filled.Menu,
-                contentDescription = if (isExpanded) "Collapse" else "Expand",
-                tint = MaterialTheme.colorScheme.primary
-            )
-        }
-
+        ExpandButton(isExpanded = isExpanded, onClick = onToggleExpand)
+        Spacer(modifier = Modifier.height(10.dp))
         navigationItems.forEach { screen ->
             SideBarButton(
                 screen = screen,
@@ -363,19 +364,84 @@ private fun SideBarContent(
 }
 
 @Composable
+fun ExpandButton(isExpanded: Boolean, onClick: () -> Unit) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.95f else 1f,
+        animationSpec = spring(stiffness = Spring.StiffnessMedium),
+        label = "ExpandButtonScale"
+    )
+    val shape = RoundedCornerShape(22.dp)
+
+    Box(
+        modifier = Modifier
+            .size(56.dp)
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+            .clip(shape)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Crossfade(targetState = isExpanded, label = "ToggleIcon") {
+            Icon(
+                imageVector = if (it) Icons.Filled.ArrowBack else Icons.Filled.Menu,
+                contentDescription = if (it) "Collapse" else "Expand",
+                tint = MaterialTheme.colorScheme.primary
+            )
+        }
+    }
+}
+
+@Composable
+fun VersionScreen() {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text("版本", style = MaterialTheme.typography.headlineLarge)
+    }
+}
+
+@Composable
+fun DownloadScreen() {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text("下载", style = MaterialTheme.typography.headlineLarge)
+    }
+}
+
+@Composable
+fun OnlineScreen() {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text("联机", style = MaterialTheme.typography.headlineLarge)
+    }
+}
+
+@Composable
 fun SideBarButton(
     screen: Screen,
     isExpanded: Boolean,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.95f else 1f,
+        animationSpec = spring(stiffness = Spring.StiffnessMedium),
+        label = "SidebarButtonScale"
+    )
+
     val backgroundColor =
         if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else Color.Transparent
     val contentColor =
         if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(
             alpha = 0.7f
         )
-    val shape = RoundedCornerShape(12.dp)
+    val shape = RoundedCornerShape(22.dp)
 
     val buttonModifier = if (isExpanded) {
         Modifier
@@ -388,9 +454,17 @@ fun SideBarButton(
     Box(
         modifier = Modifier
             .then(buttonModifier)
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
             .clip(shape)
             .background(backgroundColor, shape)
-            .clickable(onClick = onClick),
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick
+            ),
         contentAlignment = Alignment.Center
     ) {
         Row(
