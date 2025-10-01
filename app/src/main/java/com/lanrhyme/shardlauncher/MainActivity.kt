@@ -57,6 +57,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.lanrhyme.shardlauncher.common.SidebarPosition
+import com.lanrhyme.shardlauncher.ui.SplashScreen
 import com.lanrhyme.shardlauncher.ui.developeroptions.DeveloperOptionsScreen
 import com.lanrhyme.shardlauncher.ui.home.HomeScreen
 import com.lanrhyme.shardlauncher.ui.navigation.Screen
@@ -73,7 +74,8 @@ class MainActivity : ComponentActivity() {
 
         val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
         windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
-        windowInsetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        windowInsetsController.systemBarsBehavior =
+            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
 
         setContent {
             val systemIsDark = isSystemInDarkTheme()
@@ -81,22 +83,35 @@ class MainActivity : ComponentActivity() {
             var sidebarPosition by remember { mutableStateOf(SidebarPosition.Left) }
             var themeColor by remember { mutableStateOf(ThemeColor.Green) }
             val navController = rememberNavController()
+            var showSplash by remember { mutableStateOf(true) }
 
             Crossfade(
-                targetState = isDarkTheme,
-                label = "ThemeCrossfade",
+                targetState = showSplash,
+                label = "SplashCrossfade",
                 animationSpec = tween(durationMillis = 500)
-            ) { isDark ->
-                ShardLauncherTheme(darkTheme = isDark, themeColor = themeColor) {
-                    MainScreen(
-                        navController = navController,
-                        isDarkTheme = isDark,
-                        onThemeToggle = { isDarkTheme = !isDarkTheme },
-                        sidebarPosition = sidebarPosition,
-                        onPositionChange = { newPosition -> sidebarPosition = newPosition },
-                        themeColor = themeColor,
-                        onThemeColorChange = { newColor -> themeColor = newColor }
-                    )
+            ) { show ->
+                if (show) {
+                    ShardLauncherTheme(darkTheme = isDarkTheme, themeColor = themeColor) {
+                        SplashScreen(onAnimationFinished = { showSplash = false })
+                    }
+                } else {
+                    Crossfade(
+                        targetState = isDarkTheme,
+                        label = "ThemeCrossfade",
+                        animationSpec = tween(durationMillis = 500)
+                    ) { isDark ->
+                        ShardLauncherTheme(darkTheme = isDark, themeColor = themeColor) {
+                            MainScreen(
+                                navController = navController,
+                                isDarkTheme = isDark,
+                                onThemeToggle = { isDarkTheme = !isDarkTheme },
+                                sidebarPosition = sidebarPosition,
+                                onPositionChange = { newPosition -> sidebarPosition = newPosition },
+                                themeColor = themeColor,
+                                onThemeColorChange = { newColor -> themeColor = newColor }
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -118,12 +133,14 @@ fun MainScreen(
 
     val sidebarWidth by animateDpAsState(
         targetValue = if (isSidebarExpanded) 220.dp else 72.dp,
-        animationSpec = spring(stiffness = Spring.StiffnessMedium)
+        animationSpec = spring(stiffness = Spring.StiffnessMedium),
+        label = ""
     )
 
     val contentBlurRadius by animateDpAsState(
         targetValue = if (isSidebarExpanded) 8.dp else 0.dp,
-        animationSpec = spring(stiffness = Spring.StiffnessMedium)
+        animationSpec = spring(stiffness = Spring.StiffnessMedium),
+        label = ""
     )
 
     // Re-introduce the root Surface to provide a stable, single background
@@ -182,11 +199,13 @@ fun MainContent(
     val collapsedSidebarWidth = 72.dp
     val paddingStart by animateDpAsState(
         targetValue = if (sidebarPosition == SidebarPosition.Left) collapsedSidebarWidth else 0.dp,
-        animationSpec = spring(stiffness = Spring.StiffnessMedium)
+        animationSpec = spring(stiffness = Spring.StiffnessMedium),
+        label = ""
     )
     val paddingEnd by animateDpAsState(
         targetValue = if (sidebarPosition == SidebarPosition.Right) collapsedSidebarWidth else 0.dp,
-        animationSpec = spring(stiffness = Spring.StiffnessMedium)
+        animationSpec = spring(stiffness = Spring.StiffnessMedium),
+        label = ""
     )
     val contentPadding = PaddingValues(start = paddingStart, end = paddingEnd)
 
@@ -198,10 +217,26 @@ fun MainContent(
             NavHost(
                 navController = navController,
                 startDestination = Screen.Home.route,
-                enterTransition = { slideInVertically(animationSpec = tween(animationDuration)) { it } + fadeIn(animationSpec = tween(animationDuration)) },
-                exitTransition = { slideOutVertically(animationSpec = tween(animationDuration)) { -it } + fadeOut(animationSpec = tween(animationDuration)) },
-                popEnterTransition = { slideInVertically(animationSpec = tween(animationDuration)) { -it } + fadeIn(animationSpec = tween(animationDuration)) },
-                popExitTransition = { slideOutVertically(animationSpec = tween(animationDuration)) { it } + fadeOut(animationSpec = tween(animationDuration)) }
+                enterTransition = {
+                    slideInVertically(animationSpec = tween(animationDuration)) { it } + fadeIn(
+                        animationSpec = tween(animationDuration)
+                    )
+                },
+                exitTransition = {
+                    slideOutVertically(animationSpec = tween(animationDuration)) { -it } + fadeOut(
+                        animationSpec = tween(animationDuration)
+                    )
+                },
+                popEnterTransition = {
+                    slideInVertically(animationSpec = tween(animationDuration)) { -it } + fadeIn(
+                        animationSpec = tween(animationDuration)
+                    )
+                },
+                popExitTransition = {
+                    slideOutVertically(animationSpec = tween(animationDuration)) { it } + fadeOut(
+                        animationSpec = tween(animationDuration)
+                    )
+                }
             ) {
                 composable(Screen.Home.route) { HomeScreen() }
                 composable(Screen.Settings.route) {
@@ -312,8 +347,12 @@ fun SideBarButton(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val backgroundColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else Color.Transparent
-    val contentColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+    val backgroundColor =
+        if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else Color.Transparent
+    val contentColor =
+        if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(
+            alpha = 0.7f
+        )
     val shape = RoundedCornerShape(12.dp)
 
     val buttonModifier = if (isExpanded) {

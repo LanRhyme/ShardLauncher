@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -142,6 +143,7 @@ fun <E> SimpleListLayout(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SliderLayout(
     value: Float,
@@ -179,7 +181,13 @@ fun SliderLayout(
                 onValueChange = onValueChange,
                 valueRange = valueRange,
                 steps = steps,
-                enabled = enabled
+                enabled = enabled,
+                thumb = {
+                    SliderDefaults.Thumb(
+                        interactionSource = remember { MutableInteractionSource() },
+                        thumbSize = DpSize(20.dp, 20.dp)
+                    )
+                }
             )
         }
     }
