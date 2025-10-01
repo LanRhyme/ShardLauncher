@@ -37,12 +37,12 @@ import androidx.navigation.compose.rememberNavController
 import com.lanrhyme.shardlauncher.ui.home.HomeScreen
 import com.lanrhyme.shardlauncher.ui.navigation.Screen
 import com.lanrhyme.shardlauncher.ui.navigation.navigationItems
-import com.lanrhyme.shardlauncher.ui.settings.SettingsPage
 import com.lanrhyme.shardlauncher.ui.theme.ShardLauncherTheme
-
-enum class SidebarPosition { Left, Right }
+import com.lanrhyme.shardlauncher.ui.settings.SettingsScreen
+import com.lanrhyme.shardlauncher.common.SidebarPosition
 
 class MainActivity : ComponentActivity() {
+    private val TAG = "MainActivity"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -158,7 +158,7 @@ fun MainContent(
             ) {
                 composable(Screen.Home.route) { HomeScreen() }
                 composable(Screen.Settings.route) {
-                    SettingsPage(
+                    SettingsScreen(
                         isDarkTheme = isDarkTheme,
                         onThemeToggle = onThemeToggle,
                         sidebarPosition = sidebarPosition,
