@@ -35,6 +35,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.lanrhyme.shardlauncher.common.SidebarPosition
+import com.lanrhyme.shardlauncher.ui.developeroptions.DeveloperOptionsScreen
 import com.lanrhyme.shardlauncher.ui.home.HomeScreen
 import com.lanrhyme.shardlauncher.ui.navigation.Screen
 import com.lanrhyme.shardlauncher.ui.navigation.navigationItems
@@ -169,6 +170,7 @@ fun MainContent(
                 composable(Screen.Home.route) { HomeScreen() }
                 composable(Screen.Settings.route) {
                     SettingsScreen(
+                        navController = navController,
                         isDarkTheme = isDarkTheme,
                         onThemeToggle = onThemeToggle,
                         sidebarPosition = sidebarPosition,
@@ -176,6 +178,9 @@ fun MainContent(
                         themeColor = themeColor,
                         onThemeColorChange = onThemeColorChange
                     )
+                }
+                composable(Screen.DeveloperOptions.route) {
+                    DeveloperOptionsScreen()
                 }
             }
         }

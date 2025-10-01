@@ -1,5 +1,9 @@
 package com.lanrhyme.shardlauncher.ui.settings
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -24,9 +28,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.lanrhyme.shardlauncher.common.SidebarPosition
 import com.lanrhyme.shardlauncher.ui.components.SimpleListLayout
 import com.lanrhyme.shardlauncher.ui.components.SwitchLayout
+import com.lanrhyme.shardlauncher.ui.navigation.Screen
 import com.lanrhyme.shardlauncher.ui.theme.ThemeColor
 
 // 1. 定义设置页面分类
@@ -41,6 +47,7 @@ enum class SettingsPage(val title: String) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
+    navController: NavController,
     isDarkTheme: Boolean,
     onThemeToggle: () -> Unit,
     sidebarPosition: SidebarPosition,
@@ -82,23 +89,26 @@ fun SettingsScreen(
         }
 
         // 4. 根据选中的页面显示不同的内容
-        // 目前，仅当选中“启动器设置”时显示现有内容
-        when (selectedPage) {
-            SettingsPage.Launcher -> {
-                LauncherSettingsContent(
-                    isDarkTheme = isDarkTheme,
-                    onThemeToggle = onThemeToggle,
-                    sidebarPosition = sidebarPosition,
-                    onPositionChange = onPositionChange,
-                    themeColor = themeColor,
-                    onThemeColorChange = onThemeColorChange
-                )
+        AnimatedContent(targetState = selectedPage, label = "Settings Page Animation", transitionSpec = {
+            fadeIn() togetherWith fadeOut()
+        }) { page ->
+            when (page) {
+                SettingsPage.Launcher -> {
+                    LauncherSettingsContent(
+                        isDarkTheme = isDarkTheme,
+                        onThemeToggle = onThemeToggle,
+                        sidebarPosition = sidebarPosition,
+                        onPositionChange = onPositionChange,
+                        themeColor = themeColor,
+                        onThemeColorChange = onThemeColorChange
+                    )
+                }
+                SettingsPage.Other -> {
+                    OtherSettingsContent(navController = navController)
+                }
+                // Other categories can be added later
+                else -> { /* Placeholder for other settings pages */ }
             }
-            // 其他分类页面的内容可以稍后添加
-            SettingsPage.Game -> { /* TODO: 全局游戏设置内容 */ }
-            SettingsPage.Controls -> { /* TODO: 控制设置内容 */ }
-            SettingsPage.About -> { /* TODO: 关于页面内容 */ }
-            SettingsPage.Other -> { /* TODO: 其他设置内容 */ }
         }
     }
 }
@@ -155,6 +165,33 @@ private fun LauncherSettingsContent(
                 selectedItem = themeColor,
                 onValueChange = onThemeColorChange,
                 getItemText = { it.title }
+            )
+        }
+    }
+}
+
+@Composable
+private fun OtherSettingsContent(navController: NavController) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        item {
+            Text(
+                text = "高级",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+            )
+        }
+        item {
+            SimpleListLayout(
+                title = "开发者选项",
+                items = listOf(Unit),
+                selectedItem = Unit,
+                onValueChange = { navController.navigate(Screen.DeveloperOptions.route) },
+                getItemText = { "点击进入开发者选项" } 
             )
         }
     }
