@@ -57,6 +57,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.lanrhyme.shardlauncher.common.SidebarPosition
+import com.lanrhyme.shardlauncher.data.SettingsRepository
 import com.lanrhyme.shardlauncher.ui.SplashScreen
 import com.lanrhyme.shardlauncher.ui.developeroptions.DeveloperOptionsScreen
 import com.lanrhyme.shardlauncher.ui.home.HomeScreen
@@ -68,8 +69,11 @@ import com.lanrhyme.shardlauncher.ui.theme.ThemeColor
 
 class MainActivity : ComponentActivity() {
     private val TAG = "MainActivity"
+    private lateinit var settingsRepository: SettingsRepository
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        settingsRepository = SettingsRepository(applicationContext)
+
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
@@ -108,7 +112,8 @@ class MainActivity : ComponentActivity() {
                                 sidebarPosition = sidebarPosition,
                                 onPositionChange = { newPosition -> sidebarPosition = newPosition },
                                 themeColor = themeColor,
-                                onThemeColorChange = { newColor -> themeColor = newColor }
+                                onThemeColorChange = { newColor -> themeColor = newColor },
+                                settingsRepository = settingsRepository
                             )
                         }
                     }
@@ -126,10 +131,11 @@ fun MainScreen(
     sidebarPosition: SidebarPosition,
     onPositionChange: (SidebarPosition) -> Unit,
     themeColor: ThemeColor,
-    onThemeColorChange: (ThemeColor) -> Unit
+    onThemeColorChange: (ThemeColor) -> Unit,
+    settingsRepository: SettingsRepository
 ) {
     var isSidebarExpanded by remember { mutableStateOf(false) }
-    var animationSpeed by remember { mutableStateOf(1f) }
+    var animationSpeed by remember { mutableStateOf(settingsRepository.getAnimationSpeed()) }
 
     val sidebarWidth by animateDpAsState(
         targetValue = if (isSidebarExpanded) 220.dp else 72.dp,
@@ -159,7 +165,10 @@ fun MainScreen(
                 themeColor = themeColor,
                 onThemeColorChange = onThemeColorChange,
                 animationSpeed = animationSpeed,
-                onAnimationSpeedChange = { animationSpeed = it }
+                onAnimationSpeedChange = {
+                    animationSpeed = it
+                    settingsRepository.setAnimationSpeed(it)
+                }
             )
 
             val sidebarAlignment = when (sidebarPosition) {
