@@ -195,48 +195,20 @@ fun SideBar(
         SidebarPosition.Right -> RoundedCornerShape(topStart = 28.dp, bottomStart = 28.dp)
     }
 
-    /* ---------- 1. 真·高斯模糊（仅 API 31+） ---------- */
-    val blurRadius = 24.dp              // 想多糊自己调
-    Box(
-        modifier = modifier
-            .fillMaxHeight()
-            .clip(cardShape)            // 圆角裁剪
-            .background(
-                MaterialTheme.colorScheme.surface.copy(alpha = 0.62f)
-            )
-            .blur(blurRadius)           // 官方模糊，低版本自动失效
-    ) {
-        SideBarContent(isExpanded, onToggleExpand, navController, currentRoute)
-    }
 
-    /* ---------- 2. 兼容全版本“假毛玻璃” ---------- */
-    /*
+    val blurRadius = 24.dp
     Box(
         modifier = modifier
             .fillMaxHeight()
             .clip(cardShape)
-            .background(Color.White.copy(alpha = 0.50f))   // 底色
-            .drawWithContent {                            // 噪点 overlay
-                drawContent()
-                drawRect(
-                    brush = ShaderBrush(
-                        BitmapShader(
-                            ImageBitmap.imageResource(id = R.drawable.noise),
-                            TileMode.Repeated,
-                            TileMode.Repeated
-                        )
-                    ),
-                    blendMode = BlendMode.Overlay,
-                    alpha = 0.07f
-                )
-            }
+            .background(
+                MaterialTheme.colorScheme.surface.copy(alpha = 0.62f)
+            )
     ) {
         SideBarContent(isExpanded, onToggleExpand, navController, currentRoute)
     }
-    */
 }
 
-/* ---------------- 内容部分抽出来，保持整洁 ---------------- */
 @Composable
 private fun SideBarContent(
     isExpanded: Boolean,
