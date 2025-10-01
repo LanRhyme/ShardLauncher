@@ -29,7 +29,7 @@
 
 控件统一为圆角矩形，我若没有明确提及统一22.dp圆角。
 控件设计参考https://zread.ai/ZalithLauncher/ZalithLauncher2/9-ui-components-and-layout-design
-参考以下文档进行设计
+参考以下文档进行设计，仅供参考，实际没有这些文件
 # UI 组件文档
 
 > 采用模块化组件架构，将 UI 元素组织为专门类别，促进可重用性和可维护性。该组件系统基于 Jetpack Compose 和 Material Design 3 原则构建。

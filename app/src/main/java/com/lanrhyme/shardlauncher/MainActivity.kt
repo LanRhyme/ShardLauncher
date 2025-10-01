@@ -34,12 +34,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.lanrhyme.shardlauncher.common.SidebarPosition
 import com.lanrhyme.shardlauncher.ui.home.HomeScreen
 import com.lanrhyme.shardlauncher.ui.navigation.Screen
 import com.lanrhyme.shardlauncher.ui.navigation.navigationItems
-import com.lanrhyme.shardlauncher.ui.theme.ShardLauncherTheme
 import com.lanrhyme.shardlauncher.ui.settings.SettingsScreen
-import com.lanrhyme.shardlauncher.common.SidebarPosition
+import com.lanrhyme.shardlauncher.ui.theme.ShardLauncherTheme
+import com.lanrhyme.shardlauncher.ui.theme.ThemeColor
 
 class MainActivity : ComponentActivity() {
     private val TAG = "MainActivity"
@@ -55,13 +56,16 @@ class MainActivity : ComponentActivity() {
             val systemIsDark = isSystemInDarkTheme()
             var isDarkTheme by remember { mutableStateOf(systemIsDark) }
             var sidebarPosition by remember { mutableStateOf(SidebarPosition.Left) }
+            var themeColor by remember { mutableStateOf(ThemeColor.Green) }
 
-            ShardLauncherTheme(darkTheme = isDarkTheme) {
+            ShardLauncherTheme(darkTheme = isDarkTheme, themeColor = themeColor) {
                 MainScreen(
                     isDarkTheme = isDarkTheme,
                     onThemeToggle = { isDarkTheme = !isDarkTheme },
                     sidebarPosition = sidebarPosition,
-                    onPositionChange = { newPosition -> sidebarPosition = newPosition }
+                    onPositionChange = { newPosition -> sidebarPosition = newPosition },
+                    themeColor = themeColor,
+                    onThemeColorChange = { newColor -> themeColor = newColor }
                 )
             }
         }
@@ -73,7 +77,9 @@ fun MainScreen(
     isDarkTheme: Boolean,
     onThemeToggle: () -> Unit,
     sidebarPosition: SidebarPosition,
-    onPositionChange: (SidebarPosition) -> Unit
+    onPositionChange: (SidebarPosition) -> Unit,
+    themeColor: ThemeColor,
+    onThemeColorChange: (ThemeColor) -> Unit
 ) {
     val navController = rememberNavController()
     var isSidebarExpanded by remember { mutableStateOf(false) }
@@ -100,7 +106,9 @@ fun MainScreen(
                 isDarkTheme = isDarkTheme,
                 onThemeToggle = onThemeToggle,
                 sidebarPosition = sidebarPosition,
-                onPositionChange = onPositionChange
+                onPositionChange = onPositionChange,
+                themeColor = themeColor,
+                onThemeColorChange = onThemeColorChange
             )
 
             val sidebarAlignment = when (sidebarPosition) {
@@ -131,7 +139,9 @@ fun MainContent(
     isDarkTheme: Boolean,
     onThemeToggle: () -> Unit,
     sidebarPosition: SidebarPosition,
-    onPositionChange: (SidebarPosition) -> Unit
+    onPositionChange: (SidebarPosition) -> Unit,
+    themeColor: ThemeColor,
+    onThemeColorChange: (ThemeColor) -> Unit
 ) {
     val collapsedSidebarWidth = 72.dp
     val paddingStart by animateDpAsState(
@@ -162,7 +172,9 @@ fun MainContent(
                         isDarkTheme = isDarkTheme,
                         onThemeToggle = onThemeToggle,
                         sidebarPosition = sidebarPosition,
-                        onPositionChange = onPositionChange
+                        onPositionChange = onPositionChange,
+                        themeColor = themeColor,
+                        onThemeColorChange = onThemeColorChange
                     )
                 }
             }
