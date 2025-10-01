@@ -35,6 +35,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lanrhyme.shardlauncher.common.SidebarPosition
@@ -64,17 +66,31 @@ fun SettingsScreen(
         val pages = SettingsPage.entries
 
         Column(modifier = Modifier.fillMaxSize()) {
-            // 3. 添加TabRow作为导航栏
-            PrimaryTabRow(
-                selectedTabIndex = selectedPage.ordinal,
-                modifier = Modifier.fillMaxWidth()
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                pages.forEachIndexed { index, page ->
-                    Tab(
-                        selected = selectedPage.ordinal == index,
-                        onClick = { selectedPage = pages[index] },
-                        text = { Text(text = page.title) }
-                    )
+                Text(
+                    text = "设置",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(end = 16.dp)
+                )
+                PrimaryTabRow(
+                    selectedTabIndex = selectedPage.ordinal,
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(22.dp)),
+                ) {
+                    pages.forEachIndexed { index, page ->
+                        Tab(
+                            selected = selectedPage.ordinal == index,
+                            onClick = { selectedPage = pages[index] },
+                            text = { Text(text = page.title) }
+                        )
+                    }
                 }
             }
 
