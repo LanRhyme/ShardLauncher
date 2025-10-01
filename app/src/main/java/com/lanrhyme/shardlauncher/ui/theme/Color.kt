@@ -17,7 +17,7 @@ val GreenGrey40 = Color(0xFF55624C)
 val GreenPink40 = Color(0xFF19686A)
 
 val Green80 = Color(0xFFB4D39A)
-val GreenGrey80 = Color(0xFFBDCBAF)
+val GreenGrey80 = Color(0xFFECF6E4)
 val GreenPink80 = Color(0xFF7ED0D2)
 
 // Blue Theme Colors
