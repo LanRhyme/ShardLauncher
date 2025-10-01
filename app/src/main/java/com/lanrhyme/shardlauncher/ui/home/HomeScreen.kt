@@ -1,21 +1,34 @@
 package com.lanrhyme.shardlauncher.ui.home
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.lanrhyme.shardlauncher.R
 import com.lanrhyme.shardlauncher.ui.custom.XamlRenderer
 import com.lanrhyme.shardlauncher.ui.custom.parseXaml
 
@@ -131,7 +144,52 @@ fun HomeScreen() {
         VerticalDivider()
 
         Box(modifier = Modifier.weight(0.3f).fillMaxHeight()) {
-            // TODO: Add action buttons here
+            Column(
+                modifier = Modifier.fillMaxSize().padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                // Player Avatar
+                Image(
+                    painter = painterResource(id = R.drawable.ic_launcher_foreground), // Placeholder
+                    contentDescription = "Player Avatar",
+                    modifier = Modifier
+                        .size(120.dp)
+                        .clip(CircleShape)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Player Name
+                Text(
+                    text = "Player Name",
+                    style = MaterialTheme.typography.titleLarge
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+
+                // Account Type
+                Text(
+                    text = "Account Type",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                )
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                // Selected Version
+                Text(
+                    text = "Selected Version: 1.20.1",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Launch Button
+                Button(
+                    onClick = { /* TODO: Handle launch */ },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(text = "启动游戏")
+                }
+            }
         }
     }
 }
