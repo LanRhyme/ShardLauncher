@@ -70,6 +70,7 @@ import com.lanrhyme.shardlauncher.ui.theme.ThemeColor
 class MainActivity : ComponentActivity() {
     private val TAG = "MainActivity"
     private lateinit var settingsRepository: SettingsRepository
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         settingsRepository = SettingsRepository(applicationContext)
@@ -83,9 +84,11 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val systemIsDark = isSystemInDarkTheme()
-            var isDarkTheme by remember { mutableStateOf(systemIsDark) }
-            var sidebarPosition by remember { mutableStateOf(SidebarPosition.Left) }
-            var themeColor by remember { mutableStateOf(ThemeColor.Green) }
+            var isDarkTheme by remember { mutableStateOf(settingsRepository.getIsDarkTheme(systemIsDark)) }
+            var sidebarPosition by remember { mutableStateOf(settingsRepository.getSidebarPosition()) }
+            var themeColor by remember { mutableStateOf(settingsRepository.getThemeColor()) }
+            var animationSpeed by remember { mutableStateOf(settingsRepository.getAnimationSpeed()) }
+
             val navController = rememberNavController()
             var showSplash by remember { mutableStateOf(true) }
 
@@ -108,12 +111,26 @@ class MainActivity : ComponentActivity() {
                             MainScreen(
                                 navController = navController,
                                 isDarkTheme = isDark,
-                                onThemeToggle = { isDarkTheme = !isDarkTheme },
+                                onThemeToggle = {
+                                    val newTheme = !isDarkTheme
+                                    isDarkTheme = newTheme
+                                    settingsRepository.setIsDarkTheme(newTheme)
+                                },
                                 sidebarPosition = sidebarPosition,
-                                onPositionChange = { newPosition -> sidebarPosition = newPosition },
+                                onPositionChange = { newPosition ->
+                                    sidebarPosition = newPosition
+                                    settingsRepository.setSidebarPosition(newPosition)
+                                },
                                 themeColor = themeColor,
-                                onThemeColorChange = { newColor -> themeColor = newColor },
-                                settingsRepository = settingsRepository
+                                onThemeColorChange = { newColor ->
+                                    themeColor = newColor
+                                    settingsRepository.setThemeColor(newColor)
+                                },
+                                animationSpeed = animationSpeed,
+                                onAnimationSpeedChange = { newSpeed ->
+                                    animationSpeed = newSpeed
+                                    settingsRepository.setAnimationSpeed(newSpeed)
+                                }
                             )
                         }
                     }
@@ -132,10 +149,10 @@ fun MainScreen(
     onPositionChange: (SidebarPosition) -> Unit,
     themeColor: ThemeColor,
     onThemeColorChange: (ThemeColor) -> Unit,
-    settingsRepository: SettingsRepository
+    animationSpeed: Float,
+    onAnimationSpeedChange: (Float) -> Unit
 ) {
     var isSidebarExpanded by remember { mutableStateOf(false) }
-    var animationSpeed by remember { mutableStateOf(settingsRepository.getAnimationSpeed()) }
 
     val sidebarWidth by animateDpAsState(
         targetValue = if (isSidebarExpanded) 220.dp else 72.dp,
@@ -149,7 +166,6 @@ fun MainScreen(
         label = ""
     )
 
-    // Re-introduce the root Surface to provide a stable, single background
     Surface(modifier = Modifier.fillMaxSize()) {
         Box(modifier = Modifier.fillMaxSize()) {
             MainContent(
@@ -165,10 +181,7 @@ fun MainScreen(
                 themeColor = themeColor,
                 onThemeColorChange = onThemeColorChange,
                 animationSpeed = animationSpeed,
-                onAnimationSpeedChange = {
-                    animationSpeed = it
-                    settingsRepository.setAnimationSpeed(it)
-                }
+                onAnimationSpeedChange = onAnimationSpeedChange
             )
 
             val sidebarAlignment = when (sidebarPosition) {
