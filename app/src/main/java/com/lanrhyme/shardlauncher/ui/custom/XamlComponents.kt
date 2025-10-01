@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -43,7 +44,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 
 @Composable
 fun XamlRenderer(nodes: List<XamlNode>, modifier: Modifier = Modifier) {
@@ -323,12 +324,27 @@ fun RenderImage(node: ImageNode) {
     val height = parseSize(node.attributes["Height"])
     val horizontalAlignment = parseHorizontalAlignment(node.attributes["HorizontalAlignment"])
 
-    Row(horizontalArrangement = Arrangement.spacedBy(0.dp, horizontalAlignment), modifier=Modifier.fillMaxWidth()) {
-        AsyncImage(
+    Box(modifier = Modifier.fillMaxWidth()) {
+        SubcomposeAsyncImage(
             model = source,
             contentDescription = null,
             modifier = Modifier
-                .then(if (height != Dp.Unspecified) Modifier.height(height) else Modifier)
+                .align(
+                    when (horizontalAlignment) {
+                        Alignment.CenterHorizontally -> Alignment.Center
+                        Alignment.End -> Alignment.CenterEnd
+                        else -> Alignment.CenterStart
+                    }
+                )
+                .then(if (height != Dp.Unspecified) Modifier.height(height) else Modifier),
+            loading = {
+                Box(
+                    modifier = Modifier.then(if (height != Dp.Unspecified) Modifier.height(height) else Modifier.size(50.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
         )
     }
 }
@@ -358,10 +374,15 @@ fun RenderListItem(node: ListItemNode) {
             if (logo.startsWith("pack://")) {
                 // Handle built-in pack images later
             } else {
-                 AsyncImage(
+                 SubcomposeAsyncImage(
                     model = logo,
                     contentDescription = null,
-                    modifier = Modifier.size(40.dp)
+                    modifier = Modifier.size(40.dp),
+                    loading = {
+                        Box(modifier = Modifier.size(40.dp), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator()
+                        }
+                    }
                 )
             }
            

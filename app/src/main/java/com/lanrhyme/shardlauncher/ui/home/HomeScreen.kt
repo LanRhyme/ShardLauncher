@@ -1,5 +1,6 @@
 package com.lanrhyme.shardlauncher.ui.home
 
+import android.content.Context
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -20,116 +21,25 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.lanrhyme.shardlauncher.R
 import com.lanrhyme.shardlauncher.ui.custom.XamlRenderer
 import com.lanrhyme.shardlauncher.ui.custom.parseXaml
+import java.io.IOException
 
 @Composable
 fun HomeScreen() {
-    val xamlContent = """
-<local:MyCard Title="前言" Margin="0,0,0,15">
-    <StackPanel Margin="25,40,23,15">
-        <TextBlock Margin="0,0,0,4" FontSize="13" HorizontalAlignment="Center" Foreground="{DynamicResource ColorBrush1}"
-                    Text="本篇简单介绍了在 PCL 中使用 XAML 进行自定义页面的相关语法。由于内容繁多，建议下载本篇代码参考学习。" />
-        <local:MyButton Margin="0,8,0,8" Width="200" Height="35"
-                    Text="下载本篇的代码" EventType="下载文件" EventData="https://testingcf.jsdelivr.net/gh/LTCatt/PCL2Help@latest/个性化/XAML%20格式.xaml" ToolTip="下载本篇的代码" />
-    </StackPanel>
-</local:MyCard>
-
-<local:MyCard Title="纯文本" Margin="0,0,0,15" CanSwap="True" IsSwapped="True">
-    <StackPanel Margin="25,40,23,15">
-        <TextBlock Margin="0,0,0,4"
-                    Text="每个 local:MyCard 代表一张卡片，你可以添加、删除格式类似的 MyCard 来添加多个卡片。每个 TextBlock 代表一段文本，你可以在 Text 属性中书写任何你想写的内容，也可以自行添加更多的 TextBlock。" />
-        <TextBlock Margin="0,0,0,4" FontSize="11"
-                    Text="你可以通过添加、删除属性修改样式，例如上一行的 FontSize 就会将字号改为 11 号。" />
-        <TextBlock Margin="20,5,20,0" Foreground="#8C7721"
-                    Text="它还有许多可以调整的属性：上一行的 Margin 调整了边距，Foreground 则会让文字变色。" />
-    </StackPanel>
-</local:MyCard>
-
-<local:MyCard Title="卡片、提示条" Margin="0,0,0,15" CanSwap="True" IsSwapped="True">
-    <StackPanel Margin="25,40,23,15">
-        <local:MyHint Text="local:MyHint 代表提示条。" />
-        <local:MyHint Margin="0,8,0,2" Theme="Blue"
-                    Text="将提示条的 Theme 属性改为 Blue、Yellow 或 Red 即可修改配色。&#xA;使用左边的那堆字符可以在任意地方手动换行，如果需要使用等号、引号等特殊字符，可以自行百度 XAML 转义字符。" />
-        <TextBlock Margin="0,6,0,0"
-                    Text="卡片（local:MyCard）的 Title 属性决定了它的标题。&#xA;为卡片添加 CanSwap 属性让它可以被折叠，True 代表是，False 代表否。在此基础上，再使用 IsSwapped 属性调整它是否默认被折叠。" />
-    </StackPanel>
-</local:MyCard>
-
-<local:MyCard Title="长宽属性、图片" Margin="0,0,0,15" CanSwap="True" IsSwapped="True">
-    <StackPanel Margin="25,40,23,15">
-        <TextBlock Margin="0,0,0,4" Width="320" HorizontalAlignment="Right"
-                    Text="任意项目都可以添加 Width 与 Height 属性来控制宽高。HorizontalAlignment 属性可以控制对齐：Center 代表居中，Right 代表居右，例如这段文本就被居右了。" />
-        <TextBlock Margin="0,0,0,6"
-                    Text="local:MyImage 代表图片，你需要在它的 Source 属性中填写一个网址或文件路径，它会从该处获取图片并显示。通常需要使用 Height 限制它的高度。" />
-        <local:MyImage Height="50" HorizontalAlignment="Center" Source="https://www.baidu.com/img/flexible/logo/pc/result.png" />
-        <TextBlock Margin="0,0,0,6"
-                    Text="如果有多个网址。也可以通过设置 FallbackSource 属性来设置备用地址。&#xA;当从网址 1 获取图片失败后，会自动从网址 2 获取图片。" />
-    </StackPanel>
-</local:MyCard>
-
-<local:MyCard Title="按钮" Margin="0,0,0,15" CanSwap="True" IsSwapped="True">
-    <StackPanel Margin="25,40,23,15">
-        <TextBlock Margin="0,0,0,4"
-                    Text="添加 local:MyButton 即可新建一个按钮。你需要限定它的尺寸与位置，并通过 Padding 属性进一步控制它的内边距。" />
-        <local:MyButton Margin="0,4,0,10" Height="35" HorizontalAlignment="Left" Padding="25,0,25,0"
-                    Text="这是一个按钮！一个按钮！" />
-        <TextBlock Margin="0,0,0,4"
-                    Text="你可以修改 ColorType 属性来调整按钮配色：Highlight 代表当前主题色，Red 代表红色。ToolTip 属性还可以让你在鼠标悬浮在上面的时候显示提示文本。" />
-        <local:MyButton Margin="0,4,0,10" Width="250" Height="35" ColorType="Highlight"
-                    Text="把鼠标停在这里别动……" ToolTip="……就能看到这句话！" />
-        <TextBlock Margin="0,0,0,4"
-                    Text="local:MyTextButton 是没有边框的 “纯文本按钮”，其作用与 local:MyButton 一致。" />
-        <local:MyTextButton Margin="0,8,0,10" HorizontalAlignment="Center"
-                    Text="一个精简版的文本按钮" />
-        <TextBlock Margin="0,0,0,4"
-                    Text="按钮可以做到很多事，具体将在 “事件” 部分介绍。" />
-    </StackPanel>
-</local:MyCard>
-
-<local:MyCard Title="事件 1：打开网页、弹出窗口" Margin="0,0,0,15" CanSwap="True" IsSwapped="True">
-    <StackPanel Margin="25,40,23,15">
-        <TextBlock Margin="0,0,0,10"
-                    Text="将按钮的 EventType 属性设为 打开网页，然后在 EventData 属性中写入网址，即可通过点击按钮打开网页。" />
-        <local:MyButton Width="140" Height="35" HorizontalAlignment="Left" Padding="13,0,13,0"
-                    Text="打开 Minecraft Wiki" EventType="打开网页" EventData="https://zh.minecraft.wiki/" />
-        <TextBlock Margin="0,10,0,10"
-                    Text="或者将 EventType 属性改为 弹出窗口，然后在 EventData 属性中写入弹窗的标题与内容……" />
-        <local:MyButton Width="140" Height="35" HorizontalAlignment="Left" Padding="13,0,13,0"
-                    Text="显示一个弹窗" EventType="弹出窗口" EventData="这是标题|标题与内容以竖线间隔。\n你也可以直接在其中换行。" />
-        <TextBlock Margin="0,10,0,0"
-                    Text="local:MyTextButton 同样可以设置 EventType 与 EventData 让它具有特定功能。" />
-        <local:MyTextButton Margin="0,8,0,0" HorizontalAlignment="Center"
-                    Text="点击打开知乎" EventType="打开网页" EventData="https://www.zhihu.com/" />
-    </StackPanel>
-</local:MyCard>
-
-<local:MyCard Title="事件 2：启动游戏" Margin="0,0,0,15" CanSwap="True" IsSwapped="True">
-    <StackPanel Margin="25,40,23,15">
-        <TextBlock Margin="0,0,0,4"
-                    Text="将 EventType 设置为 启动游戏，EventData 设置为具体的游戏版本，即可通过点击按钮启动游戏。如果当前游戏文件夹没有该版本，则无法启动。" />
-        <local:MyButton Margin="0,4,0,10" Width="250" Height="35"
-                    Text="启动 Minecraft 1.12.2" EventType="启动游戏" EventData="1.12.2" />
-        <TextBlock Margin="0,0,0,4"
-                    Text="在 EventData 后面添加一条竖线（|），竖线后填写服务器 IP，即可在启动该版本的同时自动进入服务器。" />
-        <local:MyButton Margin="0,4,0,0" Width="250" Height="35"
-                    Text="启动 1.20.1 并进入 Hypixel" EventType="启动游戏" EventData="1.20.1|mc.hypixel.net" ToolTip="服务器 IP：mc.hypixel.net" />
-        <TextBlock Margin="0,0,0,4"
-                    Text="在 EventData 中填写 \current，表示启动当前被选中的游戏版本，同样可以在后面填写服务器 IP。" />
-        <local:MyButton Margin="0,4,0,10" Width="250" Height="35"
-                    Text="启动当前选中版本并进入 Hypixel" EventType="启动游戏" EventData="\current|mc.hypixel.net" ToolTip="启动当前版本" />
-    </StackPanel>
-</local:MyCard>
-    """
+    val context = LocalContext.current
+    val xamlContent = remember { loadXamlFromAssets(context, "home.xaml") }
     val nodes = parseXaml(xamlContent)
 
     Row(modifier = Modifier.fillMaxSize()) {
@@ -191,6 +101,15 @@ fun HomeScreen() {
                 }
             }
         }
+    }
+}
+
+fun loadXamlFromAssets(context: Context, fileName: String): String {
+    return try {
+        context.assets.open(fileName).bufferedReader().use { it.readText() }
+    } catch (e: IOException) {
+        e.printStackTrace()
+        ""
     }
 }
 
