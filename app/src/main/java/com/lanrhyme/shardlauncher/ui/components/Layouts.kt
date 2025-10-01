@@ -37,7 +37,6 @@ fun SwitchLayout(
             ),
         shape = shape,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
@@ -82,7 +81,6 @@ fun <E> SimpleListLayout(
             .alpha(if (enabled) 1f else 0.5f),
         shape = shape,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
     ) {
         Column {
             Row(
@@ -140,6 +138,49 @@ fun <E> SimpleListLayout(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun SliderLayout(
+    value: Float,
+    onValueChange: (Float) -> Unit,
+    modifier: Modifier = Modifier,
+    title: String,
+    summary: String? = null,
+    valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
+    steps: Int = 0,
+    enabled: Boolean = true,
+    shape: Shape = RoundedCornerShape(28.0.dp),
+    displayValue: Float = value
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .alpha(if (enabled) 1f else 0.5f),
+        shape = shape,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                TitleAndSummary(
+                    title = title,
+                    summary = summary
+                )
+                Text(String.format("%.1fx", displayValue), style = MaterialTheme.typography.bodyLarge)
+            }
+            Slider(
+                value = value,
+                onValueChange = onValueChange,
+                valueRange = valueRange,
+                steps = steps,
+                enabled = enabled
+            )
         }
     }
 }

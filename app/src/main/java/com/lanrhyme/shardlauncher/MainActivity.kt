@@ -3,27 +3,49 @@ package com.lanrhyme.shardlauncher
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.*
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -58,16 +80,24 @@ class MainActivity : ComponentActivity() {
             var isDarkTheme by remember { mutableStateOf(systemIsDark) }
             var sidebarPosition by remember { mutableStateOf(SidebarPosition.Left) }
             var themeColor by remember { mutableStateOf(ThemeColor.Green) }
+            val navController = rememberNavController()
 
-            ShardLauncherTheme(darkTheme = isDarkTheme, themeColor = themeColor) {
-                MainScreen(
-                    isDarkTheme = isDarkTheme,
-                    onThemeToggle = { isDarkTheme = !isDarkTheme },
-                    sidebarPosition = sidebarPosition,
-                    onPositionChange = { newPosition -> sidebarPosition = newPosition },
-                    themeColor = themeColor,
-                    onThemeColorChange = { newColor -> themeColor = newColor }
-                )
+            Crossfade(
+                targetState = isDarkTheme,
+                label = "ThemeCrossfade",
+                animationSpec = tween(durationMillis = 500)
+            ) { isDark ->
+                ShardLauncherTheme(darkTheme = isDark, themeColor = themeColor) {
+                    MainScreen(
+                        navController = navController,
+                        isDarkTheme = isDark,
+                        onThemeToggle = { isDarkTheme = !isDarkTheme },
+                        sidebarPosition = sidebarPosition,
+                        onPositionChange = { newPosition -> sidebarPosition = newPosition },
+                        themeColor = themeColor,
+                        onThemeColorChange = { newColor -> themeColor = newColor }
+                    )
+                }
             }
         }
     }
@@ -75,6 +105,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MainScreen(
+    navController: NavHostController,
     isDarkTheme: Boolean,
     onThemeToggle: () -> Unit,
     sidebarPosition: SidebarPosition,
@@ -82,8 +113,8 @@ fun MainScreen(
     themeColor: ThemeColor,
     onThemeColorChange: (ThemeColor) -> Unit
 ) {
-    val navController = rememberNavController()
     var isSidebarExpanded by remember { mutableStateOf(false) }
+    var animationSpeed by remember { mutableStateOf(1f) }
 
     val sidebarWidth by animateDpAsState(
         targetValue = if (isSidebarExpanded) 220.dp else 72.dp,
@@ -109,7 +140,9 @@ fun MainScreen(
                 sidebarPosition = sidebarPosition,
                 onPositionChange = onPositionChange,
                 themeColor = themeColor,
-                onThemeColorChange = onThemeColorChange
+                onThemeColorChange = onThemeColorChange,
+                animationSpeed = animationSpeed,
+                onAnimationSpeedChange = { animationSpeed = it }
             )
 
             val sidebarAlignment = when (sidebarPosition) {
@@ -142,7 +175,9 @@ fun MainContent(
     sidebarPosition: SidebarPosition,
     onPositionChange: (SidebarPosition) -> Unit,
     themeColor: ThemeColor,
-    onThemeColorChange: (ThemeColor) -> Unit
+    onThemeColorChange: (ThemeColor) -> Unit,
+    animationSpeed: Float,
+    onAnimationSpeedChange: (Float) -> Unit
 ) {
     val collapsedSidebarWidth = 72.dp
     val paddingStart by animateDpAsState(
@@ -159,13 +194,14 @@ fun MainContent(
         modifier = modifier.blur(radius = contentBlurRadius)
     ) {
         Box(modifier = Modifier.padding(contentPadding)) {
+            val animationDuration = (500 / animationSpeed).toInt()
             NavHost(
                 navController = navController,
                 startDestination = Screen.Home.route,
-                enterTransition = { slideInVertically(animationSpec = tween(500)) { it } + fadeIn(animationSpec = tween(500)) },
-                exitTransition = { slideOutVertically(animationSpec = tween(500)) { -it } + fadeOut(animationSpec = tween(500)) },
-                popEnterTransition = { slideInVertically(animationSpec = tween(500)) { -it } + fadeIn(animationSpec = tween(500)) },
-                popExitTransition = { slideOutVertically(animationSpec = tween(500)) { it } + fadeOut(animationSpec = tween(500)) }
+                enterTransition = { slideInVertically(animationSpec = tween(animationDuration)) { it } + fadeIn(animationSpec = tween(animationDuration)) },
+                exitTransition = { slideOutVertically(animationSpec = tween(animationDuration)) { -it } + fadeOut(animationSpec = tween(animationDuration)) },
+                popEnterTransition = { slideInVertically(animationSpec = tween(animationDuration)) { -it } + fadeIn(animationSpec = tween(animationDuration)) },
+                popExitTransition = { slideOutVertically(animationSpec = tween(animationDuration)) { it } + fadeOut(animationSpec = tween(animationDuration)) }
             ) {
                 composable(Screen.Home.route) { HomeScreen() }
                 composable(Screen.Settings.route) {
@@ -180,7 +216,10 @@ fun MainContent(
                     )
                 }
                 composable(Screen.DeveloperOptions.route) {
-                    DeveloperOptionsScreen()
+                    DeveloperOptionsScreen(
+                        animationSpeed = animationSpeed,
+                        onAnimationSpeedChange = onAnimationSpeedChange
+                    )
                 }
             }
         }
@@ -208,10 +247,9 @@ fun SideBar(
     val currentRoute = navBackStackEntry?.destination?.route
 
     val cardShape = when (position) {
-        SidebarPosition.Left  -> RoundedCornerShape(topEnd = 28.dp, bottomEnd = 28.dp)
+        SidebarPosition.Left -> RoundedCornerShape(topEnd = 28.dp, bottomEnd = 28.dp)
         SidebarPosition.Right -> RoundedCornerShape(topStart = 28.dp, bottomStart = 28.dp)
     }
-
 
     val blurRadius = 24.dp
     Box(
@@ -266,7 +304,6 @@ private fun SideBarContent(
         }
     }
 }
-
 
 @Composable
 fun SideBarButton(

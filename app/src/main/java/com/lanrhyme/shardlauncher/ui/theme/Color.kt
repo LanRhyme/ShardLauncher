@@ -12,7 +12,7 @@ val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
 // Green Theme Colors
-val Green40 = Color(0xFF6D8955)
+val Green40 = Color(0xFF477442)
 val GreenGrey40 = Color(0xFF55624C)
 val GreenPink40 = Color(0xFF19686A)
 
