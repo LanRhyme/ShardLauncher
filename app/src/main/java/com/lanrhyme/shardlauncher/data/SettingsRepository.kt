@@ -47,6 +47,15 @@ class SettingsRepository(context: Context) {
         saveProperties()
     }
 
+    fun getLauncherBackgroundBrightness(): Float {
+        return properties.getProperty(KEY_LAUNCHER_BACKGROUND_BRIGHTNESS, "0.0").toFloat()
+    }
+
+    fun setLauncherBackgroundBrightness(brightness: Float) {
+        properties.setProperty(KEY_LAUNCHER_BACKGROUND_BRIGHTNESS, brightness.toString())
+        saveProperties()
+    }
+
     fun getEnableBackgroundLightEffect(): Boolean {
         return properties.getProperty(KEY_ENABLE_BACKGROUND_LIGHT_EFFECT, "true").toBoolean()
     }
@@ -107,6 +116,7 @@ class SettingsRepository(context: Context) {
         private const val PREFS_NAME = "developer_settings.properties"
         private const val KEY_LAUNCHER_BACKGROUND_URI = "launcher_background_uri"
         private const val KEY_LAUNCHER_BACKGROUND_BLUR = "launcher_background_blur"
+        private const val KEY_LAUNCHER_BACKGROUND_BRIGHTNESS = "launcher_background_brightness"
         private const val KEY_ENABLE_BACKGROUND_LIGHT_EFFECT = "enable_background_light_effect"
         private const val KEY_ANIMATION_SPEED = "animation_speed"
         private const val KEY_LIGHT_EFFECT_ANIMATION_SPEED = "light_effect_animation_speed"

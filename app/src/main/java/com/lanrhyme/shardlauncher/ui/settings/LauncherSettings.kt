@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.lanrhyme.shardlauncher.common.SidebarPosition
 import com.lanrhyme.shardlauncher.ui.components.CombinedCard
@@ -30,6 +31,8 @@ import com.lanrhyme.shardlauncher.ui.components.SimpleListLayout
 import com.lanrhyme.shardlauncher.ui.components.SliderLayout
 import com.lanrhyme.shardlauncher.ui.components.SwitchLayout
 import com.lanrhyme.shardlauncher.ui.theme.ThemeColor
+import java.io.File
+import java.io.FileOutputStream
 
 @Composable
 internal fun LauncherSettingsContent(
@@ -48,14 +51,31 @@ internal fun LauncherSettingsContent(
     launcherBackgroundUri: String?,
     onLauncherBackgroundUriChange: (String?) -> Unit,
     launcherBackgroundBlur: Float,
-    onLauncherBackgroundBlurChange: (Float) -> Unit
+    onLauncherBackgroundBlurChange: (Float) -> Unit,
+    launcherBackgroundBrightness: Float,
+    onLauncherBackgroundBrightnessChange: (Float) -> Unit
 ) {
     val animatedSpeed by animateFloatAsState(targetValue = animationSpeed, label = "Animation Speed")
+    val context = LocalContext.current
+    val backgroundFileName = "launcher_background.jpg"
 
     val imagePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri: Uri? ->
-            onLauncherBackgroundUriChange(uri?.toString())
+            if (uri != null) {
+                val destinationFile = File(context.getExternalFilesDir(null), backgroundFileName)
+                try {
+                    context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                        FileOutputStream(destinationFile).use { outputStream ->
+                            inputStream.copyTo(outputStream)
+                        }
+                    }
+                    onLauncherBackgroundUriChange(Uri.fromFile(destinationFile).toString())
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    // Optionally, notify the user of the failure
+                }
+            }
         }
     )
 
@@ -94,7 +114,13 @@ internal fun LauncherSettingsContent(
                             text = "选择图片"
                         )
                         ScalingActionButton(
-                            onClick = { onLauncherBackgroundUriChange(null) },
+                            onClick = {
+                                val backgroundFile = File(context.getExternalFilesDir(null), backgroundFileName)
+                                if (backgroundFile.exists()) {
+                                    backgroundFile.delete()
+                                }
+                                onLauncherBackgroundUriChange(null)
+                            },
                             modifier = Modifier.weight(1f),
                             icon = Icons.Default.BrokenImage,
                             text = "清除图片"
@@ -109,6 +135,17 @@ internal fun LauncherSettingsContent(
                         title = "背景模糊",
                         summary = "调整背景图片的模糊程度",
                         displayValue = launcherBackgroundBlur,
+                        enabled = launcherBackgroundUri != null
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    SliderLayout(
+                        value = launcherBackgroundBrightness,
+                        onValueChange = onLauncherBackgroundBrightnessChange,
+                        valueRange = -100f..100f,
+                        steps = 199,
+                        title = "背景明度",
+                        summary = "调整背景图片的明暗程度(建议还是自己先提前编辑好图片)",
+                        displayValue = launcherBackgroundBrightness,
                         enabled = launcherBackgroundUri != null
                     )
                 }

@@ -46,7 +46,9 @@ fun SettingsScreen(
     launcherBackgroundUri: String?,
     onLauncherBackgroundUriChange: (String?) -> Unit,
     launcherBackgroundBlur: Float,
-    onLauncherBackgroundBlurChange: (Float) -> Unit
+    onLauncherBackgroundBlurChange: (Float) -> Unit,
+    launcherBackgroundBrightness: Float,
+    onLauncherBackgroundBrightnessChange: (Float) -> Unit
 ) {
     // 2. 添加状态来管理当前选中的页面
     var selectedPage by remember { mutableStateOf(SettingsPage.Launcher) }
@@ -82,7 +84,9 @@ fun SettingsScreen(
                         launcherBackgroundUri = launcherBackgroundUri,
                         onLauncherBackgroundUriChange = onLauncherBackgroundUriChange,
                         launcherBackgroundBlur = launcherBackgroundBlur,
-                        onLauncherBackgroundBlurChange = onLauncherBackgroundBlurChange
+                        onLauncherBackgroundBlurChange = onLauncherBackgroundBlurChange,
+                        launcherBackgroundBrightness = launcherBackgroundBrightness,
+                        onLauncherBackgroundBrightnessChange = onLauncherBackgroundBrightnessChange
                     )
                 }
                 SettingsPage.About -> {

@@ -47,6 +47,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -102,6 +104,7 @@ class MainActivity : ComponentActivity() {
             var enableBackgroundLightEffect by remember { mutableStateOf(settingsRepository.getEnableBackgroundLightEffect()) }
             var launcherBackgroundUri by remember { mutableStateOf(settingsRepository.getLauncherBackgroundUri()) }
             var launcherBackgroundBlur by remember { mutableStateOf(settingsRepository.getLauncherBackgroundBlur()) }
+            var launcherBackgroundBrightness by remember { mutableStateOf(settingsRepository.getLauncherBackgroundBrightness()) }
 
             val navController = rememberNavController()
             var showSplash by remember { mutableStateOf(true) }
@@ -165,6 +168,11 @@ class MainActivity : ComponentActivity() {
                                 onLauncherBackgroundBlurChange = {
                                     launcherBackgroundBlur = it
                                     settingsRepository.setLauncherBackgroundBlur(it)
+                                },
+                                launcherBackgroundBrightness = launcherBackgroundBrightness,
+                                onLauncherBackgroundBrightnessChange = {
+                                    launcherBackgroundBrightness = it
+                                    settingsRepository.setLauncherBackgroundBrightness(it)
                                 }
                             )
                         }
@@ -193,7 +201,9 @@ fun MainScreen(
     launcherBackgroundUri: String?,
     onLauncherBackgroundUriChange: (String?) -> Unit,
     launcherBackgroundBlur: Float,
-    onLauncherBackgroundBlurChange: (Float) -> Unit
+    onLauncherBackgroundBlurChange: (Float) -> Unit,
+    launcherBackgroundBrightness: Float,
+    onLauncherBackgroundBrightnessChange: (Float) -> Unit
 ) {
     var isSidebarExpanded by remember { mutableStateOf(false) }
 
@@ -212,13 +222,23 @@ fun MainScreen(
     Surface(modifier = Modifier.fillMaxSize()) {
         Box(modifier = Modifier.fillMaxSize()) {
             if (launcherBackgroundUri != null) {
+                val brightnessValue = launcherBackgroundBrightness
+                val colorMatrix = ColorMatrix(
+                    floatArrayOf(
+                        1f, 0f, 0f, 0f, brightnessValue,
+                        0f, 1f, 0f, 0f, brightnessValue,
+                        0f, 0f, 1f, 0f, brightnessValue,
+                        0f, 0f, 0f, 1f, 0f
+                    )
+                )
                 Image(
                     painter = rememberAsyncImagePainter(Uri.parse(launcherBackgroundUri)),
                     contentDescription = "Launcher Background",
                     modifier = Modifier
                         .fillMaxSize()
                         .blur(launcherBackgroundBlur.dp),
-                    contentScale = ContentScale.Crop
+                    contentScale = ContentScale.Crop,
+                    colorFilter = ColorFilter.colorMatrix(colorMatrix)
                 )
             }
             if (enableBackgroundLightEffect) {
@@ -248,7 +268,9 @@ fun MainScreen(
                 launcherBackgroundUri = launcherBackgroundUri,
                 onLauncherBackgroundUriChange = onLauncherBackgroundUriChange,
                 launcherBackgroundBlur = launcherBackgroundBlur,
-                onLauncherBackgroundBlurChange = onLauncherBackgroundBlurChange
+                onLauncherBackgroundBlurChange = onLauncherBackgroundBlurChange,
+                launcherBackgroundBrightness = launcherBackgroundBrightness,
+                onLauncherBackgroundBrightnessChange = onLauncherBackgroundBrightnessChange
             )
 
             val sidebarAlignment = when (sidebarPosition) {
@@ -298,7 +320,9 @@ fun MainContent(
     launcherBackgroundUri: String?,
     onLauncherBackgroundUriChange: (String?) -> Unit,
     launcherBackgroundBlur: Float,
-    onLauncherBackgroundBlurChange: (Float) -> Unit
+    onLauncherBackgroundBlurChange: (Float) -> Unit,
+    launcherBackgroundBrightness: Float,
+    onLauncherBackgroundBrightnessChange: (Float) -> Unit
 ) {
     val collapsedSidebarWidth = 72.dp
     val paddingStart by animateDpAsState(
@@ -408,7 +432,9 @@ fun MainContent(
                         launcherBackgroundUri = launcherBackgroundUri,
                         onLauncherBackgroundUriChange = onLauncherBackgroundUriChange,
                         launcherBackgroundBlur = launcherBackgroundBlur,
-                        onLauncherBackgroundBlurChange = onLauncherBackgroundBlurChange
+                        onLauncherBackgroundBlurChange = onLauncherBackgroundBlurChange,
+                        launcherBackgroundBrightness = launcherBackgroundBrightness,
+                        onLauncherBackgroundBrightnessChange = onLauncherBackgroundBrightnessChange
                     )
                 }
                 composable(Screen.DeveloperOptions.route) {
