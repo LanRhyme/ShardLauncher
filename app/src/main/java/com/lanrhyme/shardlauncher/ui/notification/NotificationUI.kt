@@ -52,8 +52,13 @@ fun NotificationPanel(
     val exitAnimation = if (sidebarPosition == SidebarPosition.Left) slideOutHorizontally(targetOffsetX = { it }) else slideOutHorizontally(targetOffsetX = { -it })
 
     val allNotifications by NotificationManager.notifications.collectAsState()
+    var dialogNotification by remember { mutableStateOf<Notification?>(null) }
     val persistentNotifications = remember(allNotifications) {
         allNotifications.filter { it.type != NotificationType.Temporary }
+    }
+
+    if (dialogNotification != null) {
+        NotificationDialog(notification = dialogNotification!!, onDismiss = { dialogNotification = null })
     }
 
     val visibleItems = remember { mutableStateListOf<String>() }
@@ -111,7 +116,9 @@ fun NotificationPanel(
                                     exit = fadeOut(animationSpec = tween(durationMillis = 200))
                                 ) {
                                     NotificationItem(
-                                        notification = notification,
+                                        notification = notification.copy(onClick = {
+                                            dialogNotification = notification
+                                        }),
                                         onDismiss = { NotificationManager.dismiss(it) },
                                         modifier = Modifier.fillMaxWidth()
                                     )
@@ -138,8 +145,13 @@ fun NotificationPanel(
 fun NotificationPopupHost() {
     val allNotifications by NotificationManager.notifications.collectAsState()
     val seenPopupIds = remember { mutableStateListOf<String>() }
+    var dialogNotification by remember { mutableStateOf<Notification?>(null) }
 
     val notificationsToShowAsPopup = allNotifications.filter { it.id !in seenPopupIds }
+
+    if (dialogNotification != null) {
+        NotificationDialog(notification = dialogNotification!!, onDismiss = { dialogNotification = null })
+    }
 
     Box(
         modifier = Modifier
@@ -157,6 +169,9 @@ fun NotificationPopupHost() {
                             if (type == NotificationType.Temporary) {
                                 NotificationManager.dismiss(id)
                             }
+                        },
+                        onClick = {
+                            dialogNotification = notification
                         }
                     )
                 }
@@ -168,7 +183,8 @@ fun NotificationPopupHost() {
 @Composable
 private fun PopupNotificationItem(
     notification: Notification,
-    onDismiss: (String, NotificationType) -> Unit
+    onDismiss: (String, NotificationType) -> Unit,
+    onClick: () -> Unit
 ) {
     var visible by remember { mutableStateOf(false) }
 
@@ -186,7 +202,7 @@ private fun PopupNotificationItem(
         exit = slideOutHorizontally { it } + fadeOut()
     ) {
         NotificationItem(
-            notification = notification,
+            notification = notification.copy(onClick = onClick),
             onDismiss = { onDismiss(notification.id, notification.type) },
             modifier = Modifier.width(350.dp)
         )

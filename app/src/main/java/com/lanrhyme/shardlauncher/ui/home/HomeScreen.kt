@@ -34,12 +34,15 @@ import androidx.compose.ui.unit.dp
 import com.lanrhyme.shardlauncher.R
 import com.lanrhyme.shardlauncher.ui.custom.XamlRenderer
 import com.lanrhyme.shardlauncher.ui.custom.parseXaml
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
 import java.io.IOException
 
 @Composable
 fun HomeScreen() {
     val context = LocalContext.current
-    val xamlContent = remember { loadXamlFromAssets(context, "home.xaml") }
+    val xamlContent = remember { loadXaml(context, "home.xaml") }
     val nodes = parseXaml(xamlContent)
 
     Row(modifier = Modifier.fillMaxSize()) {
@@ -104,9 +107,26 @@ fun HomeScreen() {
     }
 }
 
-fun loadXamlFromAssets(context: Context, fileName: String): String {
+fun loadXaml(context: Context, fileName: String): String {
+    val externalFile = File(context.getExternalFilesDir(null), fileName)
+
+    if (externalFile.exists()) {
+        return try {
+            FileInputStream(externalFile).bufferedReader().use { it.readText() }
+        } catch (e: IOException) {
+            e.printStackTrace()
+            ""
+        }
+    }
+
     return try {
-        context.assets.open(fileName).bufferedReader().use { it.readText() }
+        context.assets.open(fileName).use { inputStream ->
+            FileOutputStream(externalFile).use { outputStream ->
+                inputStream.copyTo(outputStream)
+            }
+            // Now read the copied file
+            FileInputStream(externalFile).bufferedReader().use { it.readText() }
+        }
     } catch (e: IOException) {
         e.printStackTrace()
         ""

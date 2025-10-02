@@ -1,50 +1,80 @@
 package com.lanrhyme.shardlauncher.data
 
 import android.content.Context
-import android.content.SharedPreferences
 import com.lanrhyme.shardlauncher.common.SidebarPosition
 import com.lanrhyme.shardlauncher.ui.theme.ThemeColor
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.util.Properties
 
 class SettingsRepository(context: Context) {
 
-    private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    private val properties = Properties()
+    private val settingsFile: File
+
+    init {
+        val dataDir = context.getExternalFilesDir(null)
+        settingsFile = File(dataDir, PREFS_NAME)
+        if (settingsFile.exists()) {
+            FileInputStream(settingsFile).use { properties.load(it) }
+        }
+    }
+
+    private fun saveProperties() {
+        FileOutputStream(settingsFile).use { properties.store(it, null) }
+    }
+
+    fun getEnableBackgroundLightEffect(): Boolean {
+        return properties.getProperty(KEY_ENABLE_BACKGROUND_LIGHT_EFFECT, "true").toBoolean()
+    }
+
+    fun setEnableBackgroundLightEffect(enabled: Boolean) {
+        properties.setProperty(KEY_ENABLE_BACKGROUND_LIGHT_EFFECT, enabled.toString())
+        saveProperties()
+    }
 
     fun getAnimationSpeed(): Float {
-        return prefs.getFloat(KEY_ANIMATION_SPEED, 1.0f)
+        return properties.getProperty(KEY_ANIMATION_SPEED, "1.0f").toFloat()
     }
 
     fun setAnimationSpeed(speed: Float) {
-        prefs.edit().putFloat(KEY_ANIMATION_SPEED, speed).apply()
+        properties.setProperty(KEY_ANIMATION_SPEED, speed.toString())
+        saveProperties()
     }
 
     fun getIsDarkTheme(systemIsDark: Boolean): Boolean {
-        return prefs.getBoolean(KEY_IS_DARK_THEME, systemIsDark)
+        return properties.getProperty(KEY_IS_DARK_THEME, systemIsDark.toString()).toBoolean()
     }
 
     fun setIsDarkTheme(isDark: Boolean) {
-        prefs.edit().putBoolean(KEY_IS_DARK_THEME, isDark).apply()
+        properties.setProperty(KEY_IS_DARK_THEME, isDark.toString())
+        saveProperties()
     }
 
     fun getSidebarPosition(): SidebarPosition {
-        val positionName = prefs.getString(KEY_SIDEBAR_POSITION, SidebarPosition.Left.name)
+        val positionName = properties.getProperty(KEY_SIDEBAR_POSITION, SidebarPosition.Left.name)
         return SidebarPosition.valueOf(positionName ?: SidebarPosition.Left.name)
     }
 
     fun setSidebarPosition(position: SidebarPosition) {
-        prefs.edit().putString(KEY_SIDEBAR_POSITION, position.name).apply()
+        properties.setProperty(KEY_SIDEBAR_POSITION, position.name)
+        saveProperties()
     }
 
     fun getThemeColor(): ThemeColor {
-        val colorName = prefs.getString(KEY_THEME_COLOR, ThemeColor.Green.name)
+        val colorName = properties.getProperty(KEY_THEME_COLOR, ThemeColor.Green.name)
         return ThemeColor.valueOf(colorName ?: ThemeColor.Green.name)
     }
 
     fun setThemeColor(color: ThemeColor) {
-        prefs.edit().putString(KEY_THEME_COLOR, color.name).apply()
+        properties.setProperty(KEY_THEME_COLOR, color.name)
+        saveProperties()
     }
 
     companion object {
-        private const val PREFS_NAME = "developer_settings"
+        private const val PREFS_NAME = "developer_settings.properties"
+        private const val KEY_ENABLE_BACKGROUND_LIGHT_EFFECT = "enable_background_light_effect"
         private const val KEY_ANIMATION_SPEED = "animation_speed"
         private const val KEY_IS_DARK_THEME = "is_dark_theme"
         private const val KEY_SIDEBAR_POSITION = "sidebar_position"

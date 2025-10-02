@@ -53,7 +53,9 @@ fun SettingsScreen(
     sidebarPosition: SidebarPosition,
     onPositionChange: (SidebarPosition) -> Unit,
     themeColor: ThemeColor, // Hoisted state for theme color
-    onThemeColorChange: (ThemeColor) -> Unit // Hoisted callback for theme color
+    onThemeColorChange: (ThemeColor) -> Unit, // Hoisted callback for theme color
+    enableBackgroundLightEffect: Boolean,
+    onEnableBackgroundLightEffectChange: () -> Unit
 ) {
     // 2. 添加状态来管理当前选中的页面
     var selectedPage by remember { mutableStateOf(SettingsPage.Launcher) }
@@ -100,7 +102,9 @@ fun SettingsScreen(
                         sidebarPosition = sidebarPosition,
                         onPositionChange = onPositionChange,
                         themeColor = themeColor,
-                        onThemeColorChange = onThemeColorChange
+                        onThemeColorChange = onThemeColorChange,
+                        enableBackgroundLightEffect = enableBackgroundLightEffect,
+                        onEnableBackgroundLightEffectChange = onEnableBackgroundLightEffectChange
                     )
                 }
                 SettingsPage.Other -> {
@@ -121,7 +125,9 @@ private fun LauncherSettingsContent(
     sidebarPosition: SidebarPosition,
     onPositionChange: (SidebarPosition) -> Unit,
     themeColor: ThemeColor,
-    onThemeColorChange: (ThemeColor) -> Unit
+    onThemeColorChange: (ThemeColor) -> Unit,
+    enableBackgroundLightEffect: Boolean,
+    onEnableBackgroundLightEffectChange: () -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -142,6 +148,14 @@ private fun LauncherSettingsContent(
                 summary = if (isDarkTheme) "已开启" else "已关闭",
                 checked = isDarkTheme,
                 onCheckedChange = onThemeToggle
+            )
+        }
+        item {
+            SwitchLayout(
+                title = "背景光效",
+                summary = if (enableBackgroundLightEffect) "已开启" else "已关闭",
+                checked = enableBackgroundLightEffect,
+                onCheckedChange = onEnableBackgroundLightEffectChange
             )
         }
         item {

@@ -60,6 +60,7 @@ import androidx.navigation.compose.rememberNavController
 import com.lanrhyme.shardlauncher.common.SidebarPosition
 import com.lanrhyme.shardlauncher.data.SettingsRepository
 import com.lanrhyme.shardlauncher.ui.SplashScreen
+import com.lanrhyme.shardlauncher.ui.components.BackgroundLightEffect
 import com.lanrhyme.shardlauncher.ui.developeroptions.DeveloperOptionsScreen
 import com.lanrhyme.shardlauncher.ui.home.HomeScreen
 import com.lanrhyme.shardlauncher.ui.navigation.Screen
@@ -93,6 +94,7 @@ class MainActivity : ComponentActivity() {
             var sidebarPosition by remember { mutableStateOf(settingsRepository.getSidebarPosition()) }
             var themeColor by remember { mutableStateOf(settingsRepository.getThemeColor()) }
             var animationSpeed by remember { mutableStateOf(settingsRepository.getAnimationSpeed()) }
+            var enableBackgroundLightEffect by remember { mutableStateOf(settingsRepository.getEnableBackgroundLightEffect()) }
 
             val navController = rememberNavController()
             var showSplash by remember { mutableStateOf(true) }
@@ -135,6 +137,12 @@ class MainActivity : ComponentActivity() {
                                 onAnimationSpeedChange = { newSpeed ->
                                     animationSpeed = newSpeed
                                     settingsRepository.setAnimationSpeed(newSpeed)
+                                },
+                                enableBackgroundLightEffect = enableBackgroundLightEffect,
+                                onEnableBackgroundLightEffectChange = {
+                                    val newValue = !enableBackgroundLightEffect
+                                    enableBackgroundLightEffect = newValue
+                                    settingsRepository.setEnableBackgroundLightEffect(newValue)
                                 }
                             )
                         }
@@ -155,7 +163,9 @@ fun MainScreen(
     themeColor: ThemeColor,
     onThemeColorChange: (ThemeColor) -> Unit,
     animationSpeed: Float,
-    onAnimationSpeedChange: (Float) -> Unit
+    onAnimationSpeedChange: (Float) -> Unit,
+    enableBackgroundLightEffect: Boolean,
+    onEnableBackgroundLightEffectChange: () -> Unit
 ) {
     var isSidebarExpanded by remember { mutableStateOf(false) }
 
@@ -173,6 +183,12 @@ fun MainScreen(
 
     Surface(modifier = Modifier.fillMaxSize()) {
         Box(modifier = Modifier.fillMaxSize()) {
+            if (enableBackgroundLightEffect) {
+                BackgroundLightEffect(
+                    themeColor = MaterialTheme.colorScheme.primary,
+                    animationSpeed = animationSpeed
+                )
+            }
             MainContent(
                 modifier = Modifier.fillMaxSize(),
                 isSidebarExpanded = isSidebarExpanded,
@@ -186,7 +202,9 @@ fun MainScreen(
                 themeColor = themeColor,
                 onThemeColorChange = onThemeColorChange,
                 animationSpeed = animationSpeed,
-                onAnimationSpeedChange = onAnimationSpeedChange
+                onAnimationSpeedChange = onAnimationSpeedChange,
+                enableBackgroundLightEffect = enableBackgroundLightEffect,
+                onEnableBackgroundLightEffectChange = onEnableBackgroundLightEffectChange
             )
 
             val sidebarAlignment = when (sidebarPosition) {
@@ -228,7 +246,9 @@ fun MainContent(
     themeColor: ThemeColor,
     onThemeColorChange: (ThemeColor) -> Unit,
     animationSpeed: Float,
-    onAnimationSpeedChange: (Float) -> Unit
+    onAnimationSpeedChange: (Float) -> Unit,
+    enableBackgroundLightEffect: Boolean,
+    onEnableBackgroundLightEffectChange: () -> Unit
 ) {
     val collapsedSidebarWidth = 72.dp
     val paddingStart by animateDpAsState(
@@ -328,7 +348,9 @@ fun MainContent(
                         sidebarPosition = sidebarPosition,
                         onPositionChange = onPositionChange,
                         themeColor = themeColor,
-                        onThemeColorChange = onThemeColorChange
+                        onThemeColorChange = onThemeColorChange,
+                        enableBackgroundLightEffect = enableBackgroundLightEffect,
+                        onEnableBackgroundLightEffectChange = onEnableBackgroundLightEffectChange
                     )
                 }
                 composable(Screen.DeveloperOptions.route) {

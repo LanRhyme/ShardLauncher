@@ -1,8 +1,6 @@
 package com.lanrhyme.shardlauncher.ui.notification
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,14 +20,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.lanrhyme.shardlauncher.ui.theme.Error40
-import com.lanrhyme.shardlauncher.ui.theme.Error80
-import com.lanrhyme.shardlauncher.ui.theme.ErrorSurface40
-import com.lanrhyme.shardlauncher.ui.theme.ErrorSurface80
-import com.lanrhyme.shardlauncher.ui.theme.Warning40
-import com.lanrhyme.shardlauncher.ui.theme.Warning80
-import com.lanrhyme.shardlauncher.ui.theme.WarningSurface40
-import com.lanrhyme.shardlauncher.ui.theme.WarningSurface80
 
 @Composable
 fun NotificationItem(
@@ -37,14 +27,13 @@ fun NotificationItem(
     modifier: Modifier = Modifier,
     onDismiss: ((String) -> Unit)? = null
 ) {
-    val darkTheme = isSystemInDarkTheme()
     val backgroundColor = when (notification.type) {
-        NotificationType.Warning -> if (darkTheme) WarningSurface40 else WarningSurface80
+        NotificationType.Warning -> MaterialTheme.colorScheme.tertiaryContainer
         NotificationType.Error -> MaterialTheme.colorScheme.errorContainer
         else -> MaterialTheme.colorScheme.surfaceVariant
     }
     val contentColor = when (notification.type) {
-        NotificationType.Warning -> if (darkTheme) Warning40 else Warning80
+        NotificationType.Warning -> MaterialTheme.colorScheme.onTertiaryContainer
         NotificationType.Error -> MaterialTheme.colorScheme.onErrorContainer
         else -> MaterialTheme.colorScheme.onSurfaceVariant
     }

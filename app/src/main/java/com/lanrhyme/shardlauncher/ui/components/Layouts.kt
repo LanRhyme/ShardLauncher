@@ -38,6 +38,7 @@ fun SwitchLayout(
             ),
         shape = shape,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
@@ -53,7 +54,15 @@ fun SwitchLayout(
             Switch(
                 checked = checked,
                 onCheckedChange = { onCheckedChange() },
-                enabled = enabled
+                enabled = enabled,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = MaterialTheme.colorScheme.secondary,
+                    checkedTrackColor = MaterialTheme.colorScheme.secondaryContainer,
+                    checkedIconColor = MaterialTheme.colorScheme.onSecondary,
+                    uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                    uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant,
+                    uncheckedBorderColor = MaterialTheme.colorScheme.outline
+                )
             )
         }
     }

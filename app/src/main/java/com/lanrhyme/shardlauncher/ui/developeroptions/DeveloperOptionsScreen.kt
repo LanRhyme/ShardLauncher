@@ -98,7 +98,7 @@ private fun TestNotificationSender() {
             }
             item {
                 Button(onClick = {
-                    val notification = Notification(title = "Progress", message = "Updating...", type = NotificationType.Progress, progress = progress)
+                    val notification = Notification(title = "Progress", message = "Updating...", type = NotificationType.Progress, progress = progress, isClickable = true, onClick = {})
                     progressNotificationId = notification.id
                     NotificationManager.show(notification)
                 }) {

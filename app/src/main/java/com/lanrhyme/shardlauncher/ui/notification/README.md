@@ -11,6 +11,7 @@
 - **`manager/NotificationManager.kt`**: 全局单例，用于调度和管理通知。这是与通知系统交互的唯一入口。
 - **`ui/model/Notification.kt`**: 定义了 `Notification` 数据类及其 `NotificationType` 枚举，是通知的数据模型。
 - **`ui/components/NotificationComponents.kt`**: 包含 `NotificationItem` Composable，负责渲染单个通知卡片的UI。
+- **`ui/NotificationDialog.kt`**: 包含 `NotificationDialog` Composable，负责渲染通知详情的弹窗。
 - **`MainActivity.kt`**: 
     - `NotificationPopupHost`: 负责在屏幕右上角显示临时通知弹窗。
     - `NotificationPanel`: 负责在主侧边栏展开时，在屏幕另一侧滑出持久化通知的列表。
@@ -107,6 +108,7 @@ NotificationManager.show(
 #### 发送可点击的通知
 
 `isClickable` 和 `onClick` 属性可以和任何 `type` 叠加使用。
+当 `isClickable` 为 `true` 时，`NotificationUI` 会自动处理点击事件，并显示一个包含通知详情的弹窗。如果`onClick`为空，则会使用默认的弹窗行为。如果需要自定义点击行为，可以提供一个`onClick` lambda。
 
 ```kotlin
 NotificationManager.show(
@@ -116,7 +118,7 @@ NotificationManager.show(
         type = NotificationType.Warning, // 这是一个“可点击的警告”
         isClickable = true,
         onClick = { 
-            // 在这里处理点击逻辑，例如导航到更新页面
+            // 如果onClick不为null,则会覆盖默认的弹窗行为,执行这里的逻辑
         }
     )
 )
