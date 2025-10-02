@@ -1,16 +1,16 @@
 package com.lanrhyme.shardlauncher.ui.developeroptions
 
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -22,11 +22,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.lanrhyme.shardlauncher.manager.NotificationManager
+import com.lanrhyme.shardlauncher.ui.notification.NotificationManager
 import com.lanrhyme.shardlauncher.ui.components.SliderLayout
 import com.lanrhyme.shardlauncher.ui.components.TitleAndSummary
-import com.lanrhyme.shardlauncher.ui.model.Notification
-import com.lanrhyme.shardlauncher.ui.model.NotificationType
+import com.lanrhyme.shardlauncher.ui.notification.Notification
+import com.lanrhyme.shardlauncher.ui.notification.NotificationType
 
 @Composable
 fun DeveloperOptionsScreen(
@@ -58,9 +58,9 @@ fun DeveloperOptionsScreen(
                 summary = "控制 UI 动画的播放速度",
                 displayValue = animatedSpeed
             )
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             TestNotificationSender()
         }
     }
@@ -68,35 +68,57 @@ fun DeveloperOptionsScreen(
 
 @Composable
 private fun TestNotificationSender() {
-    var expanded by remember { mutableStateOf(false) }
+    var progress by remember { mutableStateOf(0f) }
+    var progressNotificationId by remember { mutableStateOf<String?>(null) }
 
-    Box(modifier = Modifier.fillMaxWidth()) {
-        Button(onClick = { expanded = true }, modifier = Modifier.align(Alignment.Center)) {
-            Text("发送测试通知")
-        }
+    val buttons = remember {
+        listOf(
+            "Temporary" to { NotificationManager.show(Notification(title = "Temporary", message = "Disappears after 3s", type = NotificationType.Temporary)) },
+            "Normal" to { NotificationManager.show(Notification(title = "Normal", message = "Stays in the list", type = NotificationType.Normal)) },
+            "Warning" to { NotificationManager.show(Notification(title = "Warning", message = "A warning message", type = NotificationType.Warning)) },
+            "Error" to { NotificationManager.show(Notification(title = "Error", message = "An error message", type = NotificationType.Error)) },
+            "Clickable" to { NotificationManager.show(Notification(title = "Clickable", message = "Click me!", type = NotificationType.Normal, isClickable = true, onClick = {})) },
+            "Clickable Warning" to { NotificationManager.show(Notification(title = "Clickable Warning", message = "A clickable warning", type = NotificationType.Warning, isClickable = true, onClick = {})) },
+        )
+    }
 
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        TitleAndSummary(title = "Test Notifications", summary = "Send different types of notifications")
+        Spacer(modifier = Modifier.height(16.dp))
+
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            val notificationTypes = NotificationType.values()
-            notificationTypes.forEach { type ->
-                DropdownMenuItem(onClick = {
-                    sendTestNotification(type)
-                    expanded = false
-                }, text = { Text(type.name) })
+            items(buttons) { (text, onClick) ->
+                Button(onClick = onClick) {
+                    Text(text)
+                }
+            }
+            item {
+                Button(onClick = {
+                    val notification = Notification(title = "Progress", message = "Updating...", type = NotificationType.Progress, progress = progress)
+                    progressNotificationId = notification.id
+                    NotificationManager.show(notification)
+                }) {
+                    Text("Progress")
+                }
             }
         }
-    }
-}
 
-private fun sendTestNotification(type: NotificationType) {
-    val notification = when (type) {
-        NotificationType.Temporary -> Notification.Temporary("Temporary Notification", "This is a temporary notification.")
-        NotificationType.Normal -> Notification.Normal("Normal Notification", "This is a normal notification.")
-        NotificationType.Progress -> Notification.Progress("Progress Notification", "This is a progress notification.", 0.3f)
-        NotificationType.Warning -> Notification.Warning("Warning Notification", "This is a warning notification.")
-        NotificationType.Error -> Notification.Error("Error Notification", "This is an error notification.")
+        Spacer(modifier = Modifier.height(16.dp))
+
+        SliderLayout(
+            value = progress,
+            onValueChange = {
+                progress = it
+                progressNotificationId?.let { id ->
+                    NotificationManager.updateProgress(id, it)
+                }
+            },
+            title = "Update Progress",
+            summary = "For the last progress notification sent"
+        )
     }
-    NotificationManager.show(notification)
 }
