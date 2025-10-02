@@ -7,29 +7,25 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PrimaryTabRow
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.lanrhyme.shardlauncher.common.SidebarPosition
+import com.lanrhyme.shardlauncher.ui.components.CombinedCard
+import com.lanrhyme.shardlauncher.ui.components.SettingsNavigationBar
 import com.lanrhyme.shardlauncher.ui.components.SimpleListLayout
 import com.lanrhyme.shardlauncher.ui.components.SliderLayout
 import com.lanrhyme.shardlauncher.ui.components.SwitchLayout
@@ -65,33 +61,12 @@ fun SettingsScreen(
     val pages = SettingsPage.entries
 
     Column(modifier = Modifier.fillMaxSize()) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "设置",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(end = 16.dp)
-            )
-            PrimaryTabRow(
-                selectedTabIndex = selectedPage.ordinal,
-                modifier = Modifier
-                    .weight(1f)
-                    .clip(RoundedCornerShape(22.dp)),
-            ) {
-                pages.forEachIndexed { index, page ->
-                    Tab(
-                        selected = selectedPage.ordinal == index,
-                        onClick = { selectedPage = pages[index] },
-                        text = { Text(text = page.title) }
-                    )
-                }
-            }
-        }
+        SettingsNavigationBar(
+            title = "设置",
+            selectedPage = selectedPage,
+            onPageSelected = { selectedPage = it },
+            pages = pages.toList()
+        )
 
         // 4. 根据选中的页面显示不同的内容
         AnimatedContent(targetState = selectedPage, label = "Settings Page Animation", transitionSpec = {
@@ -158,22 +133,29 @@ private fun LauncherSettingsContent(
             )
         }
         item {
-            SwitchLayout(
+            CombinedCard(
                 title = "背景光效",
-                summary = if (enableBackgroundLightEffect) "已开启" else "已关闭",
-                checked = enableBackgroundLightEffect,
-                onCheckedChange = onEnableBackgroundLightEffectChange
-            )
-        }
-        item {
-            SliderLayout(
-                title = "光效运动速度",
-                value = lightEffectAnimationSpeed,
-                onValueChange = onLightEffectAnimationSpeedChange,
-                enabled = enableBackgroundLightEffect,
-                valueRange = 0.5f..2.0f,
-                displayValue = lightEffectAnimationSpeed
-            )
+                summary = if (enableBackgroundLightEffect) "已开启" else "已关闭"
+            ) {
+                Column {
+                    SwitchLayout(
+                        checked = enableBackgroundLightEffect,
+                        onCheckedChange = { onEnableBackgroundLightEffectChange() },
+                        title = "启用背景光效"
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    SliderLayout(
+                        value = lightEffectAnimationSpeed,
+                        onValueChange = onLightEffectAnimationSpeedChange,
+                        valueRange = 0.5f..2f,
+                        steps = 14,
+                        title = "光效运动速度",
+                        summary = "控制背景光效的运动速度（重启后生效）",
+                        displayValue = lightEffectAnimationSpeed,
+                        enabled = enableBackgroundLightEffect
+                    )
+                }
+            }
         }
         item {
             SimpleListLayout(

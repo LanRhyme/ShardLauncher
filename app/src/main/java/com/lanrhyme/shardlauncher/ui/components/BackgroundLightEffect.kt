@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -25,17 +26,21 @@ fun BackgroundLightEffect(
     themeColor: Color,
     animationSpeed: Float
 ) {
-    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+    BoxWithConstraints(modifier = modifier
+        .fillMaxSize()
+        .blur(100.dp)) {
         val width = constraints.maxWidth.toFloat()
         val height = constraints.maxHeight.toFloat()
 
         val infiniteTransition = rememberInfiniteTransition(label = "background_light_effect")
 
+        val animSpeed = animationSpeed * animationSpeed
+
         val radius1 by infiniteTransition.animateFloat(
             initialValue = with(LocalDensity.current) { 200.dp.toPx() },
             targetValue = with(LocalDensity.current) { 250.dp.toPx() },
             animationSpec = infiniteRepeatable(
-                animation = tween((10000 / animationSpeed).toInt(), easing = FastOutSlowInEasing),
+                animation = tween((10000 / animSpeed).toInt(), easing = FastOutSlowInEasing),
                 repeatMode = RepeatMode.Reverse
             ),
             label = "radius1"
@@ -44,7 +49,7 @@ fun BackgroundLightEffect(
             initialValue = 0f,
             targetValue = width,
             animationSpec = infiniteRepeatable(
-                animation = tween((12000 / animationSpeed).toInt(), easing = LinearEasing),
+                animation = tween((12000 / animSpeed).toInt(), easing = LinearEasing),
                 repeatMode = RepeatMode.Reverse
             ),
             label = "x1"
@@ -53,7 +58,7 @@ fun BackgroundLightEffect(
             initialValue = 0f,
             targetValue = height,
             animationSpec = infiniteRepeatable(
-                animation = tween((15000 / animationSpeed).toInt(), easing = FastOutSlowInEasing),
+                animation = tween((15000 / animSpeed).toInt(), easing = FastOutSlowInEasing),
                 repeatMode = RepeatMode.Reverse
             ),
             label = "y1"
@@ -63,7 +68,7 @@ fun BackgroundLightEffect(
             initialValue = with(LocalDensity.current) { 300.dp.toPx() },
             targetValue = with(LocalDensity.current) { 375.dp.toPx() },
             animationSpec = infiniteRepeatable(
-                animation = tween((13000 / animationSpeed).toInt(), easing = FastOutSlowInEasing),
+                animation = tween((13000 / animSpeed).toInt(), easing = FastOutSlowInEasing),
                 repeatMode = RepeatMode.Reverse
             ),
             label = "radius2"
@@ -72,7 +77,7 @@ fun BackgroundLightEffect(
             initialValue = width,
             targetValue = 0f,
             animationSpec = infiniteRepeatable(
-                animation = tween((18000 / animationSpeed).toInt(), easing = LinearEasing),
+                animation = tween((18000 / animSpeed).toInt(), easing = LinearEasing),
                 repeatMode = RepeatMode.Reverse
             ),
             label = "x2"
@@ -81,7 +86,7 @@ fun BackgroundLightEffect(
             initialValue = height,
             targetValue = 0f,
             animationSpec = infiniteRepeatable(
-                animation = tween((20000 / animationSpeed).toInt(), easing = FastOutSlowInEasing),
+                animation = tween((20000 / animSpeed).toInt(), easing = FastOutSlowInEasing),
                 repeatMode = RepeatMode.Reverse
             ),
             label = "y2"
