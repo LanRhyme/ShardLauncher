@@ -350,7 +350,9 @@ fun MainContent(
                         themeColor = themeColor,
                         onThemeColorChange = onThemeColorChange,
                         enableBackgroundLightEffect = enableBackgroundLightEffect,
-                        onEnableBackgroundLightEffectChange = onEnableBackgroundLightEffectChange
+                        onEnableBackgroundLightEffectChange = onEnableBackgroundLightEffectChange,
+                        lightEffectAnimationSpeed = animationSpeed,
+                        onLightEffectAnimationSpeedChange = onAnimationSpeedChange
                     )
                 }
                 composable(Screen.DeveloperOptions.route) {

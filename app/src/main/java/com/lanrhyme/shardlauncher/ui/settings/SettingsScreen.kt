@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.lanrhyme.shardlauncher.common.SidebarPosition
 import com.lanrhyme.shardlauncher.ui.components.SimpleListLayout
+import com.lanrhyme.shardlauncher.ui.components.SliderLayout
 import com.lanrhyme.shardlauncher.ui.components.SwitchLayout
 import com.lanrhyme.shardlauncher.ui.navigation.Screen
 import com.lanrhyme.shardlauncher.ui.theme.ThemeColor
@@ -55,7 +56,9 @@ fun SettingsScreen(
     themeColor: ThemeColor, // Hoisted state for theme color
     onThemeColorChange: (ThemeColor) -> Unit, // Hoisted callback for theme color
     enableBackgroundLightEffect: Boolean,
-    onEnableBackgroundLightEffectChange: () -> Unit
+    onEnableBackgroundLightEffectChange: () -> Unit,
+    lightEffectAnimationSpeed: Float,
+    onLightEffectAnimationSpeedChange: (Float) -> Unit
 ) {
     // 2. 添加状态来管理当前选中的页面
     var selectedPage by remember { mutableStateOf(SettingsPage.Launcher) }
@@ -104,7 +107,9 @@ fun SettingsScreen(
                         themeColor = themeColor,
                         onThemeColorChange = onThemeColorChange,
                         enableBackgroundLightEffect = enableBackgroundLightEffect,
-                        onEnableBackgroundLightEffectChange = onEnableBackgroundLightEffectChange
+                        onEnableBackgroundLightEffectChange = onEnableBackgroundLightEffectChange,
+                        lightEffectAnimationSpeed = lightEffectAnimationSpeed,
+                        onLightEffectAnimationSpeedChange = onLightEffectAnimationSpeedChange
                     )
                 }
                 SettingsPage.Other -> {
@@ -127,7 +132,9 @@ private fun LauncherSettingsContent(
     themeColor: ThemeColor,
     onThemeColorChange: (ThemeColor) -> Unit,
     enableBackgroundLightEffect: Boolean,
-    onEnableBackgroundLightEffectChange: () -> Unit
+    onEnableBackgroundLightEffectChange: () -> Unit,
+    lightEffectAnimationSpeed: Float,
+    onLightEffectAnimationSpeedChange: (Float) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -156,6 +163,16 @@ private fun LauncherSettingsContent(
                 summary = if (enableBackgroundLightEffect) "已开启" else "已关闭",
                 checked = enableBackgroundLightEffect,
                 onCheckedChange = onEnableBackgroundLightEffectChange
+            )
+        }
+        item {
+            SliderLayout(
+                title = "光效运动速度",
+                value = lightEffectAnimationSpeed,
+                onValueChange = onLightEffectAnimationSpeedChange,
+                enabled = enableBackgroundLightEffect,
+                valueRange = 0.5f..2.0f,
+                displayValue = lightEffectAnimationSpeed
             )
         }
         item {

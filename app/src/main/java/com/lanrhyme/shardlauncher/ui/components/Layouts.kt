@@ -1,17 +1,29 @@
 package com.lanrhyme.shardlauncher.ui.components
 
 import androidx.compose.animation.*
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 
@@ -38,7 +50,6 @@ fun SwitchLayout(
             ),
         shape = shape,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
@@ -152,7 +163,7 @@ fun <E> SimpleListLayout(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun SliderLayout(
     value: Float,
@@ -174,30 +185,92 @@ fun SliderLayout(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
     ) {
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                TitleAndSummary(
-                    title = title,
-                    summary = summary
-                )
-                Text(String.format("%.1fx", displayValue), style = MaterialTheme.typography.bodyLarge)
-            }
-            Slider(
-                value = value,
-                onValueChange = onValueChange,
-                valueRange = valueRange,
-                steps = steps,
-                enabled = enabled,
-                thumb = {
-                    SliderDefaults.Thumb(
-                        interactionSource = remember { MutableInteractionSource() },
-                        thumbSize = DpSize(20.dp, 20.dp)
-                    )
-                }
+            TitleAndSummary(
+                title = title,
+                summary = summary
             )
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                val interactionSource = remember { MutableInteractionSource() }
+                val isDragged by interactionSource.collectIsDraggedAsState()
+                val scale by animateFloatAsState(targetValue = if (isDragged) 1.2f else 1.0f, label = "thumb-scale")
+
+                Slider(
+                    value = value,
+                    onValueChange = onValueChange,
+                    modifier = Modifier.weight(1f),
+                    valueRange = valueRange,
+                    steps = 0, // Per user request for a continuous slider.
+                    enabled = enabled,
+                    interactionSource = interactionSource,
+                    thumb = {
+                        SliderDefaults.Thumb(
+                            interactionSource = interactionSource,
+                            modifier = Modifier.scale(scale),
+                            thumbSize = DpSize(20.dp, 20.dp)
+                        )
+                    }
+                )
+
+                Spacer(Modifier.width(16.dp))
+
+                var isEditing by remember { mutableStateOf(false) }
+                var textFieldValue by remember(displayValue) { mutableStateOf(String.format("%.1f", displayValue)) }
+                val focusRequester = remember { FocusRequester() }
+                val keyboardController = LocalSoftwareKeyboardController.current
+
+                Box(
+                    modifier = Modifier.widthIn(min = 40.dp),
+                    contentAlignment = Alignment.CenterEnd
+                ) {
+                    if (isEditing) {
+                        BasicTextField(
+                            value = textFieldValue,
+                            onValueChange = {
+                                if (it.count { c -> c == '.' } <= 1) {
+                                    textFieldValue = it.filter { c -> c.isDigit() || c == '.' }.take(4)
+                                }
+                            },
+                            textStyle = MaterialTheme.typography.bodyLarge.copy(
+                                color = MaterialTheme.colorScheme.onSurface,
+                                textAlign = TextAlign.End
+                            ),
+                            modifier = Modifier
+                                .focusRequester(focusRequester)
+                                .width(50.dp),
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Number,
+                                imeAction = ImeAction.Done
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onDone = {
+                                    val newValue = textFieldValue.toFloatOrNull()
+                                    if (newValue != null) {
+                                        onValueChange(newValue.coerceIn(valueRange))
+                                    }
+                                    isEditing = false
+                                    keyboardController?.hide()
+                                }
+                            ),
+                            singleLine = true
+                        )
+
+                        LaunchedEffect(Unit) {
+                            focusRequester.requestFocus()
+                        }
+                    } else {
+                        Text(
+                            text = String.format("%.1fx", displayValue),
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.clickable(enabled = enabled) {
+                                isEditing = true
+                            }
+                        )
+                    }
+                }
+            }
         }
     }
 }
