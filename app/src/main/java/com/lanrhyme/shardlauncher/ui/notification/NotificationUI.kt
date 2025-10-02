@@ -45,8 +45,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun NotificationPanel(
     isVisible: Boolean,
-    sidebarPosition: SidebarPosition,
-    isDarkTheme: Boolean
+    sidebarPosition: SidebarPosition
 ) {
     val panelAlignment = if (sidebarPosition == SidebarPosition.Left) Alignment.CenterEnd else Alignment.CenterStart
     val enterAnimation = if (sidebarPosition == SidebarPosition.Left) slideInHorizontally(initialOffsetX = { it }) else slideInHorizontally(initialOffsetX = { -it })
@@ -114,7 +113,6 @@ fun NotificationPanel(
                                     NotificationItem(
                                         notification = notification,
                                         onDismiss = { NotificationManager.dismiss(it) },
-                                        darkTheme = isDarkTheme,
                                         modifier = Modifier.fillMaxWidth()
                                     )
                                 }
@@ -137,9 +135,7 @@ fun NotificationPanel(
 }
 
 @Composable
-fun NotificationPopupHost(
-    isDarkTheme: Boolean
-) {
+fun NotificationPopupHost() {
     val allNotifications by NotificationManager.notifications.collectAsState()
     val seenPopupIds = remember { mutableStateListOf<String>() }
 
@@ -161,8 +157,7 @@ fun NotificationPopupHost(
                             if (type == NotificationType.Temporary) {
                                 NotificationManager.dismiss(id)
                             }
-                        },
-                        darkTheme = isDarkTheme
+                        }
                     )
                 }
             }
@@ -173,8 +168,7 @@ fun NotificationPopupHost(
 @Composable
 private fun PopupNotificationItem(
     notification: Notification,
-    onDismiss: (String, NotificationType) -> Unit,
-    darkTheme: Boolean
+    onDismiss: (String, NotificationType) -> Unit
 ) {
     var visible by remember { mutableStateOf(false) }
 
@@ -194,7 +188,6 @@ private fun PopupNotificationItem(
         NotificationItem(
             notification = notification,
             onDismiss = { onDismiss(notification.id, notification.type) },
-            darkTheme = darkTheme,
             modifier = Modifier.width(350.dp)
         )
     }

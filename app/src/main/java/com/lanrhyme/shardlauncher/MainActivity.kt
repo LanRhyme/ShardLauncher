@@ -206,11 +206,10 @@ fun MainScreen(
 
             NotificationPanel(
                 isVisible = isSidebarExpanded,
-                sidebarPosition = sidebarPosition,
-                isDarkTheme = isDarkTheme
+                sidebarPosition = sidebarPosition
             )
 
-            NotificationPopupHost(isDarkTheme = isDarkTheme)
+            NotificationPopupHost()
         }
     }
 }
