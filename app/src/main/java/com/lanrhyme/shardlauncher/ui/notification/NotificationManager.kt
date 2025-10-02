@@ -10,6 +10,9 @@ object NotificationManager {
     private val _notifications = MutableStateFlow<List<Notification>>(emptyList())
     val notifications = _notifications.asStateFlow()
 
+    private val _seenPopupIds = MutableStateFlow<Set<String>>(emptySet())
+    val seenPopupIds = _seenPopupIds.asStateFlow()
+
     fun show(notification: Notification) {
         _notifications.update { it + notification }
     }
@@ -29,5 +32,9 @@ object NotificationManager {
                 if (it.id == notificationId) it.copy(progress = progressClamped) else it
             }
         }
+    }
+
+    fun addSeenPopupId(id: String) {
+        _seenPopupIds.update { it + id }
     }
 }

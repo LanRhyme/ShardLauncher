@@ -25,6 +25,28 @@ class SettingsRepository(context: Context) {
         FileOutputStream(settingsFile).use { properties.store(it, null) }
     }
 
+    fun getLauncherBackgroundUri(): String? {
+        return properties.getProperty(KEY_LAUNCHER_BACKGROUND_URI)
+    }
+
+    fun setLauncherBackgroundUri(uri: String?) {
+        if (uri != null) {
+            properties.setProperty(KEY_LAUNCHER_BACKGROUND_URI, uri)
+        } else {
+            properties.remove(KEY_LAUNCHER_BACKGROUND_URI)
+        }
+        saveProperties()
+    }
+
+    fun getLauncherBackgroundBlur(): Float {
+        return properties.getProperty(KEY_LAUNCHER_BACKGROUND_BLUR, "0.0").toFloat()
+    }
+
+    fun setLauncherBackgroundBlur(blur: Float) {
+        properties.setProperty(KEY_LAUNCHER_BACKGROUND_BLUR, blur.toString())
+        saveProperties()
+    }
+
     fun getEnableBackgroundLightEffect(): Boolean {
         return properties.getProperty(KEY_ENABLE_BACKGROUND_LIGHT_EFFECT, "true").toBoolean()
     }
@@ -40,6 +62,15 @@ class SettingsRepository(context: Context) {
 
     fun setAnimationSpeed(speed: Float) {
         properties.setProperty(KEY_ANIMATION_SPEED, speed.toString())
+        saveProperties()
+    }
+
+    fun getLightEffectAnimationSpeed(): Float {
+        return properties.getProperty(KEY_LIGHT_EFFECT_ANIMATION_SPEED, "1.0f").toFloat()
+    }
+
+    fun setLightEffectAnimationSpeed(speed: Float) {
+        properties.setProperty(KEY_LIGHT_EFFECT_ANIMATION_SPEED, speed.toString())
         saveProperties()
     }
 
@@ -74,8 +105,11 @@ class SettingsRepository(context: Context) {
 
     companion object {
         private const val PREFS_NAME = "developer_settings.properties"
+        private const val KEY_LAUNCHER_BACKGROUND_URI = "launcher_background_uri"
+        private const val KEY_LAUNCHER_BACKGROUND_BLUR = "launcher_background_blur"
         private const val KEY_ENABLE_BACKGROUND_LIGHT_EFFECT = "enable_background_light_effect"
         private const val KEY_ANIMATION_SPEED = "animation_speed"
+        private const val KEY_LIGHT_EFFECT_ANIMATION_SPEED = "light_effect_animation_speed"
         private const val KEY_IS_DARK_THEME = "is_dark_theme"
         private const val KEY_SIDEBAR_POSITION = "sidebar_position"
         private const val KEY_THEME_COLOR = "theme_color"

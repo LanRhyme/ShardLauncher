@@ -1,0 +1,177 @@
+package com.lanrhyme.shardlauncher.ui.settings
+
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BrokenImage
+import androidx.compose.material.icons.filled.Image
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import com.lanrhyme.shardlauncher.common.SidebarPosition
+import com.lanrhyme.shardlauncher.ui.components.CombinedCard
+import com.lanrhyme.shardlauncher.ui.components.ScalingActionButton
+import com.lanrhyme.shardlauncher.ui.components.SimpleListLayout
+import com.lanrhyme.shardlauncher.ui.components.SliderLayout
+import com.lanrhyme.shardlauncher.ui.components.SwitchLayout
+import com.lanrhyme.shardlauncher.ui.theme.ThemeColor
+
+@Composable
+internal fun LauncherSettingsContent(
+    isDarkTheme: Boolean,
+    onThemeToggle: () -> Unit,
+    sidebarPosition: SidebarPosition,
+    onPositionChange: (SidebarPosition) -> Unit,
+    themeColor: ThemeColor,
+    onThemeColorChange: (ThemeColor) -> Unit,
+    enableBackgroundLightEffect: Boolean,
+    onEnableBackgroundLightEffectChange: () -> Unit,
+    lightEffectAnimationSpeed: Float,
+    onLightEffectAnimationSpeedChange: (Float) -> Unit,
+    animationSpeed: Float,
+    onAnimationSpeedChange: (Float) -> Unit,
+    launcherBackgroundUri: String?,
+    onLauncherBackgroundUriChange: (String?) -> Unit,
+    launcherBackgroundBlur: Float,
+    onLauncherBackgroundBlurChange: (Float) -> Unit
+) {
+    val animatedSpeed by animateFloatAsState(targetValue = animationSpeed, label = "Animation Speed")
+
+    val imagePicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri: Uri? ->
+            onLauncherBackgroundUriChange(uri?.toString())
+        }
+    )
+
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        item {
+            Text(
+                text = "显示设置",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+            )
+        }
+        item {
+            SwitchLayout(
+                title = "深色模式",
+                summary = if (isDarkTheme) "已开启" else "已关闭",
+                checked = isDarkTheme,
+                onCheckedChange = onThemeToggle
+            )
+        }
+        item {
+            CombinedCard(
+                title = "启动器背景",
+                summary = "自定义启动器背景"
+            ) {
+                Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                        ScalingActionButton(
+                            onClick = { imagePicker.launch("image/*") },
+                            modifier = Modifier.weight(1f),
+                            icon = Icons.Default.Image,
+                            text = "选择图片"
+                        )
+                        ScalingActionButton(
+                            onClick = { onLauncherBackgroundUriChange(null) },
+                            modifier = Modifier.weight(1f),
+                            icon = Icons.Default.BrokenImage,
+                            text = "清除图片"
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    SliderLayout(
+                        value = launcherBackgroundBlur,
+                        onValueChange = onLauncherBackgroundBlurChange,
+                        valueRange = 0f..25f,
+                        steps = 24,
+                        title = "背景模糊",
+                        summary = "调整背景图片的模糊程度",
+                        displayValue = launcherBackgroundBlur,
+                        enabled = launcherBackgroundUri != null
+                    )
+                }
+            }
+        }
+        item {
+            CombinedCard(
+                title = "背景光效",
+                summary = if (enableBackgroundLightEffect) "已开启" else "已关闭"
+            ) {
+                Column {
+                    SwitchLayout(
+                        checked = enableBackgroundLightEffect,
+                        onCheckedChange = { onEnableBackgroundLightEffectChange() },
+                        title = "启用背景光效"
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    SliderLayout(
+                        value = lightEffectAnimationSpeed,
+                        onValueChange = onLightEffectAnimationSpeedChange,
+                        valueRange = 0.5f..2f,
+                        steps = 14,
+                        title = "光效运动速度",
+                        summary = "控制背景光效的运动速度",
+                        displayValue = lightEffectAnimationSpeed,
+                        enabled = enableBackgroundLightEffect
+                    )
+                }
+            }
+        }
+        item {
+            SliderLayout(
+                value = animationSpeed,
+                onValueChange = onAnimationSpeedChange,
+                valueRange = 0.5f..2f,
+                steps = 14,
+                title = "动画速率",
+                summary = "控制 UI 动画的播放速度",
+                displayValue = animatedSpeed
+            )
+        }
+        item {
+            SimpleListLayout(
+                title = "侧边栏位置",
+                items = SidebarPosition.entries,
+                selectedItem = sidebarPosition,
+                onValueChange = onPositionChange,
+                getItemText = {
+                    when (it) {
+                        SidebarPosition.Left -> "左侧"
+                        SidebarPosition.Right -> "右侧"
+                    }
+                }
+            )
+        }
+        item {
+            SimpleListLayout(
+                title = "主题颜色",
+                items = ThemeColor.entries.toList(),
+                selectedItem = themeColor,
+                onValueChange = onThemeColorChange,
+                getItemText = { it.title }
+            )
+        }
+    }
+}

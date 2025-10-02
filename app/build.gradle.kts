@@ -1,7 +1,48 @@
+import java.io.ByteArrayOutputStream
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+}
+
+fun gitBranch(): String {
+    return try {
+        val byteOut = ByteArrayOutputStream()
+        project.exec {
+            commandLine("git", "rev-parse", "--abbrev-ref", "HEAD")
+            standardOutput = byteOut
+        }
+        String(byteOut.toByteArray()).trim()
+    } catch (e: Exception) {
+        "unknown"
+    }
+}
+
+fun gitHash(): String {
+    return try {
+        val byteOut = ByteArrayOutputStream()
+        project.exec {
+            commandLine("git", "rev-parse", "--short", "HEAD")
+            standardOutput = byteOut
+        }
+        String(byteOut.toByteArray()).trim()
+    } catch (e: Exception) {
+        "unknown"
+    }
+}
+
+fun gitCommitDate(): String {
+    return try {
+        val byteOut = ByteArrayOutputStream()
+        project.exec {
+            commandLine("git", "log", "-1", "--format=%ai")
+            standardOutput = byteOut
+        }
+        String(byteOut.toByteArray()).trim()
+    } catch (e: Exception) {
+        "unknown"
+    }
 }
 
 android {
@@ -13,9 +54,19 @@ android {
         minSdk = 26
         targetSdk = 35
         versionCode = 1
-        versionName = "1.0"
+        val vName = "1.0"
+        versionName = vName
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val isRelease = project.hasProperty("isReleaseBuild")
+        val buildStatus = if (isRelease) "正式版" else "开发版"
+
+        resValue("string", "git_branch", gitBranch())
+        resValue("string", "git_hash", gitHash())
+        resValue("string", "version_name", vName)
+        resValue("string", "last_update_time", gitCommitDate())
+        resValue("string", "build_status", buildStatus)
     }
 
     buildTypes {

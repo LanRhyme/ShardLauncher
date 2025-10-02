@@ -1,5 +1,6 @@
 package com.lanrhyme.shardlauncher
 
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -13,6 +14,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -47,6 +49,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -57,6 +60,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import coil.compose.rememberAsyncImagePainter
 import com.lanrhyme.shardlauncher.common.SidebarPosition
 import com.lanrhyme.shardlauncher.data.SettingsRepository
 import com.lanrhyme.shardlauncher.ui.SplashScreen
@@ -94,7 +98,10 @@ class MainActivity : ComponentActivity() {
             var sidebarPosition by remember { mutableStateOf(settingsRepository.getSidebarPosition()) }
             var themeColor by remember { mutableStateOf(settingsRepository.getThemeColor()) }
             var animationSpeed by remember { mutableStateOf(settingsRepository.getAnimationSpeed()) }
+            var lightEffectAnimationSpeed by remember { mutableStateOf(settingsRepository.getLightEffectAnimationSpeed()) }
             var enableBackgroundLightEffect by remember { mutableStateOf(settingsRepository.getEnableBackgroundLightEffect()) }
+            var launcherBackgroundUri by remember { mutableStateOf(settingsRepository.getLauncherBackgroundUri()) }
+            var launcherBackgroundBlur by remember { mutableStateOf(settingsRepository.getLauncherBackgroundBlur()) }
 
             val navController = rememberNavController()
             var showSplash by remember { mutableStateOf(true) }
@@ -138,11 +145,26 @@ class MainActivity : ComponentActivity() {
                                     animationSpeed = newSpeed
                                     settingsRepository.setAnimationSpeed(newSpeed)
                                 },
+                                lightEffectAnimationSpeed = lightEffectAnimationSpeed,
+                                onLightEffectAnimationSpeedChange = { newSpeed ->
+                                    lightEffectAnimationSpeed = newSpeed
+                                    settingsRepository.setLightEffectAnimationSpeed(newSpeed)
+                                },
                                 enableBackgroundLightEffect = enableBackgroundLightEffect,
                                 onEnableBackgroundLightEffectChange = {
                                     val newValue = !enableBackgroundLightEffect
                                     enableBackgroundLightEffect = newValue
                                     settingsRepository.setEnableBackgroundLightEffect(newValue)
+                                },
+                                launcherBackgroundUri = launcherBackgroundUri,
+                                onLauncherBackgroundUriChange = {
+                                    launcherBackgroundUri = it
+                                    settingsRepository.setLauncherBackgroundUri(it)
+                                },
+                                launcherBackgroundBlur = launcherBackgroundBlur,
+                                onLauncherBackgroundBlurChange = {
+                                    launcherBackgroundBlur = it
+                                    settingsRepository.setLauncherBackgroundBlur(it)
                                 }
                             )
                         }
@@ -164,8 +186,14 @@ fun MainScreen(
     onThemeColorChange: (ThemeColor) -> Unit,
     animationSpeed: Float,
     onAnimationSpeedChange: (Float) -> Unit,
+    lightEffectAnimationSpeed: Float,
+    onLightEffectAnimationSpeedChange: (Float) -> Unit,
     enableBackgroundLightEffect: Boolean,
-    onEnableBackgroundLightEffectChange: () -> Unit
+    onEnableBackgroundLightEffectChange: () -> Unit,
+    launcherBackgroundUri: String?,
+    onLauncherBackgroundUriChange: (String?) -> Unit,
+    launcherBackgroundBlur: Float,
+    onLauncherBackgroundBlurChange: (Float) -> Unit
 ) {
     var isSidebarExpanded by remember { mutableStateOf(false) }
 
@@ -183,10 +211,20 @@ fun MainScreen(
 
     Surface(modifier = Modifier.fillMaxSize()) {
         Box(modifier = Modifier.fillMaxSize()) {
+            if (launcherBackgroundUri != null) {
+                Image(
+                    painter = rememberAsyncImagePainter(Uri.parse(launcherBackgroundUri)),
+                    contentDescription = "Launcher Background",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .blur(launcherBackgroundBlur.dp),
+                    contentScale = ContentScale.Crop
+                )
+            }
             if (enableBackgroundLightEffect) {
                 BackgroundLightEffect(
                     themeColor = MaterialTheme.colorScheme.primary,
-                    animationSpeed = animationSpeed
+                    animationSpeed = lightEffectAnimationSpeed
                 )
             }
             MainContent(
@@ -203,8 +241,14 @@ fun MainScreen(
                 onThemeColorChange = onThemeColorChange,
                 animationSpeed = animationSpeed,
                 onAnimationSpeedChange = onAnimationSpeedChange,
+                lightEffectAnimationSpeed = lightEffectAnimationSpeed,
+                onLightEffectAnimationSpeedChange = onLightEffectAnimationSpeedChange,
                 enableBackgroundLightEffect = enableBackgroundLightEffect,
-                onEnableBackgroundLightEffectChange = onEnableBackgroundLightEffectChange
+                onEnableBackgroundLightEffectChange = onEnableBackgroundLightEffectChange,
+                launcherBackgroundUri = launcherBackgroundUri,
+                onLauncherBackgroundUriChange = onLauncherBackgroundUriChange,
+                launcherBackgroundBlur = launcherBackgroundBlur,
+                onLauncherBackgroundBlurChange = onLauncherBackgroundBlurChange
             )
 
             val sidebarAlignment = when (sidebarPosition) {
@@ -247,8 +291,14 @@ fun MainContent(
     onThemeColorChange: (ThemeColor) -> Unit,
     animationSpeed: Float,
     onAnimationSpeedChange: (Float) -> Unit,
+    lightEffectAnimationSpeed: Float,
+    onLightEffectAnimationSpeedChange: (Float) -> Unit,
     enableBackgroundLightEffect: Boolean,
-    onEnableBackgroundLightEffectChange: () -> Unit
+    onEnableBackgroundLightEffectChange: () -> Unit,
+    launcherBackgroundUri: String?,
+    onLauncherBackgroundUriChange: (String?) -> Unit,
+    launcherBackgroundBlur: Float,
+    onLauncherBackgroundBlurChange: (Float) -> Unit
 ) {
     val collapsedSidebarWidth = 72.dp
     val paddingStart by animateDpAsState(
@@ -351,15 +401,18 @@ fun MainContent(
                         onThemeColorChange = onThemeColorChange,
                         enableBackgroundLightEffect = enableBackgroundLightEffect,
                         onEnableBackgroundLightEffectChange = onEnableBackgroundLightEffectChange,
-                        lightEffectAnimationSpeed = animationSpeed,
-                        onLightEffectAnimationSpeedChange = onAnimationSpeedChange
+                        animationSpeed = animationSpeed,
+                        onAnimationSpeedChange = onAnimationSpeedChange,
+                        lightEffectAnimationSpeed = lightEffectAnimationSpeed,
+                        onLightEffectAnimationSpeedChange = onLightEffectAnimationSpeedChange,
+                        launcherBackgroundUri = launcherBackgroundUri,
+                        onLauncherBackgroundUriChange = onLauncherBackgroundUriChange,
+                        launcherBackgroundBlur = launcherBackgroundBlur,
+                        onLauncherBackgroundBlurChange = onLauncherBackgroundBlurChange
                     )
                 }
                 composable(Screen.DeveloperOptions.route) {
-                    DeveloperOptionsScreen(
-                        animationSpeed = animationSpeed,
-                        onAnimationSpeedChange = onAnimationSpeedChange
-                    )
+                    DeveloperOptionsScreen()
                 }
             }
         }

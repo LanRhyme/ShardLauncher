@@ -144,7 +144,7 @@ fun NotificationPanel(
 @Composable
 fun NotificationPopupHost() {
     val allNotifications by NotificationManager.notifications.collectAsState()
-    val seenPopupIds = remember { mutableStateListOf<String>() }
+    val seenPopupIds by NotificationManager.seenPopupIds.collectAsState()
     var dialogNotification by remember { mutableStateOf<Notification?>(null) }
 
     val notificationsToShowAsPopup = allNotifications.filter { it.id !in seenPopupIds }
@@ -165,7 +165,7 @@ fun NotificationPopupHost() {
                     PopupNotificationItem(
                         notification = notification,
                         onDismiss = { id, type ->
-                            seenPopupIds.add(id)
+                            NotificationManager.addSeenPopupId(id)
                             if (type == NotificationType.Temporary) {
                                 NotificationManager.dismiss(id)
                             }
