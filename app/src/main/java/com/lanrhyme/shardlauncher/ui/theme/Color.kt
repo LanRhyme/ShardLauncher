@@ -29,14 +29,14 @@ val Blue80 = Color(0xFF9BCAFF)
 val BlueGrey80 = Color(0xFFBFC6D4)
 val BlueTertiary80 = Color(0xFFD6BAF5)
 
-// Cyan Theme Colors (New)
-val Cyan40 = Color(0xFF006B70)
-val CyanGrey40 = Color(0xFF4E6364)
-val CyanTertiary40 = Color(0xFF5A5E7D)
+// Golden Sunset Theme (replaces Cyan)
+val Cyan40 = Color(0xFF7A5900)
+val CyanGrey40 = Color(0xFF6F5D40)
+val CyanTertiary40 = Color(0xFF9A4628)
 
-val Cyan80 = Color(0xFF4CD9E2)
-val CyanGrey80 = Color(0xFFB4CDCE)
-val CyanTertiary80 = Color(0xFFC0C5EA)
+val Cyan80 = Color(0xFFF4C048)
+val CyanGrey80 = Color(0xFFDCC6A1)
+val CyanTertiary80 = Color(0xFFFFB59D)
 
 // Common Colors for Dark Theme
 val DarkBackgroundColor = Color(0xFF1B1B1B)

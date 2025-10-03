@@ -94,7 +94,7 @@ fun ComponentDemoScreen() {
         }
         
         item {
-            SliderLayout(value = sliderState, onValueChange = { sliderState = it }, title = "Slider Layout")
+            SliderLayout(value = sliderState, onValueChange = { sliderState = it }, title = "Slider Layout", isGlowEffectEnabled = true)
         }
         
         item {

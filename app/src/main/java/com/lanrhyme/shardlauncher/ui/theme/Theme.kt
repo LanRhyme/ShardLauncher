@@ -14,10 +14,10 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 enum class ThemeColor(val title: String) {
-    Green("绿色"),
-    Blue("蓝色"),
-    Purple("紫色"),
-    Cyan("青色")
+    Green("草碎影"),
+    Blue("蓝璃梦"),
+    Purple("紫晶泪"),
+    Golden("黄粱残")
 }
 
 data class ColorSet(
@@ -89,7 +89,7 @@ object ColorPalettes {
         )
     )
 
-    val Cyan = ColorSet(
+    val Golden = ColorSet(
         lightColorScheme = lightColorScheme(
             primary = Cyan40,
             secondary = CyanGrey40,
@@ -121,7 +121,7 @@ fun ShardLauncherTheme(
         ThemeColor.Green -> if (darkTheme) ColorPalettes.Green.darkColorScheme else ColorPalettes.Green.lightColorScheme
         ThemeColor.Blue -> if (darkTheme) ColorPalettes.Blue.darkColorScheme else ColorPalettes.Blue.lightColorScheme
         ThemeColor.Purple -> if (darkTheme) ColorPalettes.Purple.darkColorScheme else ColorPalettes.Purple.lightColorScheme
-        ThemeColor.Cyan -> if (darkTheme) ColorPalettes.Cyan.darkColorScheme else ColorPalettes.Cyan.lightColorScheme
+        ThemeColor.Golden -> if (darkTheme) ColorPalettes.Golden.darkColorScheme else ColorPalettes.Golden.lightColorScheme
     }
     val view = LocalView.current
     if (!view.isInEditMode) {

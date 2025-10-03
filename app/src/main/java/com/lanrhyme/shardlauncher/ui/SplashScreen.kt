@@ -76,7 +76,6 @@ fun SplashScreen(onAnimationFinished: () -> Unit) {
                     }
                     .blur(blur),
                 fontSize = 24.sp,
-                color = MaterialTheme.colorScheme.primary
             )
         }
     }

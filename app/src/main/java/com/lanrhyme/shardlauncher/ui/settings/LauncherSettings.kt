@@ -60,7 +60,9 @@ internal fun LauncherSettingsContent(
     enableVersionCheck: Boolean,
     onEnableVersionCheckChange: () -> Unit,
     uiScale: Float,
-    onUiScaleChange: (Float) -> Unit
+    onUiScaleChange: (Float) -> Unit,
+    isGlowEffectEnabled: Boolean,
+    onIsGlowEffectEnabledChange: () -> Unit
 ) {
     val animatedSpeed by animateFloatAsState(targetValue = animationSpeed, label = "Animation Speed")
     val context = LocalContext.current
@@ -162,6 +164,14 @@ internal fun LauncherSettingsContent(
             )
         }
         item {
+            SwitchLayout(
+                title = "UI发光效果",
+                summary = "为部分文字和图标添加发光效果",
+                checked = isGlowEffectEnabled,
+                onCheckedChange = { onIsGlowEffectEnabledChange() }
+            )
+        }
+        item {
             CollapsibleCard(
                 title = "启动器背景",
                 summary = "自定义启动器背景"
@@ -207,7 +217,8 @@ internal fun LauncherSettingsContent(
                     title = "背景模糊",
                     summary = "调整背景图片的模糊程度",
                     displayValue = launcherBackgroundBlur,
-                    enabled = launcherBackgroundUri != null && !isBackgroundVideo
+                    enabled = launcherBackgroundUri != null && !isBackgroundVideo,
+                    isGlowEffectEnabled = isGlowEffectEnabled
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 SliderLayout(
@@ -218,7 +229,8 @@ internal fun LauncherSettingsContent(
                     title = "背景明度",
                     summary = "调整背景图片的明暗程度(建议还是自己先提前编辑好图片)",
                     displayValue = launcherBackgroundBrightness,
-                    enabled = launcherBackgroundUri != null && !isBackgroundVideo
+                    enabled = launcherBackgroundUri != null && !isBackgroundVideo,
+                    isGlowEffectEnabled = isGlowEffectEnabled
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 SliderLayout(
@@ -229,7 +241,8 @@ internal fun LauncherSettingsContent(
                     title = "视频音量",
                     summary = "调整背景视频的音量",
                     displayValue = launcherBackgroundVideoVolume,
-                    enabled = isBackgroundVideo
+                    enabled = isBackgroundVideo,
+                    isGlowEffectEnabled = isGlowEffectEnabled
                 )
             }
         }
@@ -252,7 +265,8 @@ internal fun LauncherSettingsContent(
                     title = "光效运动速度",
                     summary = "控制背景光效的运动速度",
                     displayValue = lightEffectAnimationSpeed,
-                    enabled = enableBackgroundLightEffect
+                    enabled = enableBackgroundLightEffect,
+                    isGlowEffectEnabled = isGlowEffectEnabled
                 )
             }
         }
@@ -264,7 +278,8 @@ internal fun LauncherSettingsContent(
                 steps = 14,
                 title = "动画速率",
                 summary = "控制 UI 动画的播放速度",
-                displayValue = animatedSpeed
+                displayValue = animatedSpeed,
+                isGlowEffectEnabled = isGlowEffectEnabled
             )
         }
         item {
@@ -275,7 +290,8 @@ internal fun LauncherSettingsContent(
                 steps = 13,
                 title = "UI 缩放",
                 summary = "调整启动器整体界面的大小",
-                displayValue = uiScale
+                displayValue = uiScale,
+                isGlowEffectEnabled = isGlowEffectEnabled
             )
         }
     }

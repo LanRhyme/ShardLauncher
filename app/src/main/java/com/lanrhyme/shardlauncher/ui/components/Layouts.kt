@@ -175,7 +175,8 @@ fun SliderLayout(
     steps: Int = 0,
     enabled: Boolean = true,
     shape: Shape = RoundedCornerShape(28.0.dp),
-    displayValue: Float = value
+    displayValue: Float = value,
+    isGlowEffectEnabled: Boolean
 ) {
     Card(
         modifier = modifier
@@ -208,7 +209,14 @@ fun SliderLayout(
                     thumb = {
                         SliderDefaults.Thumb(
                             interactionSource = interactionSource,
-                            modifier = Modifier.scale(scale),
+                            modifier = Modifier
+                                .scale(scale)
+                                .glow(
+                                    color = MaterialTheme.colorScheme.primary,
+                                    enabled = isGlowEffectEnabled && enabled,
+                                    cornerRadius = 20.dp,
+                                    blurRadius = 12.dp
+                                ),
                             thumbSize = DpSize(20.dp, 20.dp)
                         )
                     }

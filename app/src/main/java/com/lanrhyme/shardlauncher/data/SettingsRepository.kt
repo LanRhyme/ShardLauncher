@@ -139,6 +139,15 @@ class SettingsRepository(context: Context) {
         saveProperties()
     }
 
+    fun getIsGlowEffectEnabled(): Boolean {
+        return properties.getProperty(KEY_IS_GLOW_EFFECT_ENABLED, "true").toBoolean()
+    }
+
+    fun setIsGlowEffectEnabled(enabled: Boolean) {
+        properties.setProperty(KEY_IS_GLOW_EFFECT_ENABLED, enabled.toString())
+        saveProperties()
+    }
+
     companion object {
         private const val PREFS_NAME = "developer_settings.properties"
         private const val KEY_UI_SCALE = "ui_scale"
@@ -153,5 +162,6 @@ class SettingsRepository(context: Context) {
         private const val KEY_IS_DARK_THEME = "is_dark_theme"
         private const val KEY_SIDEBAR_POSITION = "sidebar_position"
         private const val KEY_THEME_COLOR = "theme_color"
+        private const val KEY_IS_GLOW_EFFECT_ENABLED = "is_glow_effect_enabled"
     }
 }

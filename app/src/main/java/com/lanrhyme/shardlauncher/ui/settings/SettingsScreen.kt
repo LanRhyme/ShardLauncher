@@ -54,7 +54,9 @@ fun SettingsScreen(
     enableVersionCheck: Boolean,
     onEnableVersionCheckChange: () -> Unit,
     uiScale: Float,
-    onUiScaleChange: (Float) -> Unit
+    onUiScaleChange: (Float) -> Unit,
+    isGlowEffectEnabled: Boolean,
+    onIsGlowEffectEnabledChange: () -> Unit
 ) {
     // 2. 添加状态来管理当前选中的页面
     var selectedPage by remember { mutableStateOf(SettingsPage.Launcher) }
@@ -99,12 +101,16 @@ fun SettingsScreen(
                         enableVersionCheck = enableVersionCheck,
                         onEnableVersionCheckChange = onEnableVersionCheckChange,
                         uiScale = uiScale,
-                        onUiScaleChange = onUiScaleChange
+                        onUiScaleChange = onUiScaleChange,
+                        isGlowEffectEnabled = isGlowEffectEnabled,
+                        onIsGlowEffectEnabledChange = onIsGlowEffectEnabledChange
                     )
                 }
+
                 SettingsPage.About -> {
                     AboutScreen()
                 }
+
                 SettingsPage.Other -> {
                     OtherSettingsContent(navController = navController)
                 }

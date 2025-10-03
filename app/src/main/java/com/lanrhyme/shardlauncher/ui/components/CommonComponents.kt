@@ -9,6 +9,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -43,11 +44,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 
@@ -132,7 +141,7 @@ fun LazyItemScope.CombinedCard(
 }
 
 /**
- * An animated button that scales on press for tactile feedback.
+ * An animated button that scales on press for tactile feedback, with a default gradient background.
  *
  * @param onClick The action to perform when the button is clicked.
  * @param modifier The modifier to be applied to the button.
@@ -154,13 +163,30 @@ fun ScalingActionButton(
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(if (isPressed) 0.95f else 1f, label = "buttonScale")
 
+    val backgroundBrush = Brush.horizontalGradient(
+        colors = listOf(
+            MaterialTheme.colorScheme.primary,
+            MaterialTheme.colorScheme.tertiary,
+        )
+    )
+    val buttonShape = RoundedCornerShape(22.dp)
+
+    val buttonModifier = modifier
+        .scale(scale)
+        .background(backgroundBrush, shape = buttonShape)
+
     Button(
         onClick = onClick,
-        modifier = modifier
-            .scale(scale),
+        modifier = buttonModifier,
         enabled = enabled,
         interactionSource = interactionSource,
-        contentPadding = contentPadding
+        contentPadding = contentPadding,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color.Transparent,
+            contentColor = MaterialTheme.colorScheme.onPrimary
+        ),
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp, pressedElevation = 0.dp),
+        shape = buttonShape
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             icon?.let {
@@ -266,4 +292,47 @@ fun StyledFilterChip(
             selectedLabelColor = MaterialTheme.colorScheme.onPrimary
         )
     )
+}
+
+/**
+ * A modifier that applies a glow effect around the composable's bounds.
+ *
+ * @param color The color of the glow.
+ * @param cornerRadius The corner radius of the glowing shape.
+ * @param blurRadius The blur radius of the glow effect.
+ * @param enabled Toggles the glow effect on or off.
+ */
+fun Modifier.glow(
+    color: Color,
+    cornerRadius: Dp = 0.dp,
+    blurRadius: Dp = 12.dp,
+    enabled: Boolean = true
+): Modifier = composed {
+    if (!enabled) return@composed this
+
+    val shadowColor = color.copy(alpha = 0.7f).toArgb()
+    val transparent = color.copy(alpha = 0f).toArgb()
+
+    this.drawBehind {
+        this.drawIntoCanvas {
+            val paint = Paint()
+            val frameworkPaint = paint.asFrameworkPaint()
+            frameworkPaint.color = transparent
+            frameworkPaint.setShadowLayer(
+                blurRadius.toPx(),
+                0f,
+                0f,
+                shadowColor
+            )
+            it.drawRoundRect(
+                0f,
+                0f,
+                this.size.width,
+                this.size.height,
+                cornerRadius.toPx(),
+                cornerRadius.toPx(),
+                paint
+            )
+        }
+    }
 }

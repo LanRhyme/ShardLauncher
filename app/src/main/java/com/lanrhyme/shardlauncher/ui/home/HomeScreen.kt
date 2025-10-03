@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -42,6 +41,8 @@ import com.lanrhyme.shardlauncher.data.SettingsRepository
 import com.lanrhyme.shardlauncher.model.LatestVersionsResponse
 import com.lanrhyme.shardlauncher.model.VersionInfo
 import com.lanrhyme.shardlauncher.ui.components.CombinedCard
+import com.lanrhyme.shardlauncher.ui.components.ScalingActionButton
+import com.lanrhyme.shardlauncher.ui.components.glow
 import com.lanrhyme.shardlauncher.ui.custom.XamlRenderer
 import com.lanrhyme.shardlauncher.ui.custom.parseXaml
 import com.lanrhyme.shardlauncher.utils.Logger
@@ -57,6 +58,8 @@ import java.io.IOException
 @Composable
 fun HomeScreen(enableVersionCheck: Boolean) {
     val context = LocalContext.current
+    val settingsRepository = remember { SettingsRepository(context) }
+    val isGlowEffectEnabled = remember { settingsRepository.getIsGlowEffectEnabled() }
     val xamlContent = remember { loadXaml(context, "home.xaml") }
     val nodes = parseXaml(xamlContent)
     var latestVersions by remember { mutableStateOf<LatestVersionsResponse?>(null) }
@@ -117,6 +120,7 @@ fun HomeScreen(enableVersionCheck: Boolean) {
                                 errorMessage != null -> {
                                     Text(text = errorMessage!!, modifier = Modifier.padding(16.dp))
                                 }
+
                                 latestVersions != null -> {
                                     Column(modifier = Modifier.padding(16.dp)) {
                                         latestVersions!!.release.let { release ->
@@ -128,6 +132,7 @@ fun HomeScreen(enableVersionCheck: Boolean) {
                                         }
                                     }
                                 }
+
                                 else -> {
                                     Text(text = "正在获取最新版本信息...", modifier = Modifier.padding(16.dp))
                                 }
@@ -156,6 +161,12 @@ fun HomeScreen(enableVersionCheck: Boolean) {
                         contentDescription = "LanRhyme",
                         modifier = Modifier
                             .size(70.dp)
+                            .glow(
+                                color = MaterialTheme.colorScheme.primary,
+                                enabled = isGlowEffectEnabled,
+                                cornerRadius = 70.dp, // Make it circular
+                                blurRadius = 20.dp
+                            )
                     )
                     Spacer(modifier = Modifier.height(5.dp))
 
@@ -185,12 +196,11 @@ fun HomeScreen(enableVersionCheck: Boolean) {
                     Spacer(modifier = Modifier.height(8.dp))
 
                     // Launch Button
-                    Button(
+                    ScalingActionButton(
                         onClick = { /* TODO: Handle launch */ },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(text = "启动游戏")
-                    }
+                        modifier = Modifier.fillMaxWidth(),
+                        text = "启动游戏"
+                    )
                 }
             }
         }

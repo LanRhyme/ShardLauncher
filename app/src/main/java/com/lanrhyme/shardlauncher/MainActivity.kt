@@ -77,6 +77,7 @@ import com.lanrhyme.shardlauncher.common.SidebarPosition
 import com.lanrhyme.shardlauncher.data.SettingsRepository
 import com.lanrhyme.shardlauncher.ui.SplashScreen
 import com.lanrhyme.shardlauncher.ui.components.BackgroundLightEffect
+import com.lanrhyme.shardlauncher.ui.components.glow
 import com.lanrhyme.shardlauncher.ui.developeroptions.ComponentDemoScreen
 import com.lanrhyme.shardlauncher.ui.developeroptions.DeveloperOptionsScreen
 import com.lanrhyme.shardlauncher.ui.downloads.DownloadScreen
@@ -120,6 +121,7 @@ class MainActivity : ComponentActivity() {
             var launcherBackgroundVideoVolume by remember { mutableStateOf(settingsRepository.getLauncherBackgroundVideoVolume()) }
             var enableVersionCheck by remember { mutableStateOf(settingsRepository.getEnableVersionCheck()) }
             var uiScale by remember { mutableStateOf(settingsRepository.getUiScale()) }
+            var isGlowEffectEnabled by remember { mutableStateOf(settingsRepository.getIsGlowEffectEnabled()) }
 
             val navController = rememberNavController()
             var showSplash by remember { mutableStateOf(true) }
@@ -207,6 +209,12 @@ class MainActivity : ComponentActivity() {
                                     onUiScaleChange = {
                                         uiScale = it
                                         settingsRepository.setUiScale(it)
+                                    },
+                                    isGlowEffectEnabled = isGlowEffectEnabled,
+                                    onIsGlowEffectEnabledChange = {
+                                        val newValue = !isGlowEffectEnabled
+                                        isGlowEffectEnabled = newValue
+                                        settingsRepository.setIsGlowEffectEnabled(newValue)
                                     }
                                 )
                             }
@@ -244,7 +252,9 @@ fun MainScreen(
     enableVersionCheck: Boolean,
     onEnableVersionCheckChange: () -> Unit,
     uiScale: Float,
-    onUiScaleChange: (Float) -> Unit
+    onUiScaleChange: (Float) -> Unit,
+    isGlowEffectEnabled: Boolean,
+    onIsGlowEffectEnabledChange: () -> Unit
 ) {
     var isSidebarExpanded by remember { mutableStateOf(false) }
 
@@ -351,7 +361,9 @@ fun MainScreen(
                 enableVersionCheck = enableVersionCheck,
                 onEnableVersionCheckChange = onEnableVersionCheckChange,
                 uiScale = uiScale,
-                onUiScaleChange = onUiScaleChange
+                onUiScaleChange = onUiScaleChange,
+                isGlowEffectEnabled = isGlowEffectEnabled,
+                onIsGlowEffectEnabledChange = onIsGlowEffectEnabledChange
             )
 
             val sidebarAlignment = when (sidebarPosition) {
@@ -366,7 +378,8 @@ fun MainScreen(
                 isExpanded = isSidebarExpanded,
                 onToggleExpand = { isSidebarExpanded = !isSidebarExpanded },
                 navController = navController,
-                position = sidebarPosition
+                position = sidebarPosition,
+                isGlowEffectEnabled = isGlowEffectEnabled
             )
 
             NotificationPanel(
@@ -409,7 +422,9 @@ fun MainContent(
     enableVersionCheck: Boolean,
     onEnableVersionCheckChange: () -> Unit,
     uiScale: Float,
-    onUiScaleChange: (Float) -> Unit
+    onUiScaleChange: (Float) -> Unit,
+    isGlowEffectEnabled: Boolean,
+    onIsGlowEffectEnabledChange: () -> Unit
 ) {
     val collapsedSidebarWidth = 72.dp
     val paddingStart by animateDpAsState(
@@ -527,7 +542,9 @@ fun MainContent(
                         enableVersionCheck = enableVersionCheck,
                         onEnableVersionCheckChange = onEnableVersionCheckChange,
                         uiScale = uiScale,
-                        onUiScaleChange = onUiScaleChange
+                        onUiScaleChange = onUiScaleChange,
+                        isGlowEffectEnabled = isGlowEffectEnabled,
+                        onIsGlowEffectEnabledChange = onIsGlowEffectEnabledChange
                     )
                 }
                 composable(Screen.DeveloperOptions.route) {
@@ -556,7 +573,8 @@ fun SideBar(
     isExpanded: Boolean,
     onToggleExpand: () -> Unit,
     navController: NavController,
-    position: SidebarPosition
+    position: SidebarPosition,
+    isGlowEffectEnabled: Boolean
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -574,7 +592,7 @@ fun SideBar(
                 MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
             )
     ) {
-        SideBarContent(isExpanded, onToggleExpand, navController, currentRoute)
+        SideBarContent(isExpanded, onToggleExpand, navController, currentRoute, isGlowEffectEnabled)
     }
 }
 
@@ -583,7 +601,8 @@ private fun SideBarContent(
     isExpanded: Boolean,
     onToggleExpand: () -> Unit,
     navController: NavController,
-    currentRoute: String?
+    currentRoute: String?,
+    isGlowEffectEnabled: Boolean
 ) {
     val notifications by NotificationManager.notifications.collectAsState()
     val hasPersistentNotifications = notifications.any { it.type != NotificationType.Temporary }
@@ -611,7 +630,8 @@ private fun SideBarContent(
                             restoreState = true
                         }
                     }
-                }
+                },
+                isGlowEffectEnabled = isGlowEffectEnabled
             )
         }
     }
@@ -686,7 +706,8 @@ fun SideBarButton(
     screen: Screen,
     isExpanded: Boolean,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    isGlowEffectEnabled: Boolean
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -738,7 +759,14 @@ fun SideBarButton(
                 imageVector = screen.icon,
                 contentDescription = screen.label,
                 tint = contentColor,
-                modifier = Modifier.size(28.dp)
+                modifier = Modifier
+                    .size(28.dp)
+                    .glow(
+                        color = MaterialTheme.colorScheme.primary,
+                        enabled = isGlowEffectEnabled && isSelected,
+                        cornerRadius = 22.dp,
+                        blurRadius = 12.dp
+                    )
             )
             if (isExpanded) {
                 Spacer(modifier = Modifier.width(16.dp))

@@ -157,7 +157,8 @@ private fun TestNotificationSender() {
                 }
             },
             title = "Update Progress",
-            summary = "For the last progress notification sent"
+            summary = "For the last progress notification sent",
+            isGlowEffectEnabled = true
         )
     }
 }
