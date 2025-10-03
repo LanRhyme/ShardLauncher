@@ -63,6 +63,15 @@
 - **`summary`**: `String?` - (可选) 显示在标题旁边的摘要。
 - **`content`**: `@Composable () -> Unit` - 展开时在卡片内部显示的内容。
 
+**`.glow` 修饰符**
+
+一个 `Modifier` 扩展函数，为任何 Composable 添加可配置的发光效果。
+
+- **`color`**: `Color` - 辉光的颜色。
+- **`cornerRadius`**: `Dp` - 发光效果的圆角半径。
+- **`blurRadius`**: `Dp` - 辉光的模糊半径。
+- **`enabled`**: `Boolean` - 控制辉光效果是否启用。
+
 ### 2. 自定义视图
 
 **`CustomCard.kt`**

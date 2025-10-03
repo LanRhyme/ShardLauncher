@@ -12,7 +12,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
@@ -64,8 +66,18 @@ fun SplashScreen(onAnimationFinished: () -> Unit) {
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
+            val gradientBrush = Brush.linearGradient(
+                colors = listOf(
+                    MaterialTheme.colorScheme.primary,
+                    MaterialTheme.colorScheme.tertiary
+                )
+            )
             Text(
                 text = "Welcome to ShardLauncher!",
+                style = TextStyle(
+                    brush = gradientBrush,
+                    fontSize = 24.sp
+                ),
                 modifier = Modifier
                     .graphicsLayer {
                         scaleX = scale
@@ -75,7 +87,6 @@ fun SplashScreen(onAnimationFinished: () -> Unit) {
                         this.translationY = yOffset.toPx()
                     }
                     .blur(blur),
-                fontSize = 24.sp,
             )
         }
     }
