@@ -68,6 +68,7 @@ import com.lanrhyme.shardlauncher.data.SettingsRepository
 import com.lanrhyme.shardlauncher.ui.SplashScreen
 import com.lanrhyme.shardlauncher.ui.components.BackgroundLightEffect
 import com.lanrhyme.shardlauncher.ui.developeroptions.DeveloperOptionsScreen
+import com.lanrhyme.shardlauncher.ui.downloads.DownloadScreen
 import com.lanrhyme.shardlauncher.ui.home.HomeScreen
 import com.lanrhyme.shardlauncher.ui.navigation.Screen
 import com.lanrhyme.shardlauncher.ui.navigation.navigationItems
@@ -412,7 +413,7 @@ fun MainContent(
             ) {
                 composable(Screen.Home.route) { HomeScreen() }
                 composable(Screen.Version.route) { VersionScreen() }
-                composable(Screen.Download.route) { DownloadScreen() }
+                composable(Screen.Download.route) { DownloadScreen(navController = navController) }
                 composable(Screen.Online.route) { OnlineScreen() }
                 composable(Screen.Settings.route) {
                     SettingsScreen(
@@ -575,13 +576,6 @@ fun ExpandButton(
 fun VersionScreen() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text("版本", style = MaterialTheme.typography.headlineLarge)
-    }
-}
-
-@Composable
-fun DownloadScreen() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text("下载", style = MaterialTheme.typography.headlineLarge)
     }
 }
 

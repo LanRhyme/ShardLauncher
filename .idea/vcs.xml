@@ -3,7 +3,5 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/backend/amethyst" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/backend/amethyst/MobileGlues" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/backend/amethyst/MobileGlues/src/main/cpp/3rdparty/perfetto" vcs="Git" />
   </component>
 </project>

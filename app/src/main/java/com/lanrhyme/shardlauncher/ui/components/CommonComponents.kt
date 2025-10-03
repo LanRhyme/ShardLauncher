@@ -1,6 +1,9 @@
 package com.lanrhyme.shardlauncher.ui.components
 
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Column
@@ -11,28 +14,34 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.lanrhyme.shardlauncher.ui.settings.SettingsPage
 
 /**
  * An animated button that scales on press for tactile feedback.
@@ -112,21 +121,38 @@ fun TitleAndSummary(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun CombinedCard(
+fun LazyItemScope.CombinedCard(
     modifier: Modifier = Modifier,
     title: String,
     summary: String? = null,
     content: @Composable () -> Unit
 ) {
+    var appeared by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        appeared = true
+    }
+
+    val scale by animateFloatAsState(
+        targetValue = if (appeared) 1f else 0.9f,
+        animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing),
+        label = "scale"
+    )
+
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .graphicsLayer {
+                this.scaleX = scale
+                this.scaleY = scale
+            },
         shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(12.dp)) {
             TitleAndSummary(title = title, summary = summary)
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             content()
         }
     }
@@ -134,11 +160,12 @@ fun CombinedCard(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsNavigationBar(
+fun <T> SegmentedNavigationBar(
     title: String,
-    selectedPage: SettingsPage,
-    onPageSelected: (SettingsPage) -> Unit,
-    pages: List<SettingsPage>
+    selectedPage: T,
+    onPageSelected: (T) -> Unit,
+    pages: List<T>,
+    getTitle: (T) -> String
 ) {
     Row(
         modifier = Modifier
@@ -153,18 +180,39 @@ fun SettingsNavigationBar(
             modifier = Modifier.padding(end = 16.dp)
         )
         PrimaryTabRow(
-            selectedTabIndex = selectedPage.ordinal,
+            selectedTabIndex = pages.indexOf(selectedPage),
             modifier = Modifier
                 .weight(1f)
                 .clip(RoundedCornerShape(22.dp)),
         ) {
-            pages.forEachIndexed { index, page ->
+            pages.forEach { page ->
                 Tab(
-                    selected = selectedPage.ordinal == index,
-                    onClick = { onPageSelected(pages[index]) },
-                    text = { Text(text = page.title) }
+                    selected = selectedPage == page,
+                    onClick = { onPageSelected(page) },
+                    text = { Text(text = getTitle(page)) }
                 )
             }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun StyledFilterChip(
+    selected: Boolean,
+    onClick: () -> Unit,
+    label: @Composable () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    FilterChip(
+        selected = selected,
+        onClick = onClick,
+        label = label,
+        modifier = modifier,
+        shape = RoundedCornerShape(22.dp),
+        colors = FilterChipDefaults.filterChipColors(
+            selectedContainerColor = MaterialTheme.colorScheme.primary,
+            selectedLabelColor = MaterialTheme.colorScheme.onPrimary
+        )
+    )
 }

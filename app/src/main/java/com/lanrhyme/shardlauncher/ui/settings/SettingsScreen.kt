@@ -15,7 +15,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import com.lanrhyme.shardlauncher.common.SidebarPosition
-import com.lanrhyme.shardlauncher.ui.components.SettingsNavigationBar
+import com.lanrhyme.shardlauncher.ui.components.SegmentedNavigationBar
 import com.lanrhyme.shardlauncher.ui.theme.ThemeColor
 
 // 1. 定义设置页面分类
@@ -55,11 +55,12 @@ fun SettingsScreen(
     val pages = SettingsPage.entries
 
     Column(modifier = Modifier.fillMaxSize()) {
-        SettingsNavigationBar(
+        SegmentedNavigationBar(
             title = "设置",
             selectedPage = selectedPage,
             onPageSelected = { selectedPage = it },
-            pages = pages.toList()
+            pages = pages.toList(),
+            getTitle = { it.title }
         )
 
         // 4. 根据选中的页面显示不同的内容
