@@ -54,12 +54,18 @@ import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.PlayerView
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -111,6 +117,7 @@ class MainActivity : ComponentActivity() {
             var launcherBackgroundUri by remember { mutableStateOf(settingsRepository.getLauncherBackgroundUri()) }
             var launcherBackgroundBlur by remember { mutableStateOf(settingsRepository.getLauncherBackgroundBlur()) }
             var launcherBackgroundBrightness by remember { mutableStateOf(settingsRepository.getLauncherBackgroundBrightness()) }
+            var launcherBackgroundVideoVolume by remember { mutableStateOf(settingsRepository.getLauncherBackgroundVideoVolume()) }
             var enableVersionCheck by remember { mutableStateOf(settingsRepository.getEnableVersionCheck()) }
             var uiScale by remember { mutableStateOf(settingsRepository.getUiScale()) }
 
@@ -185,6 +192,11 @@ class MainActivity : ComponentActivity() {
                                         launcherBackgroundBrightness = it
                                         settingsRepository.setLauncherBackgroundBrightness(it)
                                     },
+                                    launcherBackgroundVideoVolume = launcherBackgroundVideoVolume,
+                                    onLauncherBackgroundVideoVolumeChange = {
+                                        launcherBackgroundVideoVolume = it
+                                        settingsRepository.setLauncherBackgroundVideoVolume(it)
+                                    },
                                     enableVersionCheck = enableVersionCheck,
                                     onEnableVersionCheckChange = {
                                         val newValue = !enableVersionCheck
@@ -227,6 +239,8 @@ fun MainScreen(
     onLauncherBackgroundBlurChange: (Float) -> Unit,
     launcherBackgroundBrightness: Float,
     onLauncherBackgroundBrightnessChange: (Float) -> Unit,
+    launcherBackgroundVideoVolume: Float,
+    onLauncherBackgroundVideoVolumeChange: (Float) -> Unit,
     enableVersionCheck: Boolean,
     onEnableVersionCheckChange: () -> Unit,
     uiScale: Float,
@@ -246,27 +260,61 @@ fun MainScreen(
         label = ""
     )
 
+    val context = LocalContext.current
+
     Surface(modifier = Modifier.fillMaxSize()) {
         Box(modifier = Modifier.fillMaxSize()) {
             if (launcherBackgroundUri != null) {
-                val brightnessValue = launcherBackgroundBrightness
-                val colorMatrix = ColorMatrix(
-                    floatArrayOf(
-                        1f, 0f, 0f, 0f, brightnessValue,
-                        0f, 1f, 0f, 0f, brightnessValue,
-                        0f, 0f, 1f, 0f, brightnessValue,
-                        0f, 0f, 0f, 1f, 0f
+                val isVideo = launcherBackgroundUri.endsWith(".mp4")
+                if (isVideo) {
+                    val exoPlayer = remember {
+                        ExoPlayer.Builder(context).build().apply {
+                            setMediaItem(MediaItem.fromUri(Uri.parse(launcherBackgroundUri)))
+                            repeatMode = Player.REPEAT_MODE_ALL
+                            playWhenReady = true
+                            prepare()
+                        }
+                    }
+
+                    exoPlayer.volume = launcherBackgroundVideoVolume
+
+                    DisposableEffect(Unit) {
+                        onDispose { exoPlayer.release() }
+                    }
+
+                    AndroidView(
+                        factory = { ctx ->
+                            PlayerView(ctx).apply {
+                                player = exoPlayer
+                                useController = false
+                                layoutParams = android.widget.FrameLayout.LayoutParams(
+                                    android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                                    android.view.ViewGroup.LayoutParams.MATCH_PARENT
+                                )
+                            }
+                        },
+                        modifier = Modifier.fillMaxSize()
                     )
-                )
-                Image(
-                    painter = rememberAsyncImagePainter(Uri.parse(launcherBackgroundUri)),
-                    contentDescription = "Launcher Background",
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .blur(launcherBackgroundBlur.dp),
-                    contentScale = ContentScale.Crop,
-                    colorFilter = ColorFilter.colorMatrix(colorMatrix)
-                )
+                } else {
+                    val brightnessValue = launcherBackgroundBrightness
+                    val colorMatrix = ColorMatrix(
+                        floatArrayOf(
+                            1f, 0f, 0f, 0f, brightnessValue,
+                            0f, 1f, 0f, 0f, brightnessValue,
+                            0f, 0f, 1f, 0f, brightnessValue,
+                            0f, 0f, 0f, 1f, 0f
+                        )
+                    )
+                    Image(
+                        painter = rememberAsyncImagePainter(Uri.parse(launcherBackgroundUri)),
+                        contentDescription = "Launcher Background",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .blur(launcherBackgroundBlur.dp),
+                        contentScale = ContentScale.Crop,
+                        colorFilter = ColorFilter.colorMatrix(colorMatrix)
+                    )
+                }
             }
             if (enableBackgroundLightEffect) {
                 BackgroundLightEffect(
@@ -298,6 +346,8 @@ fun MainScreen(
                 onLauncherBackgroundBlurChange = onLauncherBackgroundBlurChange,
                 launcherBackgroundBrightness = launcherBackgroundBrightness,
                 onLauncherBackgroundBrightnessChange = onLauncherBackgroundBrightnessChange,
+                launcherBackgroundVideoVolume = launcherBackgroundVideoVolume,
+                onLauncherBackgroundVideoVolumeChange = onLauncherBackgroundVideoVolumeChange,
                 enableVersionCheck = enableVersionCheck,
                 onEnableVersionCheckChange = onEnableVersionCheckChange,
                 uiScale = uiScale,
@@ -354,6 +404,8 @@ fun MainContent(
     onLauncherBackgroundBlurChange: (Float) -> Unit,
     launcherBackgroundBrightness: Float,
     onLauncherBackgroundBrightnessChange: (Float) -> Unit,
+    launcherBackgroundVideoVolume: Float,
+    onLauncherBackgroundVideoVolumeChange: (Float) -> Unit,
     enableVersionCheck: Boolean,
     onEnableVersionCheckChange: () -> Unit,
     uiScale: Float,
@@ -470,6 +522,8 @@ fun MainContent(
                         onLauncherBackgroundBlurChange = onLauncherBackgroundBlurChange,
                         launcherBackgroundBrightness = launcherBackgroundBrightness,
                         onLauncherBackgroundBrightnessChange = onLauncherBackgroundBrightnessChange,
+                        launcherBackgroundVideoVolume = launcherBackgroundVideoVolume,
+                        onLauncherBackgroundVideoVolumeChange = onLauncherBackgroundVideoVolumeChange,
                         enableVersionCheck = enableVersionCheck,
                         onEnableVersionCheckChange = onEnableVersionCheckChange,
                         uiScale = uiScale,

@@ -74,6 +74,15 @@ class SettingsRepository(context: Context) {
         saveProperties()
     }
 
+    fun getLauncherBackgroundVideoVolume(): Float {
+        return properties.getProperty(KEY_LAUNCHER_BACKGROUND_VIDEO_VOLUME, "1.0").toFloat()
+    }
+
+    fun setLauncherBackgroundVideoVolume(volume: Float) {
+        properties.setProperty(KEY_LAUNCHER_BACKGROUND_VIDEO_VOLUME, volume.toString())
+        saveProperties()
+    }
+
     fun getEnableBackgroundLightEffect(): Boolean {
         return properties.getProperty(KEY_ENABLE_BACKGROUND_LIGHT_EFFECT, "true").toBoolean()
     }
@@ -137,6 +146,7 @@ class SettingsRepository(context: Context) {
         private const val KEY_LAUNCHER_BACKGROUND_URI = "launcher_background_uri"
         private const val KEY_LAUNCHER_BACKGROUND_BLUR = "launcher_background_blur"
         private const val KEY_LAUNCHER_BACKGROUND_BRIGHTNESS = "launcher_background_brightness"
+        private const val KEY_LAUNCHER_BACKGROUND_VIDEO_VOLUME = "launcher_background_video_volume"
         private const val KEY_ENABLE_BACKGROUND_LIGHT_EFFECT = "enable_background_light_effect"
         private const val KEY_ANIMATION_SPEED = "animation_speed"
         private const val KEY_LIGHT_EFFECT_ANIMATION_SPEED = "light_effect_animation_speed"

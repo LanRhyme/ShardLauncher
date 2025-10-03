@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -54,6 +55,8 @@ internal fun LauncherSettingsContent(
     onLauncherBackgroundBlurChange: (Float) -> Unit,
     launcherBackgroundBrightness: Float,
     onLauncherBackgroundBrightnessChange: (Float) -> Unit,
+    launcherBackgroundVideoVolume: Float,
+    onLauncherBackgroundVideoVolumeChange: (Float) -> Unit,
     enableVersionCheck: Boolean,
     onEnableVersionCheckChange: () -> Unit,
     uiScale: Float,
@@ -62,12 +65,35 @@ internal fun LauncherSettingsContent(
     val animatedSpeed by animateFloatAsState(targetValue = animationSpeed, label = "Animation Speed")
     val context = LocalContext.current
     val backgroundFileName = "launcher_background.jpg"
+    val backgroundVideoName = "launcher_background.mp4"
+
+    val isBackgroundVideo = launcherBackgroundUri?.endsWith(".mp4") == true
 
     val imagePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri: Uri? ->
             if (uri != null) {
                 val destinationFile = File(context.getExternalFilesDir(null), backgroundFileName)
+                try {
+                    context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                        FileOutputStream(destinationFile).use { outputStream ->
+                            inputStream.copyTo(outputStream)
+                        }
+                    }
+                    onLauncherBackgroundUriChange(Uri.fromFile(destinationFile).toString())
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    // Optionally, notify the user of the failure
+                }
+            }
+        }
+    )
+
+    val videoPicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri: Uri? ->
+            if (uri != null) {
+                val destinationFile = File(context.getExternalFilesDir(null), backgroundVideoName)
                 try {
                     context.contentResolver.openInputStream(uri)?.use { inputStream ->
                         FileOutputStream(destinationFile).use { outputStream ->
@@ -140,24 +166,36 @@ internal fun LauncherSettingsContent(
                 title = "启动器背景",
                 summary = "自定义启动器背景"
             ) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                    ScalingActionButton(
-                        onClick = { imagePicker.launch("image/*") },
-                        modifier = Modifier.weight(1f),
-                        icon = Icons.Default.Image,
-                        text = "选择图片"
-                    )
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                        ScalingActionButton(
+                            onClick = { imagePicker.launch("image/*") },
+                            modifier = Modifier.weight(1f),
+                            icon = Icons.Default.Image,
+                            text = "选择图片"
+                        )
+                        ScalingActionButton(
+                            onClick = { videoPicker.launch("video/*") },
+                            modifier = Modifier.weight(1f),
+                            icon = Icons.Default.Videocam,
+                            text = "选择视频"
+                        )
+                    }
                     ScalingActionButton(
                         onClick = {
                             val backgroundFile = File(context.getExternalFilesDir(null), backgroundFileName)
                             if (backgroundFile.exists()) {
                                 backgroundFile.delete()
                             }
+                            val backgroundVideoFile = File(context.getExternalFilesDir(null), backgroundVideoName)
+                            if (backgroundVideoFile.exists()) {
+                                backgroundVideoFile.delete()
+                            }
                             onLauncherBackgroundUriChange(null)
                         },
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.fillMaxWidth(),
                         icon = Icons.Default.BrokenImage,
-                        text = "清除图片"
+                        text = "清除背景"
                     )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
@@ -169,7 +207,7 @@ internal fun LauncherSettingsContent(
                     title = "背景模糊",
                     summary = "调整背景图片的模糊程度",
                     displayValue = launcherBackgroundBlur,
-                    enabled = launcherBackgroundUri != null
+                    enabled = launcherBackgroundUri != null && !isBackgroundVideo
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 SliderLayout(
@@ -180,7 +218,18 @@ internal fun LauncherSettingsContent(
                     title = "背景明度",
                     summary = "调整背景图片的明暗程度(建议还是自己先提前编辑好图片)",
                     displayValue = launcherBackgroundBrightness,
-                    enabled = launcherBackgroundUri != null
+                    enabled = launcherBackgroundUri != null && !isBackgroundVideo
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                SliderLayout(
+                    value = launcherBackgroundVideoVolume,
+                    onValueChange = onLauncherBackgroundVideoVolumeChange,
+                    valueRange = 0f..1f,
+                    steps = 19,
+                    title = "视频音量",
+                    summary = "调整背景视频的音量",
+                    displayValue = launcherBackgroundVideoVolume,
+                    enabled = isBackgroundVideo
                 )
             }
         }
