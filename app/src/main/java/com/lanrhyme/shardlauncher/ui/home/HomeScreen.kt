@@ -7,6 +7,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -17,16 +18,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyItemScope
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -34,9 +37,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.lanrhyme.shardlauncher.R
+import com.lanrhyme.shardlauncher.api.ApiClient
+import com.lanrhyme.shardlauncher.data.SettingsRepository
+import com.lanrhyme.shardlauncher.model.LatestVersionsResponse
+import com.lanrhyme.shardlauncher.model.VersionInfo
 import com.lanrhyme.shardlauncher.ui.components.CombinedCard
 import com.lanrhyme.shardlauncher.ui.custom.XamlRenderer
 import com.lanrhyme.shardlauncher.ui.custom.parseXaml
+import com.lanrhyme.shardlauncher.utils.Logger
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -44,17 +55,84 @@ import java.io.IOException
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun HomeScreen() {
+fun HomeScreen(enableVersionCheck: Boolean) {
     val context = LocalContext.current
     val xamlContent = remember { loadXaml(context, "home.xaml") }
     val nodes = parseXaml(xamlContent)
+    var latestVersions by remember { mutableStateOf<LatestVersionsResponse?>(null) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    if (enableVersionCheck) {
+        LaunchedEffect(Unit) {
+            Logger.log(context, "HomeScreen", "Version check enabled. Starting polling.")
+            var backoffDelay = 60 * 1000L // 1 minute initial backoff
+            val maxBackoffDelay = 60 * 60 * 1000L // 1 hour
+            val normalPollInterval = 60 * 60 * 1000L // 1 hour
+
+            while (true) {
+                var nextDelay = normalPollInterval
+                try {
+                    Logger.log(context, "HomeScreen", "Fetching latest versions...")
+                    errorMessage = null // Clear previous error
+                    val response = withContext(Dispatchers.IO) {
+                        ApiClient.instance.getLatestVersions()
+                    }
+                    latestVersions = response
+                    Logger.log(context, "HomeScreen", "Successfully fetched latest versions: $response")
+                    // On success, reset backoff delay
+                    backoffDelay = 60 * 1000L
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    val errorText = "获取版本信息失败: ${e.message}"
+                    errorMessage = errorText
+                    Logger.log(context, "HomeScreen", errorText)
+
+                    // On failure, use the current backoff delay for the next attempt
+                    nextDelay = backoffDelay
+                    // Increase backoff for the *next* failure
+                    backoffDelay = (backoffDelay * 2).coerceAtMost(maxBackoffDelay)
+                    Logger.log(context, "HomeScreen", "Request failed. Retrying in ${nextDelay / 1000} seconds.")
+                }
+                delay(nextDelay)
+            }
+        }
+    }
 
     Row(modifier = Modifier.fillMaxSize()) {
         Box(modifier = Modifier.weight(0.7f)) {
-            LazyColumn(modifier = Modifier.fillMaxSize().padding(12.dp)) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = PaddingValues(12.dp)
+            ) {
                 item {
                     CombinedCard(title = "主页", summary = "欢迎回来") {
                         XamlRenderer(nodes = nodes, modifier = Modifier.padding(horizontal = 20.dp))
+                    }
+                }
+                if (enableVersionCheck) {
+                    item {
+                        CombinedCard(title = "Minecraft更新", summary = "查看最近的更新内容") {
+                            when {
+                                errorMessage != null -> {
+                                    Text(text = errorMessage!!, modifier = Modifier.padding(16.dp))
+                                }
+                                latestVersions != null -> {
+                                    Column(modifier = Modifier.padding(16.dp)) {
+                                        latestVersions!!.release.let { release ->
+                                            VersionInfoCard(versionInfo = release)
+                                        }
+                                        latestVersions!!.snapshot?.let { snapshot ->
+                                            Spacer(modifier = Modifier.height(16.dp))
+                                            VersionInfoCard(versionInfo = snapshot)
+                                        }
+                                    }
+                                }
+                                else -> {
+                                    Text(text = "正在获取最新版本信息...", modifier = Modifier.padding(16.dp))
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -64,50 +142,71 @@ fun HomeScreen() {
 
         Box(modifier = Modifier.weight(0.3f).fillMaxHeight()) {
             Column(
-                modifier = Modifier.fillMaxSize().padding(16.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
             ) {
-                // Player Avatar
-                Image(
-                    painter = painterResource(id = R.drawable.ic_launcher_foreground), // Placeholder
-                    contentDescription = "Player Avatar",
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape)
-                )
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.weight(1f))
 
-                // Player Name
-                Text(
-                    text = "Player Name",
-                    style = MaterialTheme.typography.titleLarge
-                )
-                Spacer(modifier = Modifier.height(4.dp))
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
-                // Account Type
-                Text(
-                    text = "Account Type",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                )
+                    Image(
+                        painter = painterResource(id = R.drawable.steve2),
+                        contentDescription = "LanRhyme",
+                        modifier = Modifier
+                            .size(70.dp)
+                    )
+                    Spacer(modifier = Modifier.height(5.dp))
+
+                    // Player Name
+                    Text(
+                        text = "LanRhyme",
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                    Spacer(modifier = Modifier.height(1.dp))
+
+                    Text(
+                        text = "微软账号",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                }
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                // Selected Version
-                Text(
-                    text = "Selected Version: 1.20.1",
-                    style = MaterialTheme.typography.bodyLarge
-                )
-                Spacer(modifier = Modifier.height(8.dp))
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
-                // Launch Button
-                Button(
-                    onClick = { /* TODO: Handle launch */ },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(text = "启动游戏")
+                    // Selected Version
+                    Text(
+                        text = "版本: 1.20.1",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Launch Button
+                    Button(
+                        onClick = { /* TODO: Handle launch */ },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(text = "启动游戏")
+                    }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun VersionInfoCard(versionInfo: VersionInfo) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(text = versionInfo.title, style = MaterialTheme.typography.titleLarge)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = versionInfo.versionType, style = MaterialTheme.typography.bodyMedium)
+            versionInfo.intro?.let {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(text = it, style = MaterialTheme.typography.bodyMedium)
             }
         }
     }

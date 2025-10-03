@@ -53,7 +53,9 @@ internal fun LauncherSettingsContent(
     launcherBackgroundBlur: Float,
     onLauncherBackgroundBlurChange: (Float) -> Unit,
     launcherBackgroundBrightness: Float,
-    onLauncherBackgroundBrightnessChange: (Float) -> Unit
+    onLauncherBackgroundBrightnessChange: (Float) -> Unit,
+    enableVersionCheck: Boolean,
+    onEnableVersionCheckChange: () -> Unit
 ) {
     val animatedSpeed by animateFloatAsState(targetValue = animationSpeed, label = "Animation Speed")
     val context = LocalContext.current
@@ -98,6 +100,37 @@ internal fun LauncherSettingsContent(
                 summary = if (isDarkTheme) "已开启" else "已关闭",
                 checked = isDarkTheme,
                 onCheckedChange = onThemeToggle
+            )
+        }
+        item {
+            SwitchLayout(
+                title = "获取Minecraft最新更新信息",
+                summary = "来源于news.bugjump.net",
+                checked = enableVersionCheck,
+                onCheckedChange = { onEnableVersionCheckChange() }
+            )
+        }
+        item {
+            SimpleListLayout(
+                title = "侧边栏位置",
+                items = SidebarPosition.entries,
+                selectedItem = sidebarPosition,
+                onValueChange = onPositionChange,
+                getItemText = {
+                    when (it) {
+                        SidebarPosition.Left -> "左侧"
+                        SidebarPosition.Right -> "右侧"
+                    }
+                }
+            )
+        }
+        item {
+            SimpleListLayout(
+                title = "主题颜色",
+                items = ThemeColor.entries.toList(),
+                selectedItem = themeColor,
+                onValueChange = onThemeColorChange,
+                getItemText = { it.title }
             )
         }
         item {
@@ -185,29 +218,6 @@ internal fun LauncherSettingsContent(
                 title = "动画速率",
                 summary = "控制 UI 动画的播放速度",
                 displayValue = animatedSpeed
-            )
-        }
-        item {
-            SimpleListLayout(
-                title = "侧边栏位置",
-                items = SidebarPosition.entries,
-                selectedItem = sidebarPosition,
-                onValueChange = onPositionChange,
-                getItemText = {
-                    when (it) {
-                        SidebarPosition.Left -> "左侧"
-                        SidebarPosition.Right -> "右侧"
-                    }
-                }
-            )
-        }
-        item {
-            SimpleListLayout(
-                title = "主题颜色",
-                items = ThemeColor.entries.toList(),
-                selectedItem = themeColor,
-                onValueChange = onThemeColorChange,
-                getItemText = { it.title }
             )
         }
     }

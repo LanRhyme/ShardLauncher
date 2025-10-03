@@ -48,7 +48,9 @@ fun SettingsScreen(
     launcherBackgroundBlur: Float,
     onLauncherBackgroundBlurChange: (Float) -> Unit,
     launcherBackgroundBrightness: Float,
-    onLauncherBackgroundBrightnessChange: (Float) -> Unit
+    onLauncherBackgroundBrightnessChange: (Float) -> Unit,
+    enableVersionCheck: Boolean,
+    onEnableVersionCheckChange: () -> Unit
 ) {
     // 2. 添加状态来管理当前选中的页面
     var selectedPage by remember { mutableStateOf(SettingsPage.Launcher) }
@@ -87,7 +89,9 @@ fun SettingsScreen(
                         launcherBackgroundBlur = launcherBackgroundBlur,
                         onLauncherBackgroundBlurChange = onLauncherBackgroundBlurChange,
                         launcherBackgroundBrightness = launcherBackgroundBrightness,
-                        onLauncherBackgroundBrightnessChange = onLauncherBackgroundBrightnessChange
+                        onLauncherBackgroundBrightnessChange = onLauncherBackgroundBrightnessChange,
+                        enableVersionCheck = enableVersionCheck,
+                        onEnableVersionCheckChange = onEnableVersionCheckChange
                     )
                 }
                 SettingsPage.About -> {

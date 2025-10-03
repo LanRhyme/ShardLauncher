@@ -23,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.lanrhyme.shardlauncher.ui.components.ScalingActionButton
 import com.lanrhyme.shardlauncher.ui.components.SliderLayout
 import com.lanrhyme.shardlauncher.ui.components.TitleAndSummary
@@ -31,7 +32,7 @@ import com.lanrhyme.shardlauncher.ui.notification.NotificationManager
 import com.lanrhyme.shardlauncher.ui.notification.NotificationType
 
 @Composable
-fun DeveloperOptionsScreen() {
+fun DeveloperOptionsScreen(navController: NavController) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -47,6 +48,25 @@ fun DeveloperOptionsScreen() {
                     TitleAndSummary(
                         title = "开发者选项",
                         summary = "一些用于测试的功能，它们在将来可能被移除"
+                    )
+                }
+            }
+        }
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(22.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    TitleAndSummary(
+                        title = "组件演示",
+                        summary = "查看所有可用组件"
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    ScalingActionButton(
+                        onClick = { navController.navigate("component_demo") },
+                        modifier = Modifier.fillMaxWidth(),
+                        text = "打开组件演示"
                     )
                 }
             }

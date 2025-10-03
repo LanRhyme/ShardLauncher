@@ -25,6 +25,15 @@ class SettingsRepository(context: Context) {
         FileOutputStream(settingsFile).use { properties.store(it, null) }
     }
 
+    fun getEnableVersionCheck(): Boolean {
+        return properties.getProperty(KEY_ENABLE_VERSION_CHECK, "true").toBoolean()
+    }
+
+    fun setEnableVersionCheck(enabled: Boolean) {
+        properties.setProperty(KEY_ENABLE_VERSION_CHECK, enabled.toString())
+        saveProperties()
+    }
+
     fun getLauncherBackgroundUri(): String? {
         return properties.getProperty(KEY_LAUNCHER_BACKGROUND_URI)
     }
@@ -114,6 +123,7 @@ class SettingsRepository(context: Context) {
 
     companion object {
         private const val PREFS_NAME = "developer_settings.properties"
+        private const val KEY_ENABLE_VERSION_CHECK = "enable_version_check"
         private const val KEY_LAUNCHER_BACKGROUND_URI = "launcher_background_uri"
         private const val KEY_LAUNCHER_BACKGROUND_BLUR = "launcher_background_blur"
         private const val KEY_LAUNCHER_BACKGROUND_BRIGHTNESS = "launcher_background_brightness"

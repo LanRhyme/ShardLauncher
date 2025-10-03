@@ -67,6 +67,7 @@ import com.lanrhyme.shardlauncher.common.SidebarPosition
 import com.lanrhyme.shardlauncher.data.SettingsRepository
 import com.lanrhyme.shardlauncher.ui.SplashScreen
 import com.lanrhyme.shardlauncher.ui.components.BackgroundLightEffect
+import com.lanrhyme.shardlauncher.ui.developeroptions.ComponentDemoScreen
 import com.lanrhyme.shardlauncher.ui.developeroptions.DeveloperOptionsScreen
 import com.lanrhyme.shardlauncher.ui.downloads.DownloadScreen
 import com.lanrhyme.shardlauncher.ui.home.HomeScreen
@@ -106,6 +107,7 @@ class MainActivity : ComponentActivity() {
             var launcherBackgroundUri by remember { mutableStateOf(settingsRepository.getLauncherBackgroundUri()) }
             var launcherBackgroundBlur by remember { mutableStateOf(settingsRepository.getLauncherBackgroundBlur()) }
             var launcherBackgroundBrightness by remember { mutableStateOf(settingsRepository.getLauncherBackgroundBrightness()) }
+            var enableVersionCheck by remember { mutableStateOf(settingsRepository.getEnableVersionCheck()) }
 
             val navController = rememberNavController()
             var showSplash by remember { mutableStateOf(true) }
@@ -174,6 +176,12 @@ class MainActivity : ComponentActivity() {
                                 onLauncherBackgroundBrightnessChange = {
                                     launcherBackgroundBrightness = it
                                     settingsRepository.setLauncherBackgroundBrightness(it)
+                                },
+                                enableVersionCheck = enableVersionCheck,
+                                onEnableVersionCheckChange = {
+                                    val newValue = !enableVersionCheck
+                                    enableVersionCheck = newValue
+                                    settingsRepository.setEnableVersionCheck(newValue)
                                 }
                             )
                         }
@@ -204,7 +212,9 @@ fun MainScreen(
     launcherBackgroundBlur: Float,
     onLauncherBackgroundBlurChange: (Float) -> Unit,
     launcherBackgroundBrightness: Float,
-    onLauncherBackgroundBrightnessChange: (Float) -> Unit
+    onLauncherBackgroundBrightnessChange: (Float) -> Unit,
+    enableVersionCheck: Boolean,
+    onEnableVersionCheckChange: () -> Unit
 ) {
     var isSidebarExpanded by remember { mutableStateOf(false) }
 
@@ -271,7 +281,9 @@ fun MainScreen(
                 launcherBackgroundBlur = launcherBackgroundBlur,
                 onLauncherBackgroundBlurChange = onLauncherBackgroundBlurChange,
                 launcherBackgroundBrightness = launcherBackgroundBrightness,
-                onLauncherBackgroundBrightnessChange = onLauncherBackgroundBrightnessChange
+                onLauncherBackgroundBrightnessChange = onLauncherBackgroundBrightnessChange,
+                enableVersionCheck = enableVersionCheck,
+                onEnableVersionCheckChange = onEnableVersionCheckChange
             )
 
             val sidebarAlignment = when (sidebarPosition) {
@@ -323,7 +335,9 @@ fun MainContent(
     launcherBackgroundBlur: Float,
     onLauncherBackgroundBlurChange: (Float) -> Unit,
     launcherBackgroundBrightness: Float,
-    onLauncherBackgroundBrightnessChange: (Float) -> Unit
+    onLauncherBackgroundBrightnessChange: (Float) -> Unit,
+    enableVersionCheck: Boolean,
+    onEnableVersionCheckChange: () -> Unit
 ) {
     val collapsedSidebarWidth = 72.dp
     val paddingStart by animateDpAsState(
@@ -411,7 +425,7 @@ fun MainContent(
                     }
                  }
             ) {
-                composable(Screen.Home.route) { HomeScreen() }
+                composable(Screen.Home.route) { HomeScreen(enableVersionCheck = enableVersionCheck) }
                 composable(Screen.Version.route) { VersionScreen() }
                 composable(Screen.Download.route) { DownloadScreen(navController = navController) }
                 composable(Screen.Online.route) { OnlineScreen() }
@@ -435,11 +449,16 @@ fun MainContent(
                         launcherBackgroundBlur = launcherBackgroundBlur,
                         onLauncherBackgroundBlurChange = onLauncherBackgroundBlurChange,
                         launcherBackgroundBrightness = launcherBackgroundBrightness,
-                        onLauncherBackgroundBrightnessChange = onLauncherBackgroundBrightnessChange
+                        onLauncherBackgroundBrightnessChange = onLauncherBackgroundBrightnessChange,
+                        enableVersionCheck = enableVersionCheck,
+                        onEnableVersionCheckChange = onEnableVersionCheckChange
                     )
                 }
                 composable(Screen.DeveloperOptions.route) {
-                    DeveloperOptionsScreen()
+                    DeveloperOptionsScreen(navController = navController)
+                }
+                composable("component_demo") {
+                    ComponentDemoScreen()
                 }
             }
         }
