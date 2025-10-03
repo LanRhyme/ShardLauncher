@@ -2,6 +2,7 @@ package com.lanrhyme.shardlauncher.ui.home
 
 import android.content.Context
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -32,6 +34,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.lanrhyme.shardlauncher.R
+import com.lanrhyme.shardlauncher.ui.components.CombinedCard
 import com.lanrhyme.shardlauncher.ui.custom.XamlRenderer
 import com.lanrhyme.shardlauncher.ui.custom.parseXaml
 import java.io.File
@@ -39,6 +42,7 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen() {
     val context = LocalContext.current
@@ -47,9 +51,11 @@ fun HomeScreen() {
 
     Row(modifier = Modifier.fillMaxSize()) {
         Box(modifier = Modifier.weight(0.7f)) {
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
+            LazyColumn(modifier = Modifier.fillMaxSize().padding(12.dp)) {
                 item {
-                    XamlRenderer(nodes = nodes, modifier = Modifier.padding(horizontal = 20.dp))
+                    CombinedCard(title = "主页", summary = "欢迎回来") {
+                        XamlRenderer(nodes = nodes, modifier = Modifier.padding(horizontal = 20.dp))
+                    }
                 }
             }
         }
