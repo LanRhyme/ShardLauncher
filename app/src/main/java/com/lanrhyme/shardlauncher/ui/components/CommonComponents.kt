@@ -1,9 +1,15 @@
 package com.lanrhyme.shardlauncher.ui.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Column
@@ -21,6 +27,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -42,6 +49,87 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CollapsibleCard(
+    modifier: Modifier = Modifier,
+    title: String,
+    summary: String? = null,
+    content: @Composable () -> Unit
+) {
+    var isExpanded by remember { mutableStateOf(false) }
+
+    Card(
+        modifier = modifier
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
+    ) {
+        Column {
+            Row(
+                modifier = Modifier
+                    .clickable { isExpanded = !isExpanded }
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                TitleAndSummary(
+                    modifier = Modifier.weight(1f),
+                    title = title,
+                    summary = summary
+                )
+                ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)
+            }
+            AnimatedVisibility(
+                visible = isExpanded,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp)) {
+                    content()
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun LazyItemScope.CombinedCard(
+    modifier: Modifier = Modifier,
+    title: String,
+    summary: String? = null,
+    content: @Composable () -> Unit
+) {
+    var appeared by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        appeared = true
+    }
+
+    val scale by animateFloatAsState(
+        targetValue = if (appeared) 1f else 0.9f,
+        animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing),
+        label = "scale"
+    )
+
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .graphicsLayer {
+                this.scaleX = scale
+                this.scaleY = scale
+            },
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            TitleAndSummary(title = title, summary = summary)
+            Spacer(modifier = Modifier.height(12.dp))
+            content()
+        }
+    }
+}
 
 /**
  * An animated button that scales on press for tactile feedback.
@@ -117,43 +205,6 @@ fun TitleAndSummary(
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-        }
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun LazyItemScope.CombinedCard(
-    modifier: Modifier = Modifier,
-    title: String,
-    summary: String? = null,
-    content: @Composable () -> Unit
-) {
-    var appeared by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
-        appeared = true
-    }
-
-    val scale by animateFloatAsState(
-        targetValue = if (appeared) 1f else 0.9f,
-        animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing),
-        label = "scale"
-    )
-
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .graphicsLayer {
-                this.scaleX = scale
-                this.scaleY = scale
-            },
-        shape = RoundedCornerShape(22.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
-    ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            TitleAndSummary(title = title, summary = summary)
-            Spacer(modifier = Modifier.height(12.dp))
-            content()
         }
     }
 }

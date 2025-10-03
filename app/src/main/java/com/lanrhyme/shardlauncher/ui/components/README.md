@@ -54,6 +54,15 @@
 - **`label`**: `@Composable () -> Unit` - 筛选条上显示的标签。
 - **`modifier`**: `Modifier` - 应用于筛选条的修饰符。
 
+**`CollapsibleCard`**
+
+一个可展开和折叠的卡片，用于显示或隐藏其内容。
+
+- **`modifier`**: `Modifier` - 应用于卡片的修饰符。
+- **`title`**: `String` - 卡片的标题。
+- **`summary`**: `String?` - (可选) 显示在标题旁边的摘要。
+- **`content`**: `@Composable () -> Unit` - 展开时在卡片内部显示的内容。
+
 ### 2. 自定义视图
 
 **`CustomCard.kt`**

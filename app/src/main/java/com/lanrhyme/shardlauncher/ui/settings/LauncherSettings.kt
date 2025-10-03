@@ -25,7 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.lanrhyme.shardlauncher.common.SidebarPosition
-import com.lanrhyme.shardlauncher.ui.components.CombinedCard
+import com.lanrhyme.shardlauncher.ui.components.CollapsibleCard
 import com.lanrhyme.shardlauncher.ui.components.ScalingActionButton
 import com.lanrhyme.shardlauncher.ui.components.SimpleListLayout
 import com.lanrhyme.shardlauncher.ui.components.SliderLayout
@@ -97,17 +97,6 @@ internal fun LauncherSettingsContent(
             )
         }
         item {
-            SliderLayout(
-                value = uiScale,
-                onValueChange = onUiScaleChange,
-                valueRange = 0.8f..1.5f,
-                steps = 13,
-                title = "UI 缩放",
-                summary = "调整启动器整体界面的大小",
-                displayValue = uiScale
-            )
-        }
-        item {
             SwitchLayout(
                 title = "深色模式",
                 summary = if (isDarkTheme) "已开启" else "已关闭",
@@ -147,79 +136,75 @@ internal fun LauncherSettingsContent(
             )
         }
         item {
-            CombinedCard(
+            CollapsibleCard(
                 title = "启动器背景",
                 summary = "自定义启动器背景"
             ) {
-                Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                        ScalingActionButton(
-                            onClick = { imagePicker.launch("image/*") },
-                            modifier = Modifier.weight(1f),
-                            icon = Icons.Default.Image,
-                            text = "选择图片"
-                        )
-                        ScalingActionButton(
-                            onClick = {
-                                val backgroundFile = File(context.getExternalFilesDir(null), backgroundFileName)
-                                if (backgroundFile.exists()) {
-                                    backgroundFile.delete()
-                                }
-                                onLauncherBackgroundUriChange(null)
-                            },
-                            modifier = Modifier.weight(1f),
-                            icon = Icons.Default.BrokenImage,
-                            text = "清除图片"
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    SliderLayout(
-                        value = launcherBackgroundBlur,
-                        onValueChange = onLauncherBackgroundBlurChange,
-                        valueRange = 0f..25f,
-                        steps = 24,
-                        title = "背景模糊",
-                        summary = "调整背景图片的模糊程度",
-                        displayValue = launcherBackgroundBlur,
-                        enabled = launcherBackgroundUri != null
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                    ScalingActionButton(
+                        onClick = { imagePicker.launch("image/*") },
+                        modifier = Modifier.weight(1f),
+                        icon = Icons.Default.Image,
+                        text = "选择图片"
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    SliderLayout(
-                        value = launcherBackgroundBrightness,
-                        onValueChange = onLauncherBackgroundBrightnessChange,
-                        valueRange = -100f..100f,
-                        steps = 199,
-                        title = "背景明度",
-                        summary = "调整背景图片的明暗程度(建议还是自己先提前编辑好图片)",
-                        displayValue = launcherBackgroundBrightness,
-                        enabled = launcherBackgroundUri != null
+                    ScalingActionButton(
+                        onClick = {
+                            val backgroundFile = File(context.getExternalFilesDir(null), backgroundFileName)
+                            if (backgroundFile.exists()) {
+                                backgroundFile.delete()
+                            }
+                            onLauncherBackgroundUriChange(null)
+                        },
+                        modifier = Modifier.weight(1f),
+                        icon = Icons.Default.BrokenImage,
+                        text = "清除图片"
                     )
                 }
+                Spacer(modifier = Modifier.height(16.dp))
+                SliderLayout(
+                    value = launcherBackgroundBlur,
+                    onValueChange = onLauncherBackgroundBlurChange,
+                    valueRange = 0f..25f,
+                    steps = 24,
+                    title = "背景模糊",
+                    summary = "调整背景图片的模糊程度",
+                    displayValue = launcherBackgroundBlur,
+                    enabled = launcherBackgroundUri != null
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                SliderLayout(
+                    value = launcherBackgroundBrightness,
+                    onValueChange = onLauncherBackgroundBrightnessChange,
+                    valueRange = -100f..100f,
+                    steps = 199,
+                    title = "背景明度",
+                    summary = "调整背景图片的明暗程度(建议还是自己先提前编辑好图片)",
+                    displayValue = launcherBackgroundBrightness,
+                    enabled = launcherBackgroundUri != null
+                )
             }
         }
         item {
-            CombinedCard(
+            CollapsibleCard(
                 title = "背景光效",
                 summary = if (enableBackgroundLightEffect) "已开启" else "已关闭"
             ) {
-                Column {
-                    SwitchLayout(
-                        checked = enableBackgroundLightEffect,
-                        onCheckedChange = { onEnableBackgroundLightEffectChange() },
-                        title = "启用背景光效"
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    SliderLayout(
-                        value = lightEffectAnimationSpeed,
-                        onValueChange = onLightEffectAnimationSpeedChange,
-                        valueRange = 0.5f..2f,
-                        steps = 14,
-                        title = "光效运动速度",
-                        summary = "控制背景光效的运动速度",
-                        displayValue = lightEffectAnimationSpeed,
-                        enabled = enableBackgroundLightEffect
-                    )
-                }
+                SwitchLayout(
+                    checked = enableBackgroundLightEffect,
+                    onCheckedChange = { onEnableBackgroundLightEffectChange() },
+                    title = "启用背景光效"
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                SliderLayout(
+                    value = lightEffectAnimationSpeed,
+                    onValueChange = onLightEffectAnimationSpeedChange,
+                    valueRange = 0.5f..2f,
+                    steps = 14,
+                    title = "光效运动速度",
+                    summary = "控制背景光效的运动速度",
+                    displayValue = lightEffectAnimationSpeed,
+                    enabled = enableBackgroundLightEffect
+                )
             }
         }
         item {
@@ -231,6 +216,17 @@ internal fun LauncherSettingsContent(
                 title = "动画速率",
                 summary = "控制 UI 动画的播放速度",
                 displayValue = animatedSpeed
+            )
+        }
+        item {
+            SliderLayout(
+                value = uiScale,
+                onValueChange = onUiScaleChange,
+                valueRange = 0.8f..1.5f,
+                steps = 13,
+                title = "UI 缩放",
+                summary = "调整启动器整体界面的大小",
+                displayValue = uiScale
             )
         }
     }
