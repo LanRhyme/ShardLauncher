@@ -55,7 +55,9 @@ internal fun LauncherSettingsContent(
     launcherBackgroundBrightness: Float,
     onLauncherBackgroundBrightnessChange: (Float) -> Unit,
     enableVersionCheck: Boolean,
-    onEnableVersionCheckChange: () -> Unit
+    onEnableVersionCheckChange: () -> Unit,
+    uiScale: Float,
+    onUiScaleChange: (Float) -> Unit
 ) {
     val animatedSpeed by animateFloatAsState(targetValue = animationSpeed, label = "Animation Speed")
     val context = LocalContext.current
@@ -92,6 +94,17 @@ internal fun LauncherSettingsContent(
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+            )
+        }
+        item {
+            SliderLayout(
+                value = uiScale,
+                onValueChange = onUiScaleChange,
+                valueRange = 0.8f..1.5f,
+                steps = 13,
+                title = "UI 缩放",
+                summary = "调整启动器整体界面的大小",
+                displayValue = uiScale
             )
         }
         item {

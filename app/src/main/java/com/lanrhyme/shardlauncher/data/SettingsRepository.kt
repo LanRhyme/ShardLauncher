@@ -25,6 +25,15 @@ class SettingsRepository(context: Context) {
         FileOutputStream(settingsFile).use { properties.store(it, null) }
     }
 
+    fun getUiScale(): Float {
+        return properties.getProperty(KEY_UI_SCALE, "1.0").toFloat()
+    }
+
+    fun setUiScale(scale: Float) {
+        properties.setProperty(KEY_UI_SCALE, scale.toString())
+        saveProperties()
+    }
+
     fun getEnableVersionCheck(): Boolean {
         return properties.getProperty(KEY_ENABLE_VERSION_CHECK, "true").toBoolean()
     }
@@ -123,6 +132,7 @@ class SettingsRepository(context: Context) {
 
     companion object {
         private const val PREFS_NAME = "developer_settings.properties"
+        private const val KEY_UI_SCALE = "ui_scale"
         private const val KEY_ENABLE_VERSION_CHECK = "enable_version_check"
         private const val KEY_LAUNCHER_BACKGROUND_URI = "launcher_background_uri"
         private const val KEY_LAUNCHER_BACKGROUND_BLUR = "launcher_background_blur"

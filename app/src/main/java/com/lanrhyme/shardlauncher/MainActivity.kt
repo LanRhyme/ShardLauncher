@@ -54,6 +54,8 @@ import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -110,82 +112,92 @@ class MainActivity : ComponentActivity() {
             var launcherBackgroundBlur by remember { mutableStateOf(settingsRepository.getLauncherBackgroundBlur()) }
             var launcherBackgroundBrightness by remember { mutableStateOf(settingsRepository.getLauncherBackgroundBrightness()) }
             var enableVersionCheck by remember { mutableStateOf(settingsRepository.getEnableVersionCheck()) }
+            var uiScale by remember { mutableStateOf(settingsRepository.getUiScale()) }
 
             val navController = rememberNavController()
             var showSplash by remember { mutableStateOf(true) }
 
-            Crossfade(
-                targetState = showSplash,
-                label = "SplashCrossfade",
-                animationSpec = tween(durationMillis = 500)
-            ) { show ->
-                if (show) {
-                    ShardLauncherTheme(darkTheme = isDarkTheme, themeColor = themeColor) {
-                        SplashScreen(onAnimationFinished = { showSplash = false })
-                    }
-                } else {
-                    Crossfade(
-                        targetState = isDarkTheme,
-                        label = "ThemeCrossfade",
-                        animationSpec = tween(durationMillis = 500)
-                    ) { isDark ->
-                        ShardLauncherTheme(darkTheme = isDark, themeColor = themeColor) {
-                            MainScreen(
-                                navController = navController,
-                                isDarkTheme = isDark,
-                                onThemeToggle = {
-                                    val newTheme = !isDarkTheme
-                                    isDarkTheme = newTheme
-                                    settingsRepository.setIsDarkTheme(newTheme)
-                                },
-                                sidebarPosition = sidebarPosition,
-                                onPositionChange = { newPosition ->
-                                    sidebarPosition = newPosition
-                                    settingsRepository.setSidebarPosition(newPosition)
-                                },
-                                themeColor = themeColor,
-                                onThemeColorChange = { newColor ->
-                                    themeColor = newColor
-                                    settingsRepository.setThemeColor(newColor)
-                                },
-                                animationSpeed = animationSpeed,
-                                onAnimationSpeedChange = { newSpeed ->
-                                    animationSpeed = newSpeed
-                                    settingsRepository.setAnimationSpeed(newSpeed)
-                                },
-                                lightEffectAnimationSpeed = lightEffectAnimationSpeed,
-                                onLightEffectAnimationSpeedChange = { newSpeed ->
-                                    lightEffectAnimationSpeed = newSpeed
-                                    settingsRepository.setLightEffectAnimationSpeed(newSpeed)
-                                },
-                                enableBackgroundLightEffect = enableBackgroundLightEffect,
-                                onEnableBackgroundLightEffectChange = {
-                                    val newValue = !enableBackgroundLightEffect
-                                    enableBackgroundLightEffect = newValue
-                                    settingsRepository.setEnableBackgroundLightEffect(newValue)
-                                },
-                                launcherBackgroundUri = launcherBackgroundUri,
-                                onLauncherBackgroundUriChange = {
-                                    launcherBackgroundUri = it
-                                    settingsRepository.setLauncherBackgroundUri(it)
-                                },
-                                launcherBackgroundBlur = launcherBackgroundBlur,
-                                onLauncherBackgroundBlurChange = {
-                                    launcherBackgroundBlur = it
-                                    settingsRepository.setLauncherBackgroundBlur(it)
-                                },
-                                launcherBackgroundBrightness = launcherBackgroundBrightness,
-                                onLauncherBackgroundBrightnessChange = {
-                                    launcherBackgroundBrightness = it
-                                    settingsRepository.setLauncherBackgroundBrightness(it)
-                                },
-                                enableVersionCheck = enableVersionCheck,
-                                onEnableVersionCheckChange = {
-                                    val newValue = !enableVersionCheck
-                                    enableVersionCheck = newValue
-                                    settingsRepository.setEnableVersionCheck(newValue)
-                                }
-                            )
+            val scaledDensity = Density(LocalDensity.current.density * uiScale, LocalDensity.current.fontScale * uiScale)
+
+            CompositionLocalProvider(LocalDensity provides scaledDensity) {
+                Crossfade(
+                    targetState = showSplash,
+                    label = "SplashCrossfade",
+                    animationSpec = tween(durationMillis = 500)
+                ) { show ->
+                    if (show) {
+                        ShardLauncherTheme(darkTheme = isDarkTheme, themeColor = themeColor) {
+                            SplashScreen(onAnimationFinished = { showSplash = false })
+                        }
+                    } else {
+                        Crossfade(
+                            targetState = isDarkTheme,
+                            label = "ThemeCrossfade",
+                            animationSpec = tween(durationMillis = 500)
+                        ) { isDark ->
+                            ShardLauncherTheme(darkTheme = isDark, themeColor = themeColor) {
+                                MainScreen(
+                                    navController = navController,
+                                    isDarkTheme = isDark,
+                                    onThemeToggle = {
+                                        val newTheme = !isDarkTheme
+                                        isDarkTheme = newTheme
+                                        settingsRepository.setIsDarkTheme(newTheme)
+                                    },
+                                    sidebarPosition = sidebarPosition,
+                                    onPositionChange = { newPosition ->
+                                        sidebarPosition = newPosition
+                                        settingsRepository.setSidebarPosition(newPosition)
+                                    },
+                                    themeColor = themeColor,
+                                    onThemeColorChange = { newColor ->
+                                        themeColor = newColor
+                                        settingsRepository.setThemeColor(newColor)
+                                    },
+                                    animationSpeed = animationSpeed,
+                                    onAnimationSpeedChange = { newSpeed ->
+                                        animationSpeed = newSpeed
+                                        settingsRepository.setAnimationSpeed(newSpeed)
+                                    },
+                                    lightEffectAnimationSpeed = lightEffectAnimationSpeed,
+                                    onLightEffectAnimationSpeedChange = { newSpeed ->
+                                        lightEffectAnimationSpeed = newSpeed
+                                        settingsRepository.setLightEffectAnimationSpeed(newSpeed)
+                                    },
+                                    enableBackgroundLightEffect = enableBackgroundLightEffect,
+                                    onEnableBackgroundLightEffectChange = {
+                                        val newValue = !enableBackgroundLightEffect
+                                        enableBackgroundLightEffect = newValue
+                                        settingsRepository.setEnableBackgroundLightEffect(newValue)
+                                    },
+                                    launcherBackgroundUri = launcherBackgroundUri,
+                                    onLauncherBackgroundUriChange = {
+                                        launcherBackgroundUri = it
+                                        settingsRepository.setLauncherBackgroundUri(it)
+                                    },
+                                    launcherBackgroundBlur = launcherBackgroundBlur,
+                                    onLauncherBackgroundBlurChange = {
+                                        launcherBackgroundBlur = it
+                                        settingsRepository.setLauncherBackgroundBlur(it)
+                                    },
+                                    launcherBackgroundBrightness = launcherBackgroundBrightness,
+                                    onLauncherBackgroundBrightnessChange = {
+                                        launcherBackgroundBrightness = it
+                                        settingsRepository.setLauncherBackgroundBrightness(it)
+                                    },
+                                    enableVersionCheck = enableVersionCheck,
+                                    onEnableVersionCheckChange = {
+                                        val newValue = !enableVersionCheck
+                                        enableVersionCheck = newValue
+                                        settingsRepository.setEnableVersionCheck(newValue)
+                                    },
+                                    uiScale = uiScale,
+                                    onUiScaleChange = {
+                                        uiScale = it
+                                        settingsRepository.setUiScale(it)
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -216,7 +228,9 @@ fun MainScreen(
     launcherBackgroundBrightness: Float,
     onLauncherBackgroundBrightnessChange: (Float) -> Unit,
     enableVersionCheck: Boolean,
-    onEnableVersionCheckChange: () -> Unit
+    onEnableVersionCheckChange: () -> Unit,
+    uiScale: Float,
+    onUiScaleChange: (Float) -> Unit
 ) {
     var isSidebarExpanded by remember { mutableStateOf(false) }
 
@@ -285,7 +299,9 @@ fun MainScreen(
                 launcherBackgroundBrightness = launcherBackgroundBrightness,
                 onLauncherBackgroundBrightnessChange = onLauncherBackgroundBrightnessChange,
                 enableVersionCheck = enableVersionCheck,
-                onEnableVersionCheckChange = onEnableVersionCheckChange
+                onEnableVersionCheckChange = onEnableVersionCheckChange,
+                uiScale = uiScale,
+                onUiScaleChange = onUiScaleChange
             )
 
             val sidebarAlignment = when (sidebarPosition) {
@@ -339,7 +355,9 @@ fun MainContent(
     launcherBackgroundBrightness: Float,
     onLauncherBackgroundBrightnessChange: (Float) -> Unit,
     enableVersionCheck: Boolean,
-    onEnableVersionCheckChange: () -> Unit
+    onEnableVersionCheckChange: () -> Unit,
+    uiScale: Float,
+    onUiScaleChange: (Float) -> Unit
 ) {
     val collapsedSidebarWidth = 72.dp
     val paddingStart by animateDpAsState(
@@ -453,7 +471,9 @@ fun MainContent(
                         launcherBackgroundBrightness = launcherBackgroundBrightness,
                         onLauncherBackgroundBrightnessChange = onLauncherBackgroundBrightnessChange,
                         enableVersionCheck = enableVersionCheck,
-                        onEnableVersionCheckChange = onEnableVersionCheckChange
+                        onEnableVersionCheckChange = onEnableVersionCheckChange,
+                        uiScale = uiScale,
+                        onUiScaleChange = onUiScaleChange
                     )
                 }
                 composable(Screen.DeveloperOptions.route) {
