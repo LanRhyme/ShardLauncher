@@ -33,6 +33,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -512,15 +514,17 @@ private fun SideBarContent(
     val notifications by NotificationManager.notifications.collectAsState()
     val hasPersistentNotifications = notifications.any { it.type != NotificationType.Temporary }
 
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(vertical = 16.dp, horizontal = 8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        ExpandButton(isExpanded = isExpanded, onClick = onToggleExpand, showBadge = hasPersistentNotifications)
-        Spacer(modifier = Modifier.height(10.dp))
-        navigationItems.forEach { screen ->
+        item {
+            ExpandButton(isExpanded = isExpanded, onClick = onToggleExpand, showBadge = hasPersistentNotifications)
+        }
+        items(navigationItems) { screen ->
             SideBarButton(
                 screen = screen,
                 isExpanded = isExpanded,
@@ -535,9 +539,7 @@ private fun SideBarContent(
                     }
                 }
             )
-            Spacer(modifier = Modifier.height(10.dp))
         }
-        Spacer(Modifier.weight(1f))
     }
 }
 
