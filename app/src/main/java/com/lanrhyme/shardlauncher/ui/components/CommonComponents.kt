@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -238,6 +239,7 @@ fun TitleAndSummary(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun <T> SegmentedNavigationBar(
+    modifier: Modifier = Modifier,
     title: String,
     selectedPage: T,
     onPageSelected: (T) -> Unit,
@@ -245,25 +247,43 @@ fun <T> SegmentedNavigationBar(
     getTitle: (T) -> String
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = title,
-            style = MaterialTheme.typography.headlineSmall,
+            style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(end = 16.dp)
+            color = MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier
+                .glow(
+                    color = MaterialTheme.colorScheme.primary,
+                    cornerRadius = 22.dp
+                )
+                .clip(RoundedCornerShape(22.dp))
+                .background(
+                    Brush.horizontalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primary,
+                            MaterialTheme.colorScheme.tertiary,
+                        )
+                    )
+                )
+                .padding(horizontal = 16.dp, vertical = 4.dp)
         )
+        Spacer(modifier = Modifier.width(16.dp))
         PrimaryTabRow(
             selectedTabIndex = pages.indexOf(selectedPage),
             modifier = Modifier
                 .weight(1f)
                 .clip(RoundedCornerShape(22.dp)),
+            divider = { },
         ) {
             pages.forEach { page ->
                 Tab(
+                    modifier = Modifier.height(40.dp),
                     selected = selectedPage == page,
                     onClick = { onPageSelected(page) },
                     text = { Text(text = getTitle(page)) }
