@@ -294,5 +294,8 @@ internal fun LauncherSettingsContent(
                 isGlowEffectEnabled = isGlowEffectEnabled
             )
         }
+        item {
+            Spacer(modifier = Modifier.height(45.dp))
+        }
     }
 }

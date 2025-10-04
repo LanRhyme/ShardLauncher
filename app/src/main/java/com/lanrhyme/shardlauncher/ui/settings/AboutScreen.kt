@@ -273,6 +273,9 @@ fun AboutScreen() {
                     }
                 }
             }
+            item {
+                Spacer(modifier = Modifier.height(45.dp))
+            }
         }
 
         Column(
