@@ -8,6 +8,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -60,7 +61,7 @@ fun GameDownloadContent() {
     val searchQuery by viewModel.searchQuery.collectAsState()
 
     LaunchedEffect(Unit) {
-        viewModel.refreshVersions(settings.getUseBmclapi())
+        viewModel.loadVersions(settings.getUseBmclapi())
     }
 
     LazyColumn(
@@ -131,7 +132,7 @@ fun GameDownloadContent() {
                         }
                     )
                     IconButton(
-                        onClick = { viewModel.refreshVersions(settings.getUseBmclapi()) },
+                        onClick = { viewModel.loadVersions(settings.getUseBmclapi(), forceRefresh = true) },
                         modifier = Modifier.fillMaxHeight()
                     ) {
                         Icon(Icons.Default.Refresh, contentDescription = "Refresh")
@@ -180,7 +181,20 @@ fun LazyItemScope.VersionItem(version: BmclapiManifest.Version) {
                 contentDescription = "Minecraft",
                 modifier = Modifier.size(32.dp)
             )
-            Text(text = "Minecraft ${version.id}", style = MaterialTheme.typography.bodyLarge)
+            Column {
+                Text(text = "Minecraft ${version.id}", style = MaterialTheme.typography.bodyLarge)
+                val versionTypeString = when (version.type) {
+                    "release" -> VersionType.Release.title
+                    "snapshot" -> VersionType.Snapshot.title
+                    "old_alpha", "old_beta" -> VersionType.Ancient.title
+                    else -> version.type
+                }
+                Text(
+                    text = "$versionTypeString - ${version.releaseTime.substringBefore('T')}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }

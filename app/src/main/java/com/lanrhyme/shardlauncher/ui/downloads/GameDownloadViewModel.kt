@@ -5,9 +5,11 @@ import androidx.lifecycle.viewModelScope
 import com.lanrhyme.shardlauncher.api.ApiClient
 import com.lanrhyme.shardlauncher.model.BmclapiManifest
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class GameDownloadViewModel : ViewModel() {
@@ -15,6 +17,10 @@ class GameDownloadViewModel : ViewModel() {
     private val _versions = MutableStateFlow<List<BmclapiManifest.Version>>(emptyList())
     private val _searchQuery = MutableStateFlow("")
     private val _selectedVersionTypes = MutableStateFlow(setOf(VersionType.Release))
+
+    // Cache
+    private var cachedVersions: List<BmclapiManifest.Version>? = null
+    private var lastSourceWasBmclapi: Boolean? = null
 
     val searchQuery = _searchQuery.asStateFlow()
     val selectedVersionTypes = _selectedVersionTypes.asStateFlow()
@@ -34,13 +40,11 @@ class GameDownloadViewModel : ViewModel() {
             val queryMatches = version.id.contains(query, ignoreCase = true)
             typeMatches && queryMatches
         }
-    }.let { flow ->
-        val mutableStateFlow = MutableStateFlow<List<BmclapiManifest.Version>>(emptyList())
-        viewModelScope.launch {
-            flow.collect { mutableStateFlow.value = it }
-        }
-        mutableStateFlow
-    }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
 
     fun setSearchQuery(query: String) {
         _searchQuery.value = query
@@ -56,11 +60,12 @@ class GameDownloadViewModel : ViewModel() {
         _selectedVersionTypes.value = currentTypes
     }
 
-    fun refreshVersions(useBmclapi: Boolean) {
-        loadVersions(useBmclapi)
-    }
+    fun loadVersions(useBmclapi: Boolean, forceRefresh: Boolean = false) {
+        if (!forceRefresh && cachedVersions != null && lastSourceWasBmclapi == useBmclapi) {
+            _versions.value = cachedVersions!!
+            return
+        }
 
-    private fun loadVersions(useBmclapi: Boolean) {
         viewModelScope.launch {
             val versionsFromApi = if (useBmclapi) {
                 try {
@@ -75,6 +80,9 @@ class GameDownloadViewModel : ViewModel() {
                 listOf(BmclapiManifest.Version(latest.versionId, latest.versionType, "", "", ""))
             }
             _versions.value = versionsFromApi
+            // Update cache
+            cachedVersions = versionsFromApi
+            lastSourceWasBmclapi = useBmclapi
         }
     }
 }
