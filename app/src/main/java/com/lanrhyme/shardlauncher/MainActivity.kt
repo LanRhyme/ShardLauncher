@@ -75,6 +75,7 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.lanrhyme.shardlauncher.common.SidebarPosition
 import com.lanrhyme.shardlauncher.data.SettingsRepository
+import com.lanrhyme.shardlauncher.ui.LocalSettings
 import com.lanrhyme.shardlauncher.ui.SplashScreen
 import com.lanrhyme.shardlauncher.ui.components.BackgroundLightEffect
 import com.lanrhyme.shardlauncher.ui.components.glow
@@ -122,13 +123,17 @@ class MainActivity : ComponentActivity() {
             var enableVersionCheck by remember { mutableStateOf(settingsRepository.getEnableVersionCheck()) }
             var uiScale by remember { mutableStateOf(settingsRepository.getUiScale()) }
             var isGlowEffectEnabled by remember { mutableStateOf(settingsRepository.getIsGlowEffectEnabled()) }
+            var useBmclapi by remember { mutableStateOf(settingsRepository.getUseBmclapi()) }
 
             val navController = rememberNavController()
             var showSplash by remember { mutableStateOf(true) }
 
             val scaledDensity = Density(LocalDensity.current.density * uiScale, LocalDensity.current.fontScale * uiScale)
 
-            CompositionLocalProvider(LocalDensity provides scaledDensity) {
+            CompositionLocalProvider(
+                LocalDensity provides scaledDensity,
+                LocalSettings provides settingsRepository
+            ) {
                 Crossfade(
                     targetState = showSplash,
                     label = "SplashCrossfade",
@@ -215,6 +220,11 @@ class MainActivity : ComponentActivity() {
                                         val newValue = !isGlowEffectEnabled
                                         isGlowEffectEnabled = newValue
                                         settingsRepository.setIsGlowEffectEnabled(newValue)
+                                    },
+                                    useBmclapi = useBmclapi,
+                                    onUseBmclapiChange = { newValue ->
+                                        useBmclapi = newValue
+                                        settingsRepository.setUseBmclapi(newValue)
                                     }
                                 )
                             }
@@ -254,7 +264,9 @@ fun MainScreen(
     uiScale: Float,
     onUiScaleChange: (Float) -> Unit,
     isGlowEffectEnabled: Boolean,
-    onIsGlowEffectEnabledChange: () -> Unit
+    onIsGlowEffectEnabledChange: () -> Unit,
+    useBmclapi: Boolean,
+    onUseBmclapiChange: (Boolean) -> Unit
 ) {
     var isSidebarExpanded by remember { mutableStateOf(false) }
 
@@ -363,7 +375,9 @@ fun MainScreen(
                 uiScale = uiScale,
                 onUiScaleChange = onUiScaleChange,
                 isGlowEffectEnabled = isGlowEffectEnabled,
-                onIsGlowEffectEnabledChange = onIsGlowEffectEnabledChange
+                onIsGlowEffectEnabledChange = onIsGlowEffectEnabledChange,
+                useBmclapi = useBmclapi,
+                onUseBmclapiChange = onUseBmclapiChange
             )
 
             val sidebarAlignment = when (sidebarPosition) {
@@ -424,7 +438,9 @@ fun MainContent(
     uiScale: Float,
     onUiScaleChange: (Float) -> Unit,
     isGlowEffectEnabled: Boolean,
-    onIsGlowEffectEnabledChange: () -> Unit
+    onIsGlowEffectEnabledChange: () -> Unit,
+    useBmclapi: Boolean,
+    onUseBmclapiChange: (Boolean) -> Unit
 ) {
     val collapsedSidebarWidth = 72.dp
     val paddingStart by animateDpAsState(
@@ -544,7 +560,9 @@ fun MainContent(
                         uiScale = uiScale,
                         onUiScaleChange = onUiScaleChange,
                         isGlowEffectEnabled = isGlowEffectEnabled,
-                        onIsGlowEffectEnabledChange = onIsGlowEffectEnabledChange
+                        onIsGlowEffectEnabledChange = onIsGlowEffectEnabledChange,
+                        useBmclapi = useBmclapi,
+                        onUseBmclapiChange = onUseBmclapiChange
                     )
                 }
                 composable(Screen.DeveloperOptions.route) {

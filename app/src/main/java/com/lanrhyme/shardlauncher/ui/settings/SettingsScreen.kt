@@ -59,7 +59,9 @@ fun SettingsScreen(
     uiScale: Float,
     onUiScaleChange: (Float) -> Unit,
     isGlowEffectEnabled: Boolean,
-    onIsGlowEffectEnabledChange: () -> Unit
+    onIsGlowEffectEnabledChange: () -> Unit,
+    useBmclapi: Boolean,
+    onUseBmclapiChange: (Boolean) -> Unit
 ) {
     // 2. 添加状态来管理当前选中的页面
     var selectedPage by remember { mutableStateOf(SettingsPage.Launcher) }
@@ -101,6 +103,13 @@ fun SettingsScreen(
                         onUiScaleChange = onUiScaleChange,
                         isGlowEffectEnabled = isGlowEffectEnabled,
                         onIsGlowEffectEnabledChange = onIsGlowEffectEnabledChange
+                    )
+                }
+
+                SettingsPage.Game -> {
+                    GameSettingsContent(
+                        useBmclapi = useBmclapi,
+                        onUseBmclapiChange = onUseBmclapiChange
                     )
                 }
 

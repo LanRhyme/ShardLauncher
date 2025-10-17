@@ -148,6 +148,15 @@ class SettingsRepository(context: Context) {
         saveProperties()
     }
 
+    fun getUseBmclapi(): Boolean {
+        return properties.getProperty(KEY_USE_BMCLAPI, "true").toBoolean()
+    }
+
+    fun setUseBmclapi(enabled: Boolean) {
+        properties.setProperty(KEY_USE_BMCLAPI, enabled.toString())
+        saveProperties()
+    }
+
     companion object {
         private const val PREFS_NAME = "developer_settings.properties"
         private const val KEY_UI_SCALE = "ui_scale"
@@ -163,5 +172,6 @@ class SettingsRepository(context: Context) {
         private const val KEY_SIDEBAR_POSITION = "sidebar_position"
         private const val KEY_THEME_COLOR = "theme_color"
         private const val KEY_IS_GLOW_EFFECT_ENABLED = "is_glow_effect_enabled"
+        private const val KEY_USE_BMCLAPI = "use_bmclapi"
     }
 }

@@ -86,7 +86,7 @@ fun HomeScreen(enableVersionCheck: Boolean) {
                     Logger.log(context, "HomeScreen", "Fetching latest versions...")
                     errorMessage = null // Clear previous error
                     val response = withContext(Dispatchers.IO) {
-                        ApiClient.instance.getLatestVersions()
+                        ApiClient.versionApiService.getLatestVersions()
                     }
                     latestVersions = response
                     Logger.log(context, "HomeScreen", "Successfully fetched latest versions: $response")

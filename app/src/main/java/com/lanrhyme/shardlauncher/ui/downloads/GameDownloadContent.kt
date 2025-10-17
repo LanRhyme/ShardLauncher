@@ -32,6 +32,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,22 +42,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lanrhyme.shardlauncher.R
+import com.lanrhyme.shardlauncher.model.BmclapiManifest
+import com.lanrhyme.shardlauncher.ui.LocalSettings
 import com.lanrhyme.shardlauncher.ui.components.CombinedCard
 import com.lanrhyme.shardlauncher.ui.components.StyledFilterChip
-
-enum class VersionType(val title: String) {
-    Release("正式版"),
-    Snapshot("快照版"),
-    Ancient("远古版")
-}
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun GameDownloadContent() {
-    var selectedVersionTypes by remember { mutableStateOf(setOf(VersionType.Release)) }
-    var searchQuery by remember { mutableStateOf("") }
-    val versions = listOf("1.21", "1.20.4", "1.20.1", "1.19.4", "1.18.2", "1.17.1", "1.16.5") // Placeholder
+    val viewModel: GameDownloadViewModel = viewModel()
+    val settings = LocalSettings.current
+
+    val versions by viewModel.filteredVersions.collectAsState()
+    val selectedVersionTypes by viewModel.selectedVersionTypes.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.refreshVersions(settings.getUseBmclapi())
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -76,20 +81,14 @@ fun GameDownloadContent() {
                     VersionType.entries.forEach { versionType ->
                         StyledFilterChip(
                             selected = versionType in selectedVersionTypes,
-                            onClick = {
-                                selectedVersionTypes = if (versionType in selectedVersionTypes) {
-                                    selectedVersionTypes - versionType
-                                } else {
-                                    selectedVersionTypes + versionType
-                                }
-                            },
+                            onClick = { viewModel.toggleVersionType(versionType) },
                             label = { Text(versionType.title) },
                             modifier = Modifier.fillMaxHeight()
                         )
                     }
                     BasicTextField(
                         value = searchQuery,
-                        onValueChange = { searchQuery = it },
+                        onValueChange = { viewModel.setSearchQuery(it) },
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight(),
@@ -132,7 +131,7 @@ fun GameDownloadContent() {
                         }
                     )
                     IconButton(
-                        onClick = { /* TODO: Refresh logic */ },
+                        onClick = { viewModel.refreshVersions(settings.getUseBmclapi()) },
                         modifier = Modifier.fillMaxHeight()
                     ) {
                         Icon(Icons.Default.Refresh, contentDescription = "Refresh")
@@ -141,7 +140,7 @@ fun GameDownloadContent() {
             }
         }
 
-        items(versions.filter { it.contains(searchQuery, ignoreCase = true) }) { version ->
+        items(versions) { version ->
             VersionItem(version = version)
         }
     }
@@ -149,7 +148,7 @@ fun GameDownloadContent() {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun LazyItemScope.VersionItem(version: String) {
+fun LazyItemScope.VersionItem(version: BmclapiManifest.Version) {
     var appeared by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         appeared = true
@@ -181,7 +180,7 @@ fun LazyItemScope.VersionItem(version: String) {
                 contentDescription = "Minecraft",
                 modifier = Modifier.size(32.dp)
             )
-            Text(text = "Minecraft $version", style = MaterialTheme.typography.bodyLarge)
+            Text(text = "Minecraft ${version.id}", style = MaterialTheme.typography.bodyLarge)
         }
     }
 }
