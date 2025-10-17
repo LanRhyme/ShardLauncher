@@ -1,6 +1,8 @@
 package com.lanrhyme.shardlauncher.ui.home
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -18,6 +20,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Article
+import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -32,9 +38,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.lanrhyme.shardlauncher.R
 import com.lanrhyme.shardlauncher.api.ApiClient
 import com.lanrhyme.shardlauncher.data.SettingsRepository
@@ -209,14 +217,71 @@ fun HomeScreen(enableVersionCheck: Boolean) {
 
 @Composable
 fun VersionInfoCard(versionInfo: VersionInfo) {
+    val context = LocalContext.current
     Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = versionInfo.title, style = MaterialTheme.typography.titleLarge)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = versionInfo.versionType, style = MaterialTheme.typography.bodyMedium)
-            versionInfo.intro?.let {
+        Column {
+            AsyncImage(
+                model = versionInfo.versionImageLink,
+                contentDescription = versionInfo.title,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(150.dp),
+                contentScale = ContentScale.Crop
+            )
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(text = versionInfo.title, style = MaterialTheme.typography.titleLarge)
+                    Text(text = versionInfo.versionType, style = MaterialTheme.typography.bodyMedium)
+                }
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(text = it, style = MaterialTheme.typography.bodyMedium)
+                versionInfo.intro?.let {
+                    Text(text = it, style = MaterialTheme.typography.bodyMedium)
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+                versionInfo.translator?.let {
+                    Text(
+                        text = "翻译：$it",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    ScalingActionButton(
+                        onClick = {
+                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(versionInfo.officialLink)))
+                        },
+                        icon = Icons.AutoMirrored.Filled.Article,
+                        text = "官方日志",
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+                    )
+                    ScalingActionButton(
+                        onClick = {
+                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(versionInfo.wikiLink)))
+                        },
+                        icon = Icons.Default.Book,
+                        text = "Wiki",
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+                    )
+                    ScalingActionButton(
+                        onClick = {
+                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(versionInfo.serverJar)))
+                        },
+                        icon = Icons.Default.Download,
+                        text = "服务端",
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+                    )
+                }
             }
         }
     }
