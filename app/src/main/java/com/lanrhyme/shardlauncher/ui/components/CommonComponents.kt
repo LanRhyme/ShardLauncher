@@ -104,32 +104,15 @@ fun CollapsibleCard(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun LazyItemScope.CombinedCard(
+fun CombinedCard(
     modifier: Modifier = Modifier,
     title: String,
     summary: String? = null,
     content: @Composable () -> Unit
 ) {
-    var appeared by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
-        appeared = true
-    }
-
-    val scale by animateFloatAsState(
-        targetValue = if (appeared) 1f else 0.9f,
-        animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing),
-        label = "scale"
-    )
-
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .graphicsLayer {
-                this.scaleX = scale
-                this.scaleY = scale
-            },
+        modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
     ) {

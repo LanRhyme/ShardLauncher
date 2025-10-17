@@ -6,6 +6,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -44,6 +45,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.lanrhyme.shardlauncher.R
 import com.lanrhyme.shardlauncher.model.BmclapiManifest
 import com.lanrhyme.shardlauncher.ui.LocalSettings
@@ -52,7 +54,7 @@ import com.lanrhyme.shardlauncher.ui.components.StyledFilterChip
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun GameDownloadContent() {
+fun GameDownloadContent(navController: NavController) {
     val viewModel: GameDownloadViewModel = viewModel()
     val settings = LocalSettings.current
 
@@ -142,14 +144,16 @@ fun GameDownloadContent() {
         }
 
         items(versions) { version ->
-            VersionItem(version = version)
+            VersionItem(version = version) {
+                navController.navigate("version_detail/${version.id}")
+            }
         }
     }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun LazyItemScope.VersionItem(version: BmclapiManifest.Version) {
+fun LazyItemScope.VersionItem(version: BmclapiManifest.Version, onClick: () -> Unit) {
     var appeared by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         appeared = true
@@ -167,7 +171,8 @@ fun LazyItemScope.VersionItem(version: BmclapiManifest.Version) {
             .graphicsLayer {
                 this.scaleX = scale
                 this.scaleY = scale
-            },
+            }
+            .clickable { onClick() },
         shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
     ) {

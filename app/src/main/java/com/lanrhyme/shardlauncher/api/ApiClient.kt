@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit
 object ApiClient {
     private const val NEWS_BASE_URL = "https://news.bugjump.net/"
     private const val BMCLAPI_BASE_URL = "https://bmclapi2.bangbang93.com/"
+    private const val FABRIC_BASE_URL = "https://meta.fabricmc.net/"
 
     private val okHttpClient = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)
@@ -30,5 +31,14 @@ object ApiClient {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         retrofit.create(BmclapiService::class.java)
+    }
+
+    val fabricApiService: FabricApiService by lazy {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(FABRIC_BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        retrofit.create(FabricApiService::class.java)
     }
 }
