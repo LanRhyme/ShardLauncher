@@ -232,16 +232,24 @@ fun VersionInfoCard(versionInfo: VersionInfo) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.Top
                 ) {
-                    Text(text = versionInfo.title, style = MaterialTheme.typography.titleLarge)
+                    Column(
+                        Modifier
+                            .weight(1f, fill = false)
+                            .padding(end = 8.dp)) {
+                        Text(text = versionInfo.title, style = MaterialTheme.typography.titleLarge)
+                        versionInfo.intro?.let { intro ->
+                            Text(
+                                text = intro,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
+                        }
+                    }
                     Text(text = versionInfo.versionType, style = MaterialTheme.typography.bodyMedium)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                versionInfo.intro?.let {
-                    Text(text = it, style = MaterialTheme.typography.bodyMedium)
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
                 versionInfo.translator?.let {
                     Text(
                         text = "翻译：$it",
