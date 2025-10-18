@@ -208,8 +208,8 @@ private fun <T> VersionDropdownItem(version: T) {
         is FabricLoaderVersion -> {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(version.version, style = MaterialTheme.typography.bodyMedium)
-                val status = if (version.stable) "Stable" else "Beta"
-                val color = if (version.stable) Color(0xFF4CAF50) else Color(0xFFFFA000)
+                val status = if (version.stable == true) "Stable" else "Beta"
+                val color = if (version.stable == true) Color(0xFF4CAF50) else Color(0xFFFFA000)
                 Text(
                     text = status,
                     color = Color.White,

@@ -1,6 +1,6 @@
 package com.lanrhyme.shardlauncher.model
 
-data class FabricLoaderVersion(
+data class QuiltVersion(
     val version: String,
-    val stable: Boolean? = false
+    val stable: Boolean
 )

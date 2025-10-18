@@ -8,37 +8,48 @@ import java.util.concurrent.TimeUnit
 object ApiClient {
     private const val NEWS_BASE_URL = "https://news.bugjump.net/"
     private const val BMCLAPI_BASE_URL = "https://bmclapi2.bangbang93.com/"
-    private const val FABRIC_BASE_URL = "https://meta.fabricmc.net/"
+    private const val FABRIC_BASE_URL = "https://bmclapi2.bangbang93.com/fabric-meta/"
+    private const val QUILT_BASE_URL = "https://bmclapi2.bangbang93.com/quilt-meta/"
 
     private val okHttpClient = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)
         .readTimeout(15, TimeUnit.SECONDS)
         .build()
 
-    val versionApiService: VersionApiService by lazy {
+    private fun <T> createService(baseUrl: String, serviceClass: Class<T>): T {
         val retrofit = Retrofit.Builder()
-            .baseUrl(NEWS_BASE_URL)
+            .baseUrl(baseUrl)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-        retrofit.create(VersionApiService::class.java)
+        return retrofit.create(serviceClass)
+    }
+
+    val versionApiService: VersionApiService by lazy {
+        createService(NEWS_BASE_URL, VersionApiService::class.java)
     }
 
     val bmclapiService: BmclapiService by lazy {
-        val retrofit = Retrofit.Builder()
-            .baseUrl(BMCLAPI_BASE_URL)
-            .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-        retrofit.create(BmclapiService::class.java)
+        createService(BMCLAPI_BASE_URL, BmclapiService::class.java)
     }
 
     val fabricApiService: FabricApiService by lazy {
-        val retrofit = Retrofit.Builder()
-            .baseUrl(FABRIC_BASE_URL)
-            .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-        retrofit.create(FabricApiService::class.java)
+        createService(FABRIC_BASE_URL, FabricApiService::class.java)
+    }
+
+    val forgeApiService: ForgeApiService by lazy {
+        createService(BMCLAPI_BASE_URL, ForgeApiService::class.java)
+    }
+
+    val neoForgeApiService: NeoForgeApiService by lazy {
+        createService(BMCLAPI_BASE_URL, NeoForgeApiService::class.java)
+    }
+
+    val quiltApiService: QuiltApiService by lazy {
+        createService(QUILT_BASE_URL, QuiltApiService::class.java)
+    }
+
+    val optiFineApiService: OptiFineApiService by lazy {
+        createService(BMCLAPI_BASE_URL, OptiFineApiService::class.java)
     }
 }
