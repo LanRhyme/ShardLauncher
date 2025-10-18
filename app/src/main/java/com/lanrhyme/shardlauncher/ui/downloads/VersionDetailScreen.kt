@@ -2,6 +2,7 @@ package com.lanrhyme.shardlauncher.ui.downloads
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.indication
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -70,12 +72,23 @@ fun VersionDetailScreen(navController: NavController, versionId: String?) {
             modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            CustomTextField(
-                value = versionName,
-                onValueChange = { viewModel.setVersionName(it) },
-                label = "版本名称",
-                modifier = Modifier.fillMaxWidth()
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                CustomTextField(
+                    value = versionName,
+                    onValueChange = { viewModel.setVersionName(it) },
+                    label = "版本名称",
+                    modifier = Modifier.weight(1f)
+                )
+                ScalingActionButton(
+                    onClick = { viewModel.download() },
+                    icon = androidx.compose.material.icons.Icons.Default.Download,
+                    text = "下载"
+                )
+            }
 
             CombinedCard(title = "模组加载器", summary = "选择一个模组加载器 (可选)") {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -144,14 +157,6 @@ fun VersionDetailScreen(navController: NavController, versionId: String?) {
                 }
             }
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        ScalingActionButton(
-            onClick = { viewModel.download() },
-            modifier = Modifier.fillMaxWidth(),
-            text = "下载"
-        )
     }
 }
 

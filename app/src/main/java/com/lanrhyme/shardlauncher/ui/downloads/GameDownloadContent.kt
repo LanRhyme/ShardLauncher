@@ -51,6 +51,8 @@ import com.lanrhyme.shardlauncher.model.BmclapiManifest
 import com.lanrhyme.shardlauncher.ui.LocalSettings
 import com.lanrhyme.shardlauncher.ui.components.CombinedCard
 import com.lanrhyme.shardlauncher.ui.components.StyledFilterChip
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Link
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -186,7 +188,7 @@ fun LazyItemScope.VersionItem(version: BmclapiManifest.Version, onClick: () -> U
                 contentDescription = "Minecraft",
                 modifier = Modifier.size(32.dp)
             )
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(text = "Minecraft ${version.id}", style = MaterialTheme.typography.bodyLarge)
                 val versionTypeString = when (version.type) {
                     "release" -> VersionType.Release.title
