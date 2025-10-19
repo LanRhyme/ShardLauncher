@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.lanrhyme.shardlauncher.ui.components.ScalingActionButton
 import com.lanrhyme.shardlauncher.ui.components.SliderLayout
+import com.lanrhyme.shardlauncher.ui.components.SubPageNavigationBar
 import com.lanrhyme.shardlauncher.ui.components.TitleAndSummary
 import com.lanrhyme.shardlauncher.ui.notification.Notification
 import com.lanrhyme.shardlauncher.ui.notification.NotificationManager
@@ -44,10 +45,10 @@ fun DeveloperOptionsScreen(navController: NavController) {
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(22.dp)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    TitleAndSummary(
+                Column(modifier = Modifier.padding(18.dp)) {
+                    SubPageNavigationBar(
                         title = "开发者选项",
-                        summary = "一些用于测试的功能，它们在将来可能被移除"
+                        onBack = { navController.popBackStack() }
                     )
                 }
             }

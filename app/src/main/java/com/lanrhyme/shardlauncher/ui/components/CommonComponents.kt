@@ -24,6 +24,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -33,6 +35,7 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
@@ -272,6 +275,28 @@ fun <T> SegmentedNavigationBar(
                     text = { Text(text = getTitle(page)) }
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun SubPageNavigationBar(
+    title: String = "返回",
+    description: String? = null,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier.fillMaxWidth()) {
+        IconButton(onClick = onBack) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Back"
+            )
+        }
+        Text(text = title, style = MaterialTheme.typography.titleLarge)
+        if (description != null) {
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(text = description, style = MaterialTheme.typography.bodyMedium)
         }
     }
 }

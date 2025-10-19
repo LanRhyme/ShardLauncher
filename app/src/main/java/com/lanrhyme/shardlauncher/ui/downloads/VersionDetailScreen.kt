@@ -46,6 +46,7 @@ import com.lanrhyme.shardlauncher.ui.components.CombinedCard
 import com.lanrhyme.shardlauncher.ui.components.CustomTextField
 import com.lanrhyme.shardlauncher.ui.components.ScalingActionButton
 import com.lanrhyme.shardlauncher.ui.components.StyledFilterChip
+import com.lanrhyme.shardlauncher.ui.components.SubPageNavigationBar
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -65,17 +66,17 @@ fun VersionDetailScreen(navController: NavController, versionId: String?) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(8.dp)
     ) {
-        Text(
-            text = "安装 $versionId",
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(bottom = 16.dp)
+        SubPageNavigationBar(
+            title = "安装 $versionId",
+            onBack = { navController.popBackStack() },
+            modifier = Modifier.padding(bottom = 8.dp)
         )
 
         Column(
             modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
