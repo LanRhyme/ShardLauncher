@@ -1,5 +1,6 @@
 package com.lanrhyme.shardlauncher.ui.downloads
 
+import android.app.Application
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.indication
@@ -21,6 +22,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,11 +35,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.lanrhyme.shardlauncher.model.FabricLoaderVersion
 import com.lanrhyme.shardlauncher.model.LoaderVersion
+import com.lanrhyme.shardlauncher.model.version.DownloadManager
 import com.lanrhyme.shardlauncher.ui.components.CombinedCard
 import com.lanrhyme.shardlauncher.ui.components.CustomTextField
 import com.lanrhyme.shardlauncher.ui.components.ScalingActionButton
@@ -50,12 +54,13 @@ fun VersionDetailScreen(navController: NavController, versionId: String?) {
         Text("Error: Version ID is missing.")
         return
     }
-
-    val viewModel: VersionDetailViewModel = viewModel { VersionDetailViewModel(versionId) }
+    val application = LocalContext.current.applicationContext as Application
+    val viewModel: VersionDetailViewModel = viewModel { VersionDetailViewModel(application, versionId) }
     val versionName by viewModel.versionName.collectAsState()
     val selectedModLoader by viewModel.selectedModLoader.collectAsState()
     val isOptifineSelected by viewModel.isOptifineSelected.collectAsState()
     val isFabricApiSelected by viewModel.isFabricApiSelected.collectAsState()
+    val downloadState by viewModel.downloadState.collectAsState()
 
     Column(
         modifier = Modifier
@@ -86,7 +91,15 @@ fun VersionDetailScreen(navController: NavController, versionId: String?) {
                 ScalingActionButton(
                     onClick = { viewModel.download() },
                     icon = androidx.compose.material.icons.Icons.Default.Download,
-                    text = "下载"
+                    text = "下载",
+                    enabled = downloadState is DownloadManager.DownloadState.Idle || downloadState is DownloadManager.DownloadState.Finished || downloadState is DownloadManager.DownloadState.Error
+                )
+            }
+            AnimatedVisibility(downloadState is DownloadManager.DownloadState.Downloading) {
+                val state = downloadState as? DownloadManager.DownloadState.Downloading
+                LinearProgressIndicator(
+                    progress = { state?.progress ?: 0f },
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
 
@@ -104,7 +117,7 @@ fun VersionDetailScreen(navController: NavController, versionId: String?) {
                             val fabricVersions by viewModel.fabricVersions.collectAsState()
                             val selectedVersion by viewModel.selectedFabricVersion.collectAsState()
                             LoaderVersionDropdown(versions = fabricVersions, selectedVersion = selectedVersion, onVersionSelected = { viewModel.selectFabricVersion(it as FabricLoaderVersion) })
-                            
+
                             StyledFilterChip(
                                 selected = isFabricApiSelected,
                                 onClick = { viewModel.toggleFabricApi(!isFabricApiSelected) },
@@ -120,19 +133,19 @@ fun VersionDetailScreen(navController: NavController, versionId: String?) {
                     }
 
                     AnimatedVisibility(visible = selectedModLoader == ModLoader.Forge) {
-                         val forgeVersions by viewModel.forgeVersions.collectAsState()
-                         val selectedVersion by viewModel.selectedForgeVersion.collectAsState()
-                         LoaderVersionDropdown(versions = forgeVersions, selectedVersion = selectedVersion, onVersionSelected = { viewModel.selectForgeVersion(it as LoaderVersion) })
+                        val forgeVersions by viewModel.forgeVersions.collectAsState()
+                        val selectedVersion by viewModel.selectedForgeVersion.collectAsState()
+                        LoaderVersionDropdown(versions = forgeVersions, selectedVersion = selectedVersion, onVersionSelected = { viewModel.selectForgeVersion(it as LoaderVersion) })
                     }
-                     AnimatedVisibility(visible = selectedModLoader == ModLoader.NeoForge) {
-                         val neoForgeVersions by viewModel.neoForgeVersions.collectAsState()
-                         val selectedVersion by viewModel.selectedNeoForgeVersion.collectAsState()
-                         LoaderVersionDropdown(versions = neoForgeVersions, selectedVersion = selectedVersion, onVersionSelected = { viewModel.selectNeoForgeVersion(it as LoaderVersion) })
+                    AnimatedVisibility(visible = selectedModLoader == ModLoader.NeoForge) {
+                        val neoForgeVersions by viewModel.neoForgeVersions.collectAsState()
+                        val selectedVersion by viewModel.selectedNeoForgeVersion.collectAsState()
+                        LoaderVersionDropdown(versions = neoForgeVersions, selectedVersion = selectedVersion, onVersionSelected = { viewModel.selectNeoForgeVersion(it as LoaderVersion) })
                     }
-                     AnimatedVisibility(visible = selectedModLoader == ModLoader.Quilt) {
-                         val quiltVersions by viewModel.quiltVersions.collectAsState()
-                         val selectedVersion by viewModel.selectedQuiltVersion.collectAsState()
-                         LoaderVersionDropdown(versions = quiltVersions, selectedVersion = selectedVersion, onVersionSelected = { viewModel.selectQuiltVersion(it as LoaderVersion) })
+                    AnimatedVisibility(visible = selectedModLoader == ModLoader.Quilt) {
+                        val quiltVersions by viewModel.quiltVersions.collectAsState()
+                        val selectedVersion by viewModel.selectedQuiltVersion.collectAsState()
+                        LoaderVersionDropdown(versions = quiltVersions, selectedVersion = selectedVersion, onVersionSelected = { viewModel.selectQuiltVersion(it as LoaderVersion) })
                     }
                 }
             }

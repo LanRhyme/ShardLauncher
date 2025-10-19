@@ -1,6 +1,7 @@
 package com.lanrhyme.shardlauncher.ui.downloads
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.lanrhyme.shardlauncher.api.ApiClient
 import com.lanrhyme.shardlauncher.model.FabricLoaderVersion
@@ -8,6 +9,8 @@ import com.lanrhyme.shardlauncher.model.LoaderVersion
 import com.lanrhyme.shardlauncher.model.ForgeVersionToken
 import com.lanrhyme.shardlauncher.model.QuiltVersion
 import com.lanrhyme.shardlauncher.model.OptiFineVersionToken
+import com.lanrhyme.shardlauncher.model.version.DownloadManager
+import com.lanrhyme.shardlauncher.model.version.VersionManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -20,7 +23,7 @@ enum class ModLoader {
     Quilt
 }
 
-class VersionDetailViewModel(private val versionId: String) : ViewModel() {
+class VersionDetailViewModel(application: Application, private val versionId: String) : AndroidViewModel(application) {
 
     private val _versionName = MutableStateFlow(versionId)
     val versionName = _versionName.asStateFlow()
@@ -66,7 +69,12 @@ class VersionDetailViewModel(private val versionId: String) : ViewModel() {
     private val _selectedOptifineVersion = MutableStateFlow<LoaderVersion?>(null)
     val selectedOptifineVersion = _selectedOptifineVersion.asStateFlow()
 
+    private val downloadManager = DownloadManager(application)
+    val downloadState = downloadManager.downloadState
+
     init {
+        VersionManager.init(application)
+        downloadManager.init()
         loadAllLoaderVersions()
     }
 
@@ -219,5 +227,20 @@ class VersionDetailViewModel(private val versionId: String) : ViewModel() {
         )
     }
 
-    fun download() { /* TODO */ }
+    fun download() {
+        viewModelScope.launch {
+            try {
+                val manifest = VersionManager.getVersionManifest()
+                val version = manifest.versions.find { it.id == versionId }
+                if (version != null) {
+                    val gameManifest = VersionManager.getGameManifest(version)
+                    downloadManager.startDownload(gameManifest)
+                } else {
+                    // Handle version not found
+                }
+            } catch (e: Exception) {
+                // Handle error
+            }
+        }
+    }
 }
