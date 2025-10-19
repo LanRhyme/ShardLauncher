@@ -1,6 +1,7 @@
 # ShardLauncher
 
 [中文版本 (README.md)](README.md)
+
 [![Development Build Status](https://github.com/LanRhyme/ShardLauncher/actions/workflows/development.yml/badge.svg?branch=master)](https://github.com/LanRhyme/ShardLauncher/actions/workflows/development.yml)
 
 ShardLauncher is a modern Minecraft Java Edition Android launcher application built with Jetpack Compose. It offers a contemporary user interface and rich customization options.
