@@ -25,3 +25,18 @@ val navigationItems = listOf(
     Screen.Online,
     Screen.Settings
 )
+
+val routeHierarchy = mapOf(
+    Screen.DeveloperOptions.route to Screen.Settings.route,
+    "component_demo" to Screen.DeveloperOptions.route,
+    "version_detail/{versionId}" to Screen.Download.route
+)
+
+fun getRootRoute(route: String?): String? {
+    if (route == null) return null
+    var currentRoute = route
+    while (routeHierarchy.containsKey(currentRoute)) {
+        currentRoute = routeHierarchy[currentRoute]!!
+    }
+    return currentRoute
+}

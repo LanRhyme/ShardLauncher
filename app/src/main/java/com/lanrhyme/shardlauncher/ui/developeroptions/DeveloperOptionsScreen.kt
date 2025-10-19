@@ -48,7 +48,7 @@ fun DeveloperOptionsScreen(navController: NavController) {
                 Column(modifier = Modifier.padding(18.dp)) {
                     SubPageNavigationBar(
                         title = "开发者选项",
-                        onBack = { navController.popBackStack() }
+                        onBack = { navController.navigateUp() }
                     )
                 }
             }

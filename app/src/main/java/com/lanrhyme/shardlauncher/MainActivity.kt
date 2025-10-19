@@ -87,6 +87,7 @@ import com.lanrhyme.shardlauncher.ui.downloads.DownloadScreen
 import com.lanrhyme.shardlauncher.ui.downloads.VersionDetailScreen
 import com.lanrhyme.shardlauncher.ui.home.HomeScreen
 import com.lanrhyme.shardlauncher.ui.navigation.Screen
+import com.lanrhyme.shardlauncher.ui.navigation.getRootRoute
 import com.lanrhyme.shardlauncher.ui.navigation.navigationItems
 import com.lanrhyme.shardlauncher.ui.notification.NotificationManager
 import com.lanrhyme.shardlauncher.ui.notification.NotificationPanel
@@ -469,8 +470,8 @@ fun MainContent(
                 enterTransition = {
                     val initialRoute = initialState.destination.route
                     val targetRoute = targetState.destination.route
-                    val initialIndex = navigationItems.indexOfFirst { it.route == initialRoute }
-                    val targetIndex = navigationItems.indexOfFirst { it.route == targetRoute }
+                    val initialIndex = navigationItems.indexOfFirst { it.route == getRootRoute(initialRoute) }
+                    val targetIndex = navigationItems.indexOfFirst { it.route == getRootRoute(targetRoute) }
 
                     if (targetRoute == Screen.Home.route) {
                         slideInVertically(animationSpec = tween(animationDuration)) { it } + fadeIn(animationSpec = tween(animationDuration))
@@ -485,8 +486,8 @@ fun MainContent(
                 exitTransition = {
                     val initialRoute = initialState.destination.route
                     val targetRoute = targetState.destination.route
-                    val initialIndex = navigationItems.indexOfFirst { it.route == initialRoute }
-                    val targetIndex = navigationItems.indexOfFirst { it.route == targetRoute }
+                    val initialIndex = navigationItems.indexOfFirst { it.route == getRootRoute(initialRoute) }
+                    val targetIndex = navigationItems.indexOfFirst { it.route == getRootRoute(targetRoute) }
 
                     if (targetRoute == Screen.Home.route) {
                         slideOutVertically(animationSpec = tween(animationDuration)) { -it } + fadeOut(animationSpec = tween(animationDuration))
@@ -501,8 +502,8 @@ fun MainContent(
                 popEnterTransition = {
                     val initialRoute = initialState.destination.route
                     val targetRoute = targetState.destination.route
-                    val initialIndex = navigationItems.indexOfFirst { it.route == initialRoute }
-                    val targetIndex = navigationItems.indexOfFirst { it.route == targetRoute }
+                    val initialIndex = navigationItems.indexOfFirst { it.route == getRootRoute(initialRoute) }
+                    val targetIndex = navigationItems.indexOfFirst { it.route == getRootRoute(targetRoute) }
 
                     if (targetRoute == Screen.Home.route) {
                         slideInVertically(animationSpec = tween(animationDuration)) { -it } + fadeIn(animationSpec = tween(animationDuration))
@@ -517,8 +518,8 @@ fun MainContent(
                 popExitTransition = {
                     val initialRoute = initialState.destination.route
                     val targetRoute = targetState.destination.route
-                    val initialIndex = navigationItems.indexOfFirst { it.route == initialRoute }
-                    val targetIndex = navigationItems.indexOfFirst { it.route == targetRoute }
+                    val initialIndex = navigationItems.indexOfFirst { it.route == getRootRoute(initialRoute) }
+                    val targetIndex = navigationItems.indexOfFirst { it.route == getRootRoute(targetRoute) }
 
                     if (targetRoute == Screen.Home.route) {
                         slideOutVertically(animationSpec = tween(animationDuration)) { it } + fadeOut(animationSpec = tween(animationDuration))
@@ -602,6 +603,7 @@ fun SideBar(
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+    val rootRoute = getRootRoute(currentRoute)
 
     val cardShape = when (position) {
         SidebarPosition.Left -> RoundedCornerShape(topEnd = 28.dp, bottomEnd = 28.dp)
@@ -616,7 +618,7 @@ fun SideBar(
                 MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
             )
     ) {
-        SideBarContent(isExpanded, onToggleExpand, navController, currentRoute, isGlowEffectEnabled)
+        SideBarContent(isExpanded, onToggleExpand, navController, rootRoute, isGlowEffectEnabled)
     }
 }
 
@@ -642,10 +644,11 @@ private fun SideBarContent(
             ExpandButton(isExpanded = isExpanded, onClick = onToggleExpand, showBadge = hasPersistentNotifications)
         }
         items(navigationItems) { screen ->
+            val isSelected = currentRoute == screen.route
             SideBarButton(
                 screen = screen,
                 isExpanded = isExpanded,
-                isSelected = currentRoute == screen.route,
+                isSelected = isSelected,
                 onClick = {
                     if (currentRoute != screen.route) {
                         navController.navigate(screen.route) {
