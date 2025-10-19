@@ -54,3 +54,40 @@ ShardLauncher is a modern Minecraft Java Edition Android launcher application bu
 *   **Navigation:** Uses `androidx.navigation:navigation-compose` for single-Activity, multi-Composable page navigation.
 *   **Theming:** Employs the Material Design 3 theme system, supporting dark mode and multiple theme color customizations.
 *   **Settings Storage:** Uses `SharedPreferences` (encapsulated via `SettingsRepository`) for persisting user settings.
+
+## Project Structure
+
+```
+ShardLauncher/
+├── app/                  # Main application module
+│   ├── src/main/
+│   │   ├── java/         # Kotlin source code
+│   │   │   └── com.lanrhyme.shardlauncher/
+│   │   │       ├── MainActivity.kt          # Application entry point
+│   │   │       ├── ShardLauncherApp.kt      # Application class
+│   │   │       ├── api/                     # Network API interface definitions
+│   │   │       ├── common/                  # Common data classes (e.g., SidebarPosition)
+│   │   │       ├── data/                    # Data layer (e.g., SettingsRepository)
+│   │   │       ├── model/                   # Data models
+│   │   │       ├── ui/                      # UI layer
+│   │   │       │   ├── components/          # Reusable UI components
+│   │   │       │   ├── navigation/          # Navigation related
+│   │   │       │   ├── settings/            # Settings interface
+│   │   │       │   ├── downloads/           # Download interface
+│   │   │       │   ├── account/             # Account interface
+│   │   │       │   ├── home/                # Home interface
+│   │   │       │   ├── notification/        # Notification system
+│   │   │       │   ├── developeroptions/    # Developer options
+│   │   │       │   ├── crash/               # Crash handling
+│   │   │       │   ├── custom/              # Custom XAML parser
+│   │   │       │   ├── theme/               # Theme definitions
+│   │   │       │   └── LocalSettingsProvider.kt # Local settings provider
+│   │   │       └── utils/                   # Utility classes
+│   │   └── res/          # Resource files (images, strings, themes, etc.)
+│   └── build.gradle.kts  # Application module build script
+├── gradle/               # Gradle Wrapper and version configuration
+├── build.gradle.kts      # Project-level build script
+├── settings.gradle.kts   # Project settings
+├── gradle.properties     # Gradle properties
+└── README.md             # Project description
+```

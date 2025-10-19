@@ -54,3 +54,40 @@ ShardLauncher 是一个基于 Jetpack Compose 的 Minecraft Java 版 Android 启
 *   **导航:** 使用 `androidx.navigation:navigation-compose` 进行单 Activity 多 Composable 的页面导航。
 *   **主题:** 使用 Material Design 3 主题系统，并支持深色模式和多种主题颜色自定义。
 *   **设置存储:** 使用 `SharedPreferences` (通过 `SettingsRepository` 封装) 来持久化用户设置。
+
+## 项目结构
+
+```
+ShardLauncher/
+├── app/                  # 主应用模块
+│   ├── src/main/
+│   │   ├── java/         # Kotlin 源代码
+│   │   │   └── com.lanrhyme.shardlauncher/
+│   │   │       ├── MainActivity.kt          # 应用主入口
+│   │   │       ├── ShardLauncherApp.kt      # Application 类
+│   │   │       ├── api/                     # 网络 API 接口定义
+│   │   │       ├── common/                  # 公共数据类（如 SidebarPosition）
+│   │   │       ├── data/                    # 数据层（如 SettingsRepository）
+│   │   │       ├── model/                   # 数据模型
+│   │   │       ├── ui/                      # UI 层
+│   │   │       │   ├── components/          # 可复用 UI 组件
+│   │   │       │   ├── navigation/          # 导航相关
+│   │   │       │   ├── settings/            # 设置界面
+│   │   │       │   ├── downloads/           # 下载界面
+│   │   │       │   ├── account/             # 账户界面
+│   │   │       │   ├── home/                # 主页界面
+│   │   │       │   ├── notification/        # 通知系统
+│   │   │       │   ├── developeroptions/    # 开发者选项
+│   │   │       │   ├── crash/               # 崩溃处理
+│   │   │       │   ├── custom/              # 自定义 XAML 解析器
+│   │   │       │   ├── theme/               # 主题定义
+│   │   │       │   └── LocalSettingsProvider.kt # 本地设置提供者
+│   │   │       └── utils/                   # 工具类
+│   │   └── res/          # 资源文件（图片、字符串、主题等）
+│   └── build.gradle.kts  # 应用模块构建脚本
+├── gradle/               # Gradle Wrapper 和版本配置
+├── build.gradle.kts      # 项目级构建脚本
+├── settings.gradle.kts   # 项目设置
+├── gradle.properties     # Gradle 属性
+└── README.md             # 项目说明
+```
