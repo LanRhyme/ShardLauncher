@@ -6,6 +6,7 @@ import android.net.Uri
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -42,6 +43,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.lanrhyme.shardlauncher.R
 import com.lanrhyme.shardlauncher.api.ApiClient
@@ -53,6 +55,7 @@ import com.lanrhyme.shardlauncher.ui.components.ScalingActionButton
 import com.lanrhyme.shardlauncher.ui.components.glow
 import com.lanrhyme.shardlauncher.ui.custom.XamlRenderer
 import com.lanrhyme.shardlauncher.ui.custom.parseXaml
+import com.lanrhyme.shardlauncher.ui.navigation.Screen
 import com.lanrhyme.shardlauncher.utils.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -64,7 +67,7 @@ import java.io.IOException
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun HomeScreen(enableVersionCheck: Boolean) {
+fun HomeScreen(navController: NavController, enableVersionCheck: Boolean) {
     val context = LocalContext.current
     val settingsRepository = remember { SettingsRepository(context) }
     val isGlowEffectEnabled = remember { settingsRepository.getIsGlowEffectEnabled() }
@@ -162,7 +165,10 @@ fun HomeScreen(enableVersionCheck: Boolean) {
             ) {
                 Spacer(modifier = Modifier.weight(1f))
 
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.clickable { navController.navigate(Screen.Account.route) }
+                ) {
 
                     Image(
                         painter = painterResource(id = R.drawable.steve2),

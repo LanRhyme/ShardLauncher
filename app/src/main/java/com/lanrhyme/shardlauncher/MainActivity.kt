@@ -79,6 +79,7 @@ import com.lanrhyme.shardlauncher.common.SidebarPosition
 import com.lanrhyme.shardlauncher.data.SettingsRepository
 import com.lanrhyme.shardlauncher.ui.LocalSettings
 import com.lanrhyme.shardlauncher.ui.SplashScreen
+import com.lanrhyme.shardlauncher.ui.account.AccountScreen
 import com.lanrhyme.shardlauncher.ui.components.BackgroundLightEffect
 import com.lanrhyme.shardlauncher.ui.components.glow
 import com.lanrhyme.shardlauncher.ui.developeroptions.ComponentDemoScreen
@@ -532,13 +533,14 @@ fun MainContent(
                     }
                  }
             ) {
-                composable(Screen.Home.route) { HomeScreen(enableVersionCheck = enableVersionCheck) }
+                composable(Screen.Home.route) { HomeScreen(navController, enableVersionCheck = enableVersionCheck) }
                 composable(Screen.Version.route) { VersionScreen() }
                 composable(Screen.Download.route) { DownloadScreen(navController = navController) }
                 composable("version_detail/{versionId}", arguments = listOf(navArgument("versionId") { type = NavType.StringType })) {
                     VersionDetailScreen(navController, it.arguments?.getString("versionId"))
                 }
                 composable(Screen.Online.route) { OnlineScreen() }
+                composable(Screen.Account.route) { AccountScreen(navController = navController) }
                 composable(Screen.Settings.route) {
                     SettingsScreen(
                         navController = navController,
