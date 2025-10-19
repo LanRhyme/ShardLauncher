@@ -1,6 +1,7 @@
 # ShardLauncher
 
 [English Version (README_en.md)](README_en.md)
+
 [![开发构建状态](https://github.com/LanRhyme/ShardLauncher/actions/workflows/development.yml/badge.svg?branch=master)](https://github.com/LanRhyme/ShardLauncher/actions/workflows/development.yml)
 
 ShardLauncher 是一个基于 Jetpack Compose 的 Minecraft Java 版 Android 启动器应用。它提供了现代化的用户界面和丰富的自定义选项。
