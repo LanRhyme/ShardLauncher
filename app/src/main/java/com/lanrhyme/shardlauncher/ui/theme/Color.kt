@@ -14,13 +14,13 @@ val lightPurpleGrey = Color(0xFF625b71)
 val lightPink = Color(0xFF755880)
 
 // Green Theme Colors
-val lightGreen = Color(0xFF8BA863)
+val lightGreen = Color(0xFF698945)
 val lightGreenGrey = Color(0xFF8EA380)
-val lightGreenTertiary = Color(0xFF93A85F) // Changed from 0xFF19686A
+val lightGreenTertiary = Color(0xFF607444) // Changed from 0xFF19686A
 
 val darkGreen = Color(0xFFB4D39A)
 val darkGreenGrey = Color(0xFFB9D4A2)
-val darkGreenTertiary = Color(0xFF90C8B0) // Changed from 0xFF7ED0D2
+val darkGreenTertiary = Color(0xFFC2C890) // Changed from 0xFF7ED0D2
 
 // Blue Theme Colors
 val lightBlue = Color(0xFF0061A4)
