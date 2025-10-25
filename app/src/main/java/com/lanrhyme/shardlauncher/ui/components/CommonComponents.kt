@@ -144,7 +144,7 @@ fun ScalingActionButton(
     icon: ImageVector? = null,
     text: String? = null,
     enabled: Boolean = true,
-    contentPadding: PaddingValues = ButtonDefaults.ContentPadding
+    contentPadding: PaddingValues = PaddingValues(horizontal = 24.dp, vertical = 4.dp)
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -156,7 +156,7 @@ fun ScalingActionButton(
             MaterialTheme.colorScheme.tertiary,
         )
     )
-    val buttonShape = RoundedCornerShape(22.dp)
+    val buttonShape = RoundedCornerShape(100.dp)
 
     val buttonModifier = modifier
         .scale(scale)

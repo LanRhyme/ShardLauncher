@@ -26,7 +26,6 @@ import androidx.compose.material.icons.filled.HdrWeak
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.SystemUpdate
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -49,6 +48,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.lanrhyme.shardlauncher.R
+import com.lanrhyme.shardlauncher.ui.components.CombinedCard
 import com.lanrhyme.shardlauncher.ui.components.ScalingActionButton
 
 data class OssLibrary(
@@ -78,9 +78,9 @@ fun AboutScreen() {
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(22.dp)
+                CombinedCard(
+                    title = "关于",
+                    summary = "关于ShardLauncher"
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(
@@ -118,15 +118,13 @@ fun AboutScreen() {
                 }
             }
             item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(22.dp)
+                CombinedCard(
+                    title = "贡献者"
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Text("贡献者")
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
@@ -172,15 +170,13 @@ fun AboutScreen() {
                 }
             }
             item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(22.dp)
+                CombinedCard(
+                    title = "鸣谢"
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Text("鸣谢")
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
@@ -241,15 +237,13 @@ fun AboutScreen() {
                 }
             }
             item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(22.dp)
+                CombinedCard(
+                    title = "开源许可"
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Text("开源许可")
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
@@ -281,15 +275,13 @@ fun AboutScreen() {
         Column(
             modifier = Modifier.weight(0.35f)
         ) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(22.dp)
+            CombinedCard(
+                title = "版本信息"
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text("版本信息")
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
