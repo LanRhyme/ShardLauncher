@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 sealed class MicrosoftLoginState {
     object Idle : MicrosoftLoginState()
@@ -23,7 +24,7 @@ sealed class MicrosoftLoginState {
 
 class AccountViewModel(private val repository: AccountRepository) : ViewModel() {
 
-    private val authRepository = AuthRepository(ApiClient.microsoftAuthService, ApiClient.minecraftAuthService)
+    private val authRepository = AuthRepository(ApiClient.microsoftAuthService, ApiClient.minecraftAuthService, ApiClient.mojangApiService, ApiClient.rmsApiService)
 
     private val _accounts = MutableStateFlow<List<Account>>(emptyList())
     val accounts: StateFlow<List<Account>> = _accounts
@@ -83,11 +84,25 @@ class AccountViewModel(private val repository: AccountRepository) : ViewModel() 
         repository.saveSelectedAccount(account)
     }
 
-    fun addAccount(account: Account) {
+    private fun addAccount(account: Account) {
         _accounts.update { currentAccounts ->
             val newAccounts = currentAccounts + account
             repository.saveAccounts(newAccounts)
             newAccounts
+        }
+    }
+
+    fun addOfflineAccount(username: String) {
+        viewModelScope.launch {
+            val skinUrl = authRepository.getOfflineSkinUrl(username)
+            val newAccount = Account(
+                id = UUID.randomUUID().toString(),
+                username = username,
+                accountType = AccountType.OFFLINE,
+                lastPlayed = "",
+                skinUrl = skinUrl
+            )
+            addAccount(newAccount)
         }
     }
 
@@ -104,7 +119,15 @@ class AccountViewModel(private val repository: AccountRepository) : ViewModel() 
         }
     }
 
-    fun updateAccount(account: Account) {
+    fun updateOfflineAccount(account: Account, newUsername: String) {
+        viewModelScope.launch {
+            val skinUrl = authRepository.getOfflineSkinUrl(newUsername)
+            val updatedAccount = account.copy(username = newUsername, skinUrl = skinUrl)
+            updateAccount(updatedAccount)
+        }
+    }
+
+    private fun updateAccount(account: Account) {
         _accounts.update { currentAccounts ->
             val newAccounts = currentAccounts.map {
                 if (it.id == account.id) account else it

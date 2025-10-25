@@ -34,6 +34,8 @@ jobs:
       run: chmod +x gradlew
 
     - name: Build Release APKs for all ABIs
+      env:
+        CLIENT_ID: ${{ secrets.CLIENT_ID }}
       run: ./gradlew assembleRelease
 
     - name: List files in APK output directory

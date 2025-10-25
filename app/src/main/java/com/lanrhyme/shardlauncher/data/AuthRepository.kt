@@ -2,24 +2,30 @@ package com.lanrhyme.shardlauncher.data
 
 import com.google.gson.Gson
 import com.google.gson.JsonObject
+import com.lanrhyme.shardlauncher.BuildConfig
 import com.lanrhyme.shardlauncher.api.MicrosoftAuthService
 import com.lanrhyme.shardlauncher.api.MinecraftAuthService
+import com.lanrhyme.shardlauncher.api.MojangApiService
+import com.lanrhyme.shardlauncher.api.RmsApiService
 import com.lanrhyme.shardlauncher.model.auth.AuthTokenResponse
 import com.lanrhyme.shardlauncher.model.auth.DeviceCodeResponse
 import com.lanrhyme.shardlauncher.model.minecraft.MinecraftAuthResponse
 import com.lanrhyme.shardlauncher.model.minecraft.MinecraftProfile
+import com.lanrhyme.shardlauncher.model.mojang.MojangProfile
 import kotlinx.coroutines.delay
 
 class AuthRepository(
     private val microsoftAuthService: MicrosoftAuthService,
-    private val minecraftAuthService: MinecraftAuthService
+    private val minecraftAuthService: MinecraftAuthService,
+    private val mojangApiService: MojangApiService,
+    private val rmsApiService: RmsApiService
 ) {
 
     private val gson = Gson()
 
     suspend fun getDeviceCode(): DeviceCodeResponse {
         return microsoftAuthService.getDeviceCode(
-            "CLIENT_ID", // TODO: 之后将替换为申请到的Client ID
+            BuildConfig.CLIENT_ID,
             "XboxLive.signin offline_access"
         )
     }
@@ -28,7 +34,7 @@ class AuthRepository(
         while (true) {
             try {
                 return microsoftAuthService.getAccessToken(
-                    "CLIENT_ID", // TODO: Replace with your client ID
+                    BuildConfig.CLIENT_ID,
                     "urn:ietf:params:oauth:grant-type:device_code",
                     deviceCodeResponse.deviceCode
                 )
@@ -73,5 +79,27 @@ class AuthRepository(
 
     suspend fun getMinecraftProfile(accessToken: String): MinecraftProfile {
         return minecraftAuthService.getMinecraftProfile("Bearer $accessToken")
+    }
+
+    suspend fun getOfflineSkinUrl(username: String): String {
+        return try {
+            val response = rmsApiService.checkHead(username)
+            if (response.isSuccessful) {
+                "http://api.rms.net.cn/head/$username"
+            } else {
+                getMojangSkinUrl(username)
+            }
+        } catch (e: Exception) {
+            getMojangSkinUrl(username)
+        }
+    }
+
+    private suspend fun getMojangSkinUrl(username: String): String {
+        return try {
+            val mojangProfile = mojangApiService.getProfile(username)
+            "https://crafatar.com/avatars/${mojangProfile.id}"
+        } catch (e: Exception) {
+            "https://crafatar.com/avatars/8667ba71-b85a-4004-af54-457a9734eed7" // Default Steve skin
+        }
     }
 }

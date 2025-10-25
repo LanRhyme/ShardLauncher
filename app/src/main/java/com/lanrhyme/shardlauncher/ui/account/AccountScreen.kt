@@ -46,9 +46,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.lanrhyme.shardlauncher.model.Account
-import com.lanrhyme.shardlauncher.model.AccountType
 import com.lanrhyme.shardlauncher.ui.theme.ShardLauncherTheme
-import java.util.UUID
 
 @Composable
 fun AccountScreen(navController: NavController, accountViewModel: AccountViewModel = viewModel()) {
@@ -122,7 +120,7 @@ fun AccountScreen(navController: NavController, accountViewModel: AccountViewMod
         AddAccountDialog(
             onDismiss = { showAddAccountDialog = false },
             onAddOfflineAccount = {
-                accountViewModel.addAccount(it)
+                accountViewModel.addOfflineAccount(it)
                 showAddAccountDialog = false
             },
             onLoginWithMicrosoft = { accountViewModel.loginWithMicrosoft() }
@@ -162,8 +160,8 @@ fun AccountScreen(navController: NavController, accountViewModel: AccountViewMod
         EditAccountDialog(
             account = it,
             onDismiss = { editingAccount = null },
-            onConfirm = { updatedAccount ->
-                accountViewModel.updateAccount(updatedAccount)
+            onConfirm = { newUsername ->
+                accountViewModel.updateOfflineAccount(it, newUsername)
                 editingAccount = null
             }
         )
@@ -173,7 +171,7 @@ fun AccountScreen(navController: NavController, accountViewModel: AccountViewMod
 @Composable
 fun AddAccountDialog(
     onDismiss: () -> Unit, 
-    onAddOfflineAccount: (Account) -> Unit,
+    onAddOfflineAccount: (String) -> Unit,
     onLoginWithMicrosoft: () -> Unit
 ) {
     var showOfflineDialog by remember { mutableStateOf(false) }
@@ -193,17 +191,7 @@ fun AddAccountDialog(
             },
             confirmButton = {
                 Button(
-                    onClick = {
-                        val uuid = UUID.nameUUIDFromBytes("OfflinePlayer:$username".toByteArray()).toString()
-                        val newAccount = Account(
-                            id = uuid,
-                            username = username,
-                            accountType = AccountType.OFFLINE,
-                            lastPlayed = "",
-                            skinUrl = "https://crafatar.com/avatars/$uuid"
-                        )
-                        onAddOfflineAccount(newAccount)
-                    }
+                    onClick = { onAddOfflineAccount(username) }
                 ) {
                     Text("添加")
                 }
@@ -234,7 +222,7 @@ fun AddAccountDialog(
 }
 
 @Composable
-fun EditAccountDialog(account: Account, onDismiss: () -> Unit, onConfirm: (Account) -> Unit) {
+fun EditAccountDialog(account: Account, onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
     var username by remember { mutableStateOf(account.username) }
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -249,15 +237,7 @@ fun EditAccountDialog(account: Account, onDismiss: () -> Unit, onConfirm: (Accou
         },
         confirmButton = {
             Button(
-                onClick = {
-                    val uuid = UUID.nameUUIDFromBytes("OfflinePlayer:$username".toByteArray()).toString()
-                    val updatedAccount = account.copy(
-                        id = uuid,
-                        username = username,
-                        skinUrl = "https://crafatar.com/avatars/$uuid"
-                    )
-                    onConfirm(updatedAccount)
-                }
+                onClick = { onConfirm(username) }
             ) {
                 Text("保存")
             }

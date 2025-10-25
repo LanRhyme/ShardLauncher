@@ -67,6 +67,12 @@ android {
         resValue("string", "version_name", vName)
         resValue("string", "last_update_time", gitCommitDate())
         resValue("string", "build_status", buildStatus)
+
+        buildConfigField("String", "CLIENT_ID", "\"${System.getenv("CLIENT_ID") ?: ""}\"")
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {
