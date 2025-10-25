@@ -1,3 +1,24 @@
 <resources>
     <string name="app_name">ShardLauncher</string>
+    <string name="version_summary_fools_creaft_mine">25w14craftmine is a Minecraft Java Edition April Fools\' snapshot released on March 30, 2025, based on the 1.20.4 version. This snapshot introduces a crafting system that allows players to craft anything from anything, as long as they have enough materials.</string>
+    <string name="version_summary_fools_potato">24w14potato is a Minecraft Java Edition April Fools\' snapshot released on March 29, 2024, based on the 1.20.4 version. This snapshot introduces a new dimension called the Potato Dimension, where everything is made of potatoes.</string>
+    <string name="version_summary_fools_a_or_b">23w13a_or_b is a Minecraft Java Edition April Fools\' snapshot released on March 31, 2023, based on the 1.19.4 version. This snapshot introduces two new dimensions, A and B, which are randomly chosen when the player enters a portal.</string>
+    <string name="version_summary_fools_one_block_at_time">22w13oneBlockAtATime is a Minecraft Java Edition April Fools\' snapshot released on March 31, 2022, based on the 1.18.2 version. This snapshot introduces a new game mode where players can only break and place one block at a time.</string>
+    <string name="version_summary_fools_infinite">20w14infinite is a Minecraft Java Edition April Fools\' snapshot released on April 1, 2020, based on the 1.15.2 version. This snapshot introduces a new dimension called the Infinite Dimension, which is an endless world with no boundaries.</string>
+    <string name="version_summary_fools_3d_shareware">Minecraft 3D Shareware v1.34 is a Minecraft Java Edition April Fools\' snapshot released on April 1, 2019, based on the 1.14.2 version. This snapshot introduces a new game mode that mimics the classic shareware games of the 1990s.</string>
+    <string name="version_summary_fools_trendy_update">1.RV-Pre1 is a Minecraft Java Edition April Fools\' snapshot released on April 1, 2016, based on the 1.9 version. This snapshot introduces a new update called The Trendy Update, which adds various trendy features to the game.</string>
+    <string name="version_summary_fools_the_love_and_hugs_update">15w14a is a Minecraft Java Edition April Fools\' snapshot released on April 1, 2015, based on the 1.8.3 version. This snapshot introduces a new update called The Love and Hugs Update, which adds various love and hug-related features to the game.</string>
+    <string name="minecraft_download_stat_download_task">Downloading task…</string>
+    <string name="minecraft_download_stat_verify_task">Verifying task…</string>
+    <string name="minecraft_download_downloading_game_files">Downloading game files…</string>
+    <string name="minecraft_download_verifying_and_repairing_files">Verifying and repairing files…</string>
+    <string name="minecraft_download_progress_retry_downloading_files">Retrying to download files…</string>
+    <string name="minecraft_download_progress_retry_verifying_files">Retrying to verify files…</string>
+    <string name="minecraft_download_failed_notfound">Download failed: file not found.</string>
+    <string name="minecraft_download_failed_retried">Download failed after multiple retries. Failed URLs:</string>
+    <string name="generic_open_link">Open Link</string>
+    <string name="generic_confirm">Confirm</string>
+    <string name="generic_cancel">Cancel</string>
+    <string name="settings_launcher_mirror_official_first">Official Source First</string>
+    <string name="settings_launcher_mirror_mirror_first">Mirror Source First</string>
 </resources>

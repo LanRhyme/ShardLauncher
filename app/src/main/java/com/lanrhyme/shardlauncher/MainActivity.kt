@@ -79,7 +79,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.lanrhyme.shardlauncher.common.SidebarPosition
 import com.lanrhyme.shardlauncher.data.AccountRepository
 import com.lanrhyme.shardlauncher.data.SettingsRepository
-import com.lanrhyme.shardlauncher.ui.LocalSettings
+import com.lanrhyme.shardlauncher.ui.LocalSettingsProvider
 import com.lanrhyme.shardlauncher.ui.SplashScreen
 import com.lanrhyme.shardlauncher.ui.account.AccountScreen
 import com.lanrhyme.shardlauncher.ui.account.AccountViewModel
@@ -144,7 +144,7 @@ class MainActivity : ComponentActivity() {
 
             CompositionLocalProvider(
                 LocalDensity provides scaledDensity,
-                LocalSettings provides settingsRepository
+                LocalSettingsProvider provides com.lanrhyme.shardlauncher.ui.SettingsProvider(settingsRepository)
             ) {
                 Crossfade(
                     targetState = showSplash,
@@ -546,7 +546,7 @@ fun MainContent(
             ) {
                 composable(Screen.Home.route) { HomeScreen(navController, enableVersionCheck = enableVersionCheck, accountViewModel = accountViewModel) }
                 composable(Screen.Version.route) { VersionScreen() }
-                composable(Screen.Download.route) { DownloadScreen(navController = navController) }
+                composable(Screen.Download.route) { DownloadScreen(navController = navController, useBmclapi = useBmclapi) }
                 composable("version_detail/{versionId}", arguments = listOf(navArgument("versionId") { type = NavType.StringType })) {
                     VersionDetailScreen(navController, it.arguments?.getString("versionId"))
                 }

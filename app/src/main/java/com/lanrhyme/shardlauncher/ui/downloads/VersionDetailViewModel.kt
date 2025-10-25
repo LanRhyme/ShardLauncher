@@ -4,13 +4,16 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.lanrhyme.shardlauncher.api.ApiClient
+import com.lanrhyme.shardlauncher.game.version.download.BaseMinecraftDownloader
+import com.lanrhyme.shardlauncher.game.version.download.DownloadMode
+import com.lanrhyme.shardlauncher.game.version.download.MinecraftDownloader
 import com.lanrhyme.shardlauncher.model.FabricLoaderVersion
 import com.lanrhyme.shardlauncher.model.LoaderVersion
 import com.lanrhyme.shardlauncher.model.ForgeVersionToken
 import com.lanrhyme.shardlauncher.model.QuiltVersion
 import com.lanrhyme.shardlauncher.model.OptiFineVersionToken
-import com.lanrhyme.shardlauncher.model.version.DownloadManager
 import com.lanrhyme.shardlauncher.model.version.VersionManager
+import com.lanrhyme.shardlauncher.coroutine.Task
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -69,12 +72,11 @@ class VersionDetailViewModel(application: Application, private val versionId: St
     private val _selectedOptifineVersion = MutableStateFlow<LoaderVersion?>(null)
     val selectedOptifineVersion = _selectedOptifineVersion.asStateFlow()
 
-    private val downloadManager = DownloadManager(application)
-    val downloadState = downloadManager.downloadState
+    private val _downloadTask = MutableStateFlow<Task?>(null)
+    val downloadTask = _downloadTask.asStateFlow()
 
     init {
         VersionManager.init(application)
-        downloadManager.init()
         loadAllLoaderVersions()
     }
 
@@ -233,8 +235,16 @@ class VersionDetailViewModel(application: Application, private val versionId: St
                 val manifest = VersionManager.getVersionManifest()
                 val version = manifest.versions.find { it.id == versionId }
                 if (version != null) {
-                    val gameManifest = VersionManager.getGameManifest(version)
-                    downloadManager.startDownload(gameManifest)
+                    val minecraftDownloader = MinecraftDownloader(
+                        getApplication(),
+                        version.id,
+                        customName = _versionName.value,
+                        verifyIntegrity = true,
+                        mode = DownloadMode.DOWNLOAD,
+                        onCompletion = { _downloadTask.value = null },
+                        onError = { _downloadTask.value = null }
+                    )
+                    _downloadTask.value = minecraftDownloader.getDownloadTask()
                 } else {
                     // Handle version not found
                 }

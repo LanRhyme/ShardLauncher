@@ -49,15 +49,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.lanrhyme.shardlauncher.R
 import com.lanrhyme.shardlauncher.model.BmclapiManifest
-import com.lanrhyme.shardlauncher.ui.LocalSettings
+import com.lanrhyme.shardlauncher.ui.LocalSettingsProvider
 import com.lanrhyme.shardlauncher.ui.components.CombinedCard
 import com.lanrhyme.shardlauncher.ui.components.StyledFilterChip
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun GameDownloadContent(navController: NavController) {
+fun GameDownloadContent(navController: NavController, useBmclapi: Boolean) {
     val viewModel: GameDownloadViewModel = viewModel()
-    val settings = LocalSettings.current
 
     val versions by viewModel.filteredVersions.collectAsState()
     val selectedVersionTypes by viewModel.selectedVersionTypes.collectAsState()
@@ -65,7 +64,7 @@ fun GameDownloadContent(navController: NavController) {
     val isLoading by viewModel.isLoading.collectAsState()
 
     LaunchedEffect(Unit) {
-        viewModel.loadVersions(settings.getUseBmclapi())
+        viewModel.loadVersions(useBmclapi)
     }
 
     Box(
@@ -143,7 +142,7 @@ fun GameDownloadContent(navController: NavController) {
                                 }
                             )
                             IconButton(
-                                onClick = { viewModel.loadVersions(settings.getUseBmclapi(), forceRefresh = true) },
+                                onClick = { viewModel.loadVersions(useBmclapi, forceRefresh = true) },
                                 modifier = Modifier.fillMaxHeight()
                             ) {
                                 Icon(Icons.Default.Refresh, contentDescription = "Refresh")

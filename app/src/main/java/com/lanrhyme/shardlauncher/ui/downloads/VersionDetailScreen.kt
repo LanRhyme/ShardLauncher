@@ -1,5 +1,7 @@
 package com.lanrhyme.shardlauncher.ui.downloads
 
+import com.lanrhyme.shardlauncher.ui.components.LoaderVersionDropdown
+
 import android.app.Application
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
@@ -39,9 +41,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.lanrhyme.shardlauncher.coroutine.Task
+import com.lanrhyme.shardlauncher.coroutine.TaskState
 import com.lanrhyme.shardlauncher.model.FabricLoaderVersion
 import com.lanrhyme.shardlauncher.model.LoaderVersion
-import com.lanrhyme.shardlauncher.model.version.DownloadManager
 import com.lanrhyme.shardlauncher.ui.components.CombinedCard
 import com.lanrhyme.shardlauncher.ui.components.CustomTextField
 import com.lanrhyme.shardlauncher.ui.components.ScalingActionButton
@@ -61,7 +64,7 @@ fun VersionDetailScreen(navController: NavController, versionId: String?) {
     val selectedModLoader by viewModel.selectedModLoader.collectAsState()
     val isOptifineSelected by viewModel.isOptifineSelected.collectAsState()
     val isFabricApiSelected by viewModel.isFabricApiSelected.collectAsState()
-    val downloadState by viewModel.downloadState.collectAsState()
+    val downloadTask by viewModel.downloadTask.collectAsState()
 
     Column(
         modifier = Modifier
@@ -93,13 +96,13 @@ fun VersionDetailScreen(navController: NavController, versionId: String?) {
                     onClick = { viewModel.download() },
                     icon = androidx.compose.material.icons.Icons.Default.Download,
                     text = "下载",
-                    enabled = downloadState is DownloadManager.DownloadState.Idle || downloadState is DownloadManager.DownloadState.Finished || downloadState is DownloadManager.DownloadState.Error
+                    enabled = downloadTask == null || downloadTask?.taskState == TaskState.COMPLETED
                 )
             }
-            AnimatedVisibility(downloadState is DownloadManager.DownloadState.Downloading) {
-                val state = downloadState as? DownloadManager.DownloadState.Downloading
+            AnimatedVisibility(downloadTask != null && downloadTask?.taskState == TaskState.RUNNING) {
+                val progress = downloadTask?.currentProgress ?: 0f
                 LinearProgressIndicator(
-                    progress = { state?.progress ?: 0f },
+                    progress = { progress },
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -170,102 +173,6 @@ fun VersionDetailScreen(navController: NavController, versionId: String?) {
                     }
                 }
             }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun <T> LoaderVersionDropdown(
-    versions: List<T>,
-    selectedVersion: T?,
-    onVersionSelected: (T) -> Unit
-) {
-    var expanded by remember { mutableStateOf(false) }
-
-    val selectedVersionText = when (selectedVersion) {
-        is FabricLoaderVersion -> selectedVersion.version
-        is LoaderVersion -> selectedVersion.version
-        is String -> selectedVersion
-        else -> ""
-    }
-
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = !expanded }
-    ) {
-        CustomTextField(
-            value = selectedVersionText,
-            onValueChange = {},
-            readOnly = true,
-            label = "版本",
-            trailingIcon = {
-                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-            },
-            modifier = Modifier.fillMaxWidth().menuAnchor()
-        )
-        ExposedDropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            versions.forEach { version ->
-                DropdownMenuItem(
-                    text = { VersionDropdownItem(version = version) },
-                    onClick = {
-                        onVersionSelected(version)
-                        expanded = false
-                    }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun <T> VersionDropdownItem(version: T) {
-    when (version) {
-        is FabricLoaderVersion -> {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(version.version, style = MaterialTheme.typography.bodyMedium)
-                val status = if (version.stable == true) "Stable" else "Beta"
-                val color = if (version.stable == true) Color(0xFF4CAF50) else Color(0xFFFFA000)
-                Text(
-                    text = status,
-                    color = Color.White,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(color)
-                        .padding(horizontal = 6.dp, vertical = 2.dp),
-                    style = MaterialTheme.typography.labelSmall
-                )
-            }
-        }
-        is LoaderVersion -> {
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(version.version, style = MaterialTheme.typography.bodyMedium)
-                        version.status?.let {
-                            val color = if (version.isRecommended) Color(0xFF4CAF50) else Color(0xFFFFA000)
-                            Text(
-                                text = it,
-                                color = Color.White,
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(color)
-                                    .padding(horizontal = 6.dp, vertical = 2.dp),
-                                style = MaterialTheme.typography.labelSmall
-                            )
-                        }
-                    }
-                    version.releaseTime?.let {
-                        Text(it, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                }
-            }
-        }
-        is String -> {
-            Text(version, style = MaterialTheme.typography.bodyMedium)
         }
     }
 }
