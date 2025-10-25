@@ -4,6 +4,7 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
@@ -80,6 +81,7 @@ import com.lanrhyme.shardlauncher.data.SettingsRepository
 import com.lanrhyme.shardlauncher.ui.LocalSettings
 import com.lanrhyme.shardlauncher.ui.SplashScreen
 import com.lanrhyme.shardlauncher.ui.account.AccountScreen
+import com.lanrhyme.shardlauncher.ui.account.AccountViewModel
 import com.lanrhyme.shardlauncher.ui.components.BackgroundLightEffect
 import com.lanrhyme.shardlauncher.ui.components.glow
 import com.lanrhyme.shardlauncher.ui.developeroptions.ComponentDemoScreen
@@ -101,6 +103,7 @@ import com.lanrhyme.shardlauncher.ui.theme.ThemeColor
 class MainActivity : ComponentActivity() {
     private val TAG = "MainActivity"
     private lateinit var settingsRepository: SettingsRepository
+    private val accountViewModel: AccountViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -230,7 +233,8 @@ class MainActivity : ComponentActivity() {
                                     onUseBmclapiChange = { newValue ->
                                         useBmclapi = newValue
                                         settingsRepository.setUseBmclapi(newValue)
-                                    }
+                                    },
+                                    accountViewModel = accountViewModel
                                 )
                             }
                         }
@@ -271,7 +275,8 @@ fun MainScreen(
     isGlowEffectEnabled: Boolean,
     onIsGlowEffectEnabledChange: () -> Unit,
     useBmclapi: Boolean,
-    onUseBmclapiChange: (Boolean) -> Unit
+    onUseBmclapiChange: (Boolean) -> Unit,
+    accountViewModel: AccountViewModel
 ) {
     var isSidebarExpanded by remember { mutableStateOf(false) }
 
@@ -382,7 +387,8 @@ fun MainScreen(
                 isGlowEffectEnabled = isGlowEffectEnabled,
                 onIsGlowEffectEnabledChange = onIsGlowEffectEnabledChange,
                 useBmclapi = useBmclapi,
-                onUseBmclapiChange = onUseBmclapiChange
+                onUseBmclapiChange = onUseBmclapiChange,
+                accountViewModel = accountViewModel
             )
 
             val sidebarAlignment = when (sidebarPosition) {
@@ -445,7 +451,8 @@ fun MainContent(
     isGlowEffectEnabled: Boolean,
     onIsGlowEffectEnabledChange: () -> Unit,
     useBmclapi: Boolean,
-    onUseBmclapiChange: (Boolean) -> Unit
+    onUseBmclapiChange: (Boolean) -> Unit,
+    accountViewModel: AccountViewModel
 ) {
     val collapsedSidebarWidth = 72.dp
     val paddingStart by animateDpAsState(
@@ -533,14 +540,14 @@ fun MainContent(
                     }
                  }
             ) {
-                composable(Screen.Home.route) { HomeScreen(navController, enableVersionCheck = enableVersionCheck) }
+                composable(Screen.Home.route) { HomeScreen(navController, enableVersionCheck = enableVersionCheck, accountViewModel = accountViewModel) }
                 composable(Screen.Version.route) { VersionScreen() }
                 composable(Screen.Download.route) { DownloadScreen(navController = navController) }
                 composable("version_detail/{versionId}", arguments = listOf(navArgument("versionId") { type = NavType.StringType })) {
                     VersionDetailScreen(navController, it.arguments?.getString("versionId"))
                 }
                 composable(Screen.Online.route) { OnlineScreen() }
-                composable(Screen.Account.route) { AccountScreen(navController = navController) }
+                composable(Screen.Account.route) { AccountScreen(navController = navController, accountViewModel = accountViewModel) }
                 composable(Screen.Settings.route) {
                     SettingsScreen(
                         navController = navController,

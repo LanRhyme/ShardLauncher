@@ -5,7 +5,6 @@ import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,7 +17,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -30,6 +28,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,18 +40,17 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.lanrhyme.shardlauncher.R
 import com.lanrhyme.shardlauncher.api.ApiClient
 import com.lanrhyme.shardlauncher.data.SettingsRepository
 import com.lanrhyme.shardlauncher.model.LatestVersionsResponse
 import com.lanrhyme.shardlauncher.model.VersionInfo
+import com.lanrhyme.shardlauncher.ui.account.AccountViewModel
 import com.lanrhyme.shardlauncher.ui.components.CombinedCard
 import com.lanrhyme.shardlauncher.ui.components.ScalingActionButton
-import com.lanrhyme.shardlauncher.ui.components.glow
 import com.lanrhyme.shardlauncher.ui.custom.XamlRenderer
 import com.lanrhyme.shardlauncher.ui.custom.parseXaml
 import com.lanrhyme.shardlauncher.ui.navigation.Screen
@@ -67,14 +65,18 @@ import java.io.IOException
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun HomeScreen(navController: NavController, enableVersionCheck: Boolean) {
+fun HomeScreen(
+    navController: NavController,
+    enableVersionCheck: Boolean,
+    accountViewModel: AccountViewModel = viewModel()
+) {
     val context = LocalContext.current
     val settingsRepository = remember { SettingsRepository(context) }
-    val isGlowEffectEnabled = remember { settingsRepository.getIsGlowEffectEnabled() }
     val xamlContent = remember { loadXaml(context, "home.xaml") }
     val nodes = parseXaml(xamlContent)
     var latestVersions by remember { mutableStateOf<LatestVersionsResponse?>(null) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    val selectedAccount by accountViewModel.selectedAccount.collectAsState()
 
     if (enableVersionCheck) {
         LaunchedEffect(Unit) {
@@ -169,33 +171,9 @@ fun HomeScreen(navController: NavController, enableVersionCheck: Boolean) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.clickable { navController.navigate(Screen.Account.route) }
                 ) {
-
-                    Image(
-                        painter = painterResource(id = R.drawable.steve2),
-                        contentDescription = "LanRhyme",
-                        modifier = Modifier
-                            .size(70.dp)
-                            .glow(
-                                color = MaterialTheme.colorScheme.primary,
-                                enabled = isGlowEffectEnabled,
-                                cornerRadius = 70.dp, // Make it circular
-                                blurRadius = 20.dp
-                            )
-                    )
-                    Spacer(modifier = Modifier.height(5.dp))
-
-                    // Player Name
-                    Text(
-                        text = "LanRhyme",
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                    Spacer(modifier = Modifier.height(1.dp))
-
-                    Text(
-                        text = "微软账号",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                    )
+                    selectedAccount?.let {
+                        HomeAccountCard(account = it)
+                    }
                 }
 
                 Spacer(modifier = Modifier.weight(1f))
