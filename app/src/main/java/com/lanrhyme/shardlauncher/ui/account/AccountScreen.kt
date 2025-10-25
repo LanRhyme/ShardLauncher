@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import com.lanrhyme.shardlauncher.model.Account
 import com.lanrhyme.shardlauncher.ui.theme.ShardLauncherTheme
 
@@ -88,7 +89,15 @@ fun AccountScreen(navController: NavController, accountViewModel: AccountViewMod
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = "模型", textAlign = TextAlign.Center)
+                    selectedAccount?.let { account ->
+                        AsyncImage(
+                            model = "https://api.xingzhige.com/API/get_Minecraft_skins/?name=${account.username}&type=身体&overlay=true",
+                            contentDescription = "${account.username}'s skin",
+                            modifier = Modifier.fillMaxSize(0.8f)
+                        )
+                    } ?: run {
+                        Text(text = "未选择账户", textAlign = TextAlign.Center)
+                    }
                 }
             }
 
