@@ -12,9 +12,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -72,6 +72,7 @@ fun ShardAccountCard() {
 fun AccountCard(account: Account, isSelected: Boolean, onClick: () -> Unit, onLongClick: () -> Unit = {}) {
     var showMenu by remember { mutableStateOf(false) }
     val cardWidth = 120.dp
+    val cardHeight = 160.dp
 
     val scale by animateFloatAsState(
         targetValue = if (isSelected) 1.05f else 1f,
@@ -93,7 +94,7 @@ fun AccountCard(account: Account, isSelected: Boolean, onClick: () -> Unit, onLo
             modifier = Modifier
                 .scale(scale)
                 .width(cardWidth)
-                .fillMaxHeight()
+                .height(cardHeight)
                 .combinedClickable(
                     onClick = onClick,
                     onLongClick = {
