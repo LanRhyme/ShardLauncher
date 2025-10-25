@@ -42,6 +42,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.lanrhyme.shardlauncher.R
@@ -69,7 +70,15 @@ fun ShardAccountCard() {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun AccountCard(account: Account, isSelected: Boolean, onClick: () -> Unit, onLongClick: () -> Unit = {}) {
+fun AccountCard(
+    account: Account, 
+    isSelected: Boolean, 
+    onClick: () -> Unit, 
+    onLongClick: () -> Unit = {},
+    onDelete: (Account) -> Unit,
+    onEdit: (Account) -> Unit,
+    navController: NavController
+) {
     var showMenu by remember { mutableStateOf(false) }
     val cardWidth = 120.dp
     val cardHeight = 160.dp
@@ -158,7 +167,7 @@ fun AccountCard(account: Account, isSelected: Boolean, onClick: () -> Unit, onLo
             DropdownMenuItem(
                 text = { Text("删除账户档案") },
                 onClick = {
-                    // TODO: Handle delete action
+                    onDelete(account)
                     showMenu = false
                 }
             )
@@ -173,7 +182,7 @@ fun AccountCard(account: Account, isSelected: Boolean, onClick: () -> Unit, onLo
                 DropdownMenuItem(
                     text = { Text("修改用户名") },
                     onClick = {
-                        // TODO: Handle modify username action
+                        onEdit(account)
                         showMenu = false
                     }
                 )

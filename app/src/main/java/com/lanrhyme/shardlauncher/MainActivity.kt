@@ -77,11 +77,13 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import coil.compose.rememberAsyncImagePainter
 import com.lanrhyme.shardlauncher.common.SidebarPosition
+import com.lanrhyme.shardlauncher.data.AccountRepository
 import com.lanrhyme.shardlauncher.data.SettingsRepository
 import com.lanrhyme.shardlauncher.ui.LocalSettings
 import com.lanrhyme.shardlauncher.ui.SplashScreen
 import com.lanrhyme.shardlauncher.ui.account.AccountScreen
 import com.lanrhyme.shardlauncher.ui.account.AccountViewModel
+import com.lanrhyme.shardlauncher.ui.account.AccountViewModelFactory
 import com.lanrhyme.shardlauncher.ui.components.BackgroundLightEffect
 import com.lanrhyme.shardlauncher.ui.components.glow
 import com.lanrhyme.shardlauncher.ui.developeroptions.ComponentDemoScreen
@@ -103,11 +105,13 @@ import com.lanrhyme.shardlauncher.ui.theme.ThemeColor
 class MainActivity : ComponentActivity() {
     private val TAG = "MainActivity"
     private lateinit var settingsRepository: SettingsRepository
-    private val accountViewModel: AccountViewModel by viewModels()
+    private lateinit var accountRepository: AccountRepository
+    private val accountViewModel: AccountViewModel by viewModels { AccountViewModelFactory(accountRepository) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         settingsRepository = SettingsRepository(applicationContext)
+        accountRepository = AccountRepository(applicationContext)
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
 

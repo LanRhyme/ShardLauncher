@@ -46,6 +46,8 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.lanrhyme.shardlauncher.api.ApiClient
 import com.lanrhyme.shardlauncher.data.SettingsRepository
+import com.lanrhyme.shardlauncher.model.Account
+import com.lanrhyme.shardlauncher.model.AccountType
 import com.lanrhyme.shardlauncher.model.LatestVersionsResponse
 import com.lanrhyme.shardlauncher.model.VersionInfo
 import com.lanrhyme.shardlauncher.ui.account.AccountViewModel
@@ -171,9 +173,13 @@ fun HomeScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.clickable { navController.navigate(Screen.Account.route) }
                 ) {
-                    selectedAccount?.let {
-                        HomeAccountCard(account = it)
-                    }
+                    HomeAccountCard(account = selectedAccount ?: Account(
+                        id = "",
+                        username = "选择账户档案",
+                        accountType = AccountType.OFFLINE,
+                        lastPlayed = "",
+                        skinUrl = "https://crafatar.com/avatars/8667ba71-b85a-4004-af54-457a9734eed7" // Default Steve skin
+                    ))
                 }
 
                 Spacer(modifier = Modifier.weight(1f))

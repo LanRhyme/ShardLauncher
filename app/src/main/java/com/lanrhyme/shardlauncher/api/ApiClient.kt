@@ -10,6 +10,7 @@ object ApiClient {
     private const val BMCLAPI_BASE_URL = "https://bmclapi2.bangbang93.com/"
     private const val FABRIC_BASE_URL = "https://bmclapi2.bangbang93.com/fabric-meta/"
     private const val QUILT_BASE_URL = "https://bmclapi2.bangbang93.com/quilt-meta/"
+    private const val MICROSOFT_AUTH_BASE_URL = "https://login.microsoftonline.com/"
 
     private val okHttpClient = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)
@@ -51,5 +52,13 @@ object ApiClient {
 
     val optiFineApiService: OptiFineApiService by lazy {
         createService(BMCLAPI_BASE_URL, OptiFineApiService::class.java)
+    }
+
+    val microsoftAuthService: MicrosoftAuthService by lazy {
+        createService(MICROSOFT_AUTH_BASE_URL, MicrosoftAuthService::class.java)
+    }
+
+    val minecraftAuthService: MinecraftAuthService by lazy {
+        createService("https://api.minecraftservices.com/", MinecraftAuthService::class.java)
     }
 }

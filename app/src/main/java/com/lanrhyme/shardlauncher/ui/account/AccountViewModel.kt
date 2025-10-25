@@ -2,13 +2,28 @@ package com.lanrhyme.shardlauncher.ui.account
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lanrhyme.shardlauncher.api.ApiClient
+import com.lanrhyme.shardlauncher.data.AccountRepository
+import com.lanrhyme.shardlauncher.data.AuthRepository
 import com.lanrhyme.shardlauncher.model.Account
 import com.lanrhyme.shardlauncher.model.AccountType
+import com.lanrhyme.shardlauncher.model.auth.DeviceCodeResponse
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class AccountViewModel : ViewModel() {
+sealed class MicrosoftLoginState {
+    object Idle : MicrosoftLoginState()
+    data class InProgress(val deviceCodeResponse: DeviceCodeResponse) : MicrosoftLoginState()
+    object Success : MicrosoftLoginState()
+    data class Error(val message: String) : MicrosoftLoginState()
+}
+
+class AccountViewModel(private val repository: AccountRepository) : ViewModel() {
+
+    private val authRepository = AuthRepository(ApiClient.microsoftAuthService, ApiClient.minecraftAuthService)
 
     private val _accounts = MutableStateFlow<List<Account>>(emptyList())
     val accounts: StateFlow<List<Account>> = _accounts
@@ -16,25 +31,90 @@ class AccountViewModel : ViewModel() {
     private val _selectedAccount = MutableStateFlow<Account?>(null)
     val selectedAccount: StateFlow<Account?> = _selectedAccount
 
+    private val _microsoftLoginState = MutableStateFlow<MicrosoftLoginState>(MicrosoftLoginState.Idle)
+    val microsoftLoginState = _microsoftLoginState.asStateFlow()
+
     init {
-        // Sample data for demonstration
+        loadAccounts()
+    }
+
+    private fun loadAccounts() {
         viewModelScope.launch {
-            val sampleAccounts = listOf(
-                Account("1", "LongPlayerName_12345", AccountType.ONLINE, "2 hours ago", "https://crafatar.com/avatars/b8a7c7c8-f6e-4b9b-8a7c-7c8f6e6b9b8a"),
-                Account("2", "Steve", AccountType.OFFLINE, "1 day ago", "https://crafatar.com/avatars/8667ba71-b85a-4004-af54-457a9734eed7"),
-                Account("3", "Player3", AccountType.ONLINE, "A very very long time ago", "https://crafatar.com/avatars/c8f6e6b9-b8a7-4c7c-8f6e-6b9b8a7c7c8f"),
-                Account("4", "Alex", AccountType.ONLINE, "5 hours ago", "https://crafatar.com/avatars/61699b2e-d327-421c-9f4c-c63a442838e6"),
-                Account("5", "Herobrine", AccountType.OFFLINE, "1 year ago", "https://crafatar.com/avatars/f868c14a-5282-4598-a83d-3a52140e6376"),
-                Account("6", "Notch", AccountType.ONLINE, "10 years ago", "https://crafatar.com/avatars/069a79f4-44e9-4726-a5be-fca90e38aaf5")
-            )
-            _accounts.value = sampleAccounts
-            if (sampleAccounts.isNotEmpty()) {
-                _selectedAccount.value = sampleAccounts[0]
+            val savedAccounts = repository.getAccounts()
+            _accounts.value = savedAccounts
+            _selectedAccount.value = repository.getSelectedAccount() ?: savedAccounts.firstOrNull()
+        }
+    }
+
+    fun loginWithMicrosoft() {
+        viewModelScope.launch {
+            try {
+                val deviceCodeResponse = authRepository.getDeviceCode()
+                _microsoftLoginState.value = MicrosoftLoginState.InProgress(deviceCodeResponse)
+
+                val authTokenResponse = authRepository.pollForToken(deviceCodeResponse)
+                val minecraftAuthResponse = authRepository.getMinecraftAuth(authTokenResponse.accessToken)
+                val minecraftProfile = authRepository.getMinecraftProfile(minecraftAuthResponse.accessToken)
+
+                val newAccount = Account(
+                    id = minecraftProfile.id,
+                    username = minecraftProfile.name,
+                    accountType = AccountType.ONLINE,
+                    lastPlayed = "",
+                    skinUrl = minecraftProfile.skins.first().url
+                )
+
+                addAccount(newAccount)
+                selectAccount(newAccount)
+
+                _microsoftLoginState.value = MicrosoftLoginState.Success
+            } catch (e: Exception) {
+                _microsoftLoginState.value = MicrosoftLoginState.Error(e.message ?: "Unknown error")
             }
         }
     }
 
+    fun resetMicrosoftLoginState() {
+        _microsoftLoginState.value = MicrosoftLoginState.Idle
+    }
+
     fun selectAccount(account: Account) {
         _selectedAccount.value = account
+        repository.saveSelectedAccount(account)
+    }
+
+    fun addAccount(account: Account) {
+        _accounts.update { currentAccounts ->
+            val newAccounts = currentAccounts + account
+            repository.saveAccounts(newAccounts)
+            newAccounts
+        }
+    }
+
+    fun deleteAccount(account: Account) {
+        _accounts.update { currentAccounts ->
+            val newAccounts = currentAccounts.filter { it.id != account.id }
+            repository.saveAccounts(newAccounts)
+            if (_selectedAccount.value == account) {
+                val newSelectedAccount = newAccounts.firstOrNull()
+                _selectedAccount.value = newSelectedAccount
+                repository.saveSelectedAccount(newSelectedAccount)
+            }
+            newAccounts
+        }
+    }
+
+    fun updateAccount(account: Account) {
+        _accounts.update { currentAccounts ->
+            val newAccounts = currentAccounts.map {
+                if (it.id == account.id) account else it
+            }
+            repository.saveAccounts(newAccounts)
+            if (_selectedAccount.value?.id == account.id) {
+                _selectedAccount.value = account
+                repository.saveSelectedAccount(account)
+            }
+            newAccounts
+        }
     }
 }
