@@ -28,85 +28,93 @@ data class ColorSet(
 object ColorPalettes {
     val Green = ColorSet(
         lightColorScheme = lightColorScheme(
-            primary = Green40,
-            secondary = GreenGrey40,
-            tertiary = GreenTertiary40,
+            primary = lightGreen,
+            secondary = lightGreenGrey,
+            tertiary = lightGreenTertiary,
             error = Error80,
             errorContainer = ErrorSurface80,
-            onErrorContainer = Error80
+            onErrorContainer = Error80,
+            surfaceVariant = lightsurface
         ),
         darkColorScheme = darkColorScheme(
-            primary = Green80,
-            secondary = GreenGrey80,
-            tertiary = GreenTertiary80,
+            primary = darkGreen,
+            secondary = darkGreenGrey,
+            tertiary = darkGreenTertiary,
             background = DarkBackgroundColor,
             surface = DarkSurfaceColor,
             error = Error40,
             errorContainer = ErrorSurface40,
-            onErrorContainer = Error40
+            onErrorContainer = Error40,
+            surfaceVariant = darksurface
         )
     )
 
     val Blue = ColorSet(
         lightColorScheme = lightColorScheme(
-            primary = Blue40,
-            secondary = BlueGrey40,
-            tertiary = BlueTertiary40,
+            primary = lightBlue,
+            secondary = lightBlueGrey,
+            tertiary = lightBlueTertiary,
             error = Error80,
             errorContainer = ErrorSurface80,
-            onErrorContainer = Error80
+            onErrorContainer = Error80,
+            surfaceVariant = lightsurface
         ),
         darkColorScheme = darkColorScheme(
-            primary = Blue80,
-            secondary = BlueGrey80,
-            tertiary = BlueTertiary80,
+            primary = darkBlue,
+            secondary = darkBlueGrey,
+            tertiary = darkBlueTertiary,
             background = DarkBackgroundColor,
             surface = DarkSurfaceColor,
             error = Error40,
             errorContainer = ErrorSurface40,
-            onErrorContainer = Error40
+            onErrorContainer = Error40,
+            surfaceVariant = darksurface
         )
     )
 
     val Purple = ColorSet(
         lightColorScheme = lightColorScheme(
-            primary = Purple40,
-            secondary = PurpleGrey40,
-            tertiary = Pink40,
+            primary = lightPurple,
+            secondary = lightPurpleGrey,
+            tertiary = lightPink,
             error = Error80,
             errorContainer = ErrorSurface80,
-            onErrorContainer = Error80
+            onErrorContainer = Error80,
+            surfaceVariant = lightsurface
         ),
         darkColorScheme = darkColorScheme(
-            primary = Purple80,
-            secondary = PurpleGrey80,
-            tertiary = Pink80,
+            primary = darkPurple,
+            secondary = darkPurpleGrey,
+            tertiary = darkPink,
             background = DarkBackgroundColor,
             surface = DarkSurfaceColor,
             error = Error40,
             errorContainer = ErrorSurface40,
-            onErrorContainer = Error40
+            onErrorContainer = Error40,
+            surfaceVariant = darksurface
         )
     )
 
     val Golden = ColorSet(
         lightColorScheme = lightColorScheme(
-            primary = Cyan40,
-            secondary = CyanGrey40,
-            tertiary = CyanTertiary40,
+            primary = lightYellow,
+            secondary = lightYellowGrey,
+            tertiary = lightYellowTertiary,
             error = Error80,
             errorContainer = ErrorSurface80,
-            onErrorContainer = Error80
+            onErrorContainer = Error80,
+            surfaceVariant = lightsurface
         ),
         darkColorScheme = darkColorScheme(
-            primary = Cyan80,
-            secondary = CyanGrey80,
-            tertiary = CyanTertiary80,
+            primary = darkYellow,
+            secondary = darkYellowGrey,
+            tertiary = darkYellowTertiary,
             background = DarkBackgroundColor,
             surface = DarkSurfaceColor,
             error = Error40,
             errorContainer = ErrorSurface40,
-            onErrorContainer = Error40
+            onErrorContainer = Error40,
+            surfaceVariant = darksurface
         )
     )
 }

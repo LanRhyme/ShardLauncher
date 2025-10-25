@@ -2,41 +2,43 @@ package com.lanrhyme.shardlauncher.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Purple Theme Colors (Optimized)
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFE8C5DD) // Changed from 0xFFEFB8C8
+val lightsurface = Color(0xFFFCF8F8)
+val darksurface = Color(0xFF202020)
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF755880) // Changed from 0xFF7D5260
+val darkPurple = Color(0xFFD0BCFF)
+val darkPurpleGrey = Color(0xFFCCC2DC)
+val darkPink = Color(0xFFE8C5DD)
+
+val lightPurple = Color(0xFF6650a4)
+val lightPurpleGrey = Color(0xFF625b71)
+val lightPink = Color(0xFF755880)
 
 // Green Theme Colors
-val Green40 = Color(0xFF477442)
-val GreenGrey40 = Color(0xFF55624C)
-val GreenTertiary40 = Color(0xFF2E6C5C) // Changed from 0xFF19686A
+val lightGreen = Color(0xFF8BA863)
+val lightGreenGrey = Color(0xFF8EA380)
+val lightGreenTertiary = Color(0xFF93A85F) // Changed from 0xFF19686A
 
-val Green80 = Color(0xFFB4D39A)
-val GreenGrey80 = Color(0xFFECF6E4)
-val GreenTertiary80 = Color(0xFF90C8B0) // Changed from 0xFF7ED0D2
+val darkGreen = Color(0xFFB4D39A)
+val darkGreenGrey = Color(0xFFB9D4A2)
+val darkGreenTertiary = Color(0xFF90C8B0) // Changed from 0xFF7ED0D2
 
 // Blue Theme Colors
-val Blue40 = Color(0xFF0061A4)
-val BlueGrey40 = Color(0xFF535F70)
-val BlueTertiary40 = Color(0xFF405D8C) // Changed from 0xFF6B5778
+val lightBlue = Color(0xFF0061A4)
+val lightBlueGrey = Color(0xFF535F70)
+val lightBlueTertiary = Color(0xFF405D8C) // Changed from 0xFF6B5778
 
-val Blue80 = Color(0xFF9BCAFF)
-val BlueGrey80 = Color(0xFFBFC6D4)
-val BlueTertiary80 = Color(0xFFB8C0E0) // Changed from 0xFFD6BAF5
+val darkBlue = Color(0xFF9BCAFF)
+val darkBlueGrey = Color(0xFFBFC6D4)
+val darkBlueTertiary = Color(0xFFB8C0E0) // Changed from 0xFFD6BAF5
 
 // Golden Sunset Theme (replaces Cyan)
-val Cyan40 = Color(0xFF7A5900)
-val CyanGrey40 = Color(0xFF6F5D40)
-val CyanTertiary40 = Color(0xFF8C5C1C) // Changed from 0xFF9A4628
+val lightYellow = Color(0xFF7A5900)
+val lightYellowGrey = Color(0xFF6F5D40)
+val lightYellowTertiary = Color(0xFF8C5C1C) // Changed from 0xFF9A4628
 
-val Cyan80 = Color(0xFFF4C048)
-val CyanGrey80 = Color(0xFFDCC6A1)
-val CyanTertiary80 = Color(0xFFFBC87C) // Changed from 0xFFFFB59D
+val darkYellow = Color(0xFFF4C048)
+val darkYellowGrey = Color(0xFFDCC6A1)
+val darkYellowTertiary = Color(0xFFFBC87C) // Changed from 0xFFFFB59D
 
 // Common Colors for Dark Theme
 val DarkBackgroundColor = Color(0xFF1B1B1B)
