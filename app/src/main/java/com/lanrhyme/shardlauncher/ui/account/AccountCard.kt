@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
@@ -43,7 +44,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
+import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.lanrhyme.shardlauncher.R
 import com.lanrhyme.shardlauncher.model.Account
@@ -120,16 +122,30 @@ fun AccountCard(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // Avatar
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(account.skinUrl)
-                        .crossfade(true)
-                        .build(),
+                val imageRequest = ImageRequest.Builder(LocalContext.current)
+                    .data(account.skinUrl)
+                    .placeholder(R.drawable.ic_launcher_background)
+                    .error(R.drawable.img_lanrhyme)
+                    .crossfade(true)
+                    .diskCachePolicy(CachePolicy.ENABLED)
+                    .memoryCachePolicy(CachePolicy.ENABLED)
+                    .build()
+
+                SubcomposeAsyncImage(
+                    model = imageRequest,
                     contentDescription = "Account Avatar",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(3f)
+                        .weight(3f),
+                    loading = {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(modifier = Modifier.size(32.dp))
+                        }
+                    }
                 )
 
                 // Info Section

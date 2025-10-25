@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -51,8 +52,6 @@ import com.lanrhyme.shardlauncher.model.BmclapiManifest
 import com.lanrhyme.shardlauncher.ui.LocalSettings
 import com.lanrhyme.shardlauncher.ui.components.CombinedCard
 import com.lanrhyme.shardlauncher.ui.components.StyledFilterChip
-import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.Link
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -63,91 +62,101 @@ fun GameDownloadContent(navController: NavController) {
     val versions by viewModel.filteredVersions.collectAsState()
     val selectedVersionTypes by viewModel.selectedVersionTypes.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.loadVersions(settings.getUseBmclapi())
     }
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
     ) {
-        item {
-            CombinedCard(title = "版本筛选", summary = null) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(36.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    VersionType.entries.forEach { versionType ->
-                        StyledFilterChip(
-                            selected = versionType in selectedVersionTypes,
-                            onClick = { viewModel.toggleVersionType(versionType) },
-                            label = { Text(versionType.title) },
-                            modifier = Modifier.fillMaxHeight()
-                        )
-                    }
-                    BasicTextField(
-                        value = searchQuery,
-                        onValueChange = { viewModel.setSearchQuery(it) },
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight(),
-                        textStyle = MaterialTheme.typography.bodySmall.copy(
-                            color = MaterialTheme.colorScheme.onSurface
-                        ),
-                        singleLine = true,
-                        decorationBox = { innerTextField ->
-                            Row(
-                                modifier = Modifier
-                                    .background(
-                                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-                                        RoundedCornerShape(22.dp)
-                                    )
-                                    .padding(horizontal = 8.dp)
-                                    .fillMaxHeight(),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    Icons.Default.Search,
-                                    contentDescription = "Search",
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+        if (isLoading && versions.isEmpty()) {
+            CircularProgressIndicator()
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                item { ->
+                    CombinedCard(title = "版本筛选", summary = null) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(36.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            VersionType.entries.forEach { versionType ->
+                                StyledFilterChip(
+                                    selected = versionType in selectedVersionTypes,
+                                    onClick = { viewModel.toggleVersionType(versionType) },
+                                    label = { Text(versionType.title) },
+                                    modifier = Modifier.fillMaxHeight()
                                 )
-                                Box(
-                                    modifier = Modifier
-                                        .padding(start = 4.dp)
-                                        .weight(1f),
-                                    contentAlignment = Alignment.CenterStart
-                                ) {
-                                    if (searchQuery.isEmpty()) {
-                                        Text(
-                                            "搜索",
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            }
+                            BasicTextField(
+                                value = searchQuery,
+                                onValueChange = { viewModel.setSearchQuery(it) },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight(),
+                                textStyle = MaterialTheme.typography.bodySmall.copy(
+                                    color = MaterialTheme.colorScheme.onSurface
+                                ),
+                                singleLine = true,
+                                decorationBox = { innerTextField ->
+                                    Row(
+                                        modifier = Modifier
+                                            .background(
+                                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                                                RoundedCornerShape(22.dp)
+                                            )
+                                            .padding(horizontal = 8.dp)
+                                            .fillMaxHeight(),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Search,
+                                            contentDescription = "Search",
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
+                                        Box(
+                                            modifier = Modifier
+                                                .padding(start = 4.dp)
+                                                .weight(1f),
+                                            contentAlignment = Alignment.CenterStart
+                                        ) {
+                                            if (searchQuery.isEmpty()) {
+                                                Text(
+                                                    "搜索",
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                            }
+                                            innerTextField()
+                                        }
                                     }
-                                    innerTextField()
                                 }
+                            )
+                            IconButton(
+                                onClick = { viewModel.loadVersions(settings.getUseBmclapi(), forceRefresh = true) },
+                                modifier = Modifier.fillMaxHeight()
+                            ) {
+                                Icon(Icons.Default.Refresh, contentDescription = "Refresh")
                             }
                         }
-                    )
-                    IconButton(
-                        onClick = { viewModel.loadVersions(settings.getUseBmclapi(), forceRefresh = true) },
-                        modifier = Modifier.fillMaxHeight()
-                    ) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Refresh")
                     }
                 }
-            }
-        }
 
-        items(versions) { version ->
-            VersionItem(version = version) {
-                navController.navigate("version_detail/${version.id}")
+                items(versions) { version ->
+                    VersionItem(version = version) {
+                        navController.navigate("version_detail/${version.id}")
+                    }
+                }
             }
         }
     }

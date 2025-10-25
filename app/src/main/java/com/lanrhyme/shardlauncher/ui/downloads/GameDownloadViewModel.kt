@@ -17,6 +17,7 @@ class GameDownloadViewModel : ViewModel() {
     private val _versions = MutableStateFlow<List<BmclapiManifest.Version>>(emptyList())
     private val _searchQuery = MutableStateFlow("")
     private val _selectedVersionTypes = MutableStateFlow(setOf(VersionType.Release))
+    private val _isLoading = MutableStateFlow(false)
 
     // Cache
     private var cachedVersions: List<BmclapiManifest.Version>? = null
@@ -24,6 +25,7 @@ class GameDownloadViewModel : ViewModel() {
 
     val searchQuery = _searchQuery.asStateFlow()
     val selectedVersionTypes = _selectedVersionTypes.asStateFlow()
+    val isLoading = _isLoading.asStateFlow()
 
     val filteredVersions: StateFlow<List<BmclapiManifest.Version>> = combine(
         _versions,
@@ -67,22 +69,27 @@ class GameDownloadViewModel : ViewModel() {
         }
 
         viewModelScope.launch {
-            val versionsFromApi = if (useBmclapi) {
-                try {
-                    ApiClient.bmclapiService.getGameVersionManifest().versions
-                } catch (e: Exception) {
-                    // fallback to default api
+            _isLoading.value = true
+            try {
+                val versionsFromApi = if (useBmclapi) {
+                    try {
+                        ApiClient.bmclapiService.getGameVersionManifest().versions
+                    } catch (e: Exception) {
+                        // fallback to default api
+                        val latest = ApiClient.versionApiService.getLatestVersions().release
+                        listOf(BmclapiManifest.Version(latest.versionId, latest.versionType, "", "", ""))
+                    }
+                } else {
                     val latest = ApiClient.versionApiService.getLatestVersions().release
                     listOf(BmclapiManifest.Version(latest.versionId, latest.versionType, "", "", ""))
                 }
-            } else {
-                val latest = ApiClient.versionApiService.getLatestVersions().release
-                listOf(BmclapiManifest.Version(latest.versionId, latest.versionType, "", "", ""))
+                _versions.value = versionsFromApi
+                // Update cache
+                cachedVersions = versionsFromApi
+                lastSourceWasBmclapi = useBmclapi
+            } finally {
+                _isLoading.value = false
             }
-            _versions.value = versionsFromApi
-            // Update cache
-            cachedVersions = versionsFromApi
-            lastSourceWasBmclapi = useBmclapi
         }
     }
 }

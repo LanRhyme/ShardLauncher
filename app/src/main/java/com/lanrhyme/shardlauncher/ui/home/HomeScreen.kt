@@ -178,7 +178,7 @@ fun HomeScreen(
                         username = "选择账户档案",
                         accountType = AccountType.OFFLINE,
                         lastPlayed = "",
-                        skinUrl = "https://crafatar.com/avatars/8667ba71-b85a-4004-af54-457a9734eed7" // Default Steve skin
+                        skinUrl = "https://crafatar.com/avatars/8667ba71-b85a-4004-af54-457a9734eed7"
                     ))
                 }
 

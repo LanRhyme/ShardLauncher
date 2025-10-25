@@ -162,7 +162,7 @@ fun AboutScreen() {
                             title = "BMCLAPI",
                             summary = "提供Minecraft版本和资源下载服务",
                             actions = listOf(
-                                CreditAction(icon = Icons.Filled.Link, text = "Github", url = "https://bmclapidoc.bangbang93.com/")
+                                CreditAction(icon = Icons.Filled.Link, url = "https://bmclapidoc.bangbang93.com/")
                             )
                         ),
                         CreditItem(
