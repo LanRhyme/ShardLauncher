@@ -2,6 +2,7 @@ package com.lanrhyme.shardlauncher.ui.settings
 
 import android.content.Intent
 import android.net.Uri
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -38,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -50,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import com.lanrhyme.shardlauncher.R
 import com.lanrhyme.shardlauncher.ui.components.CombinedCard
 import com.lanrhyme.shardlauncher.ui.components.ScalingActionButton
+import com.lanrhyme.shardlauncher.ui.components.TitleAndSummary
 
 data class OssLibrary(
     val name: String,
@@ -118,123 +121,80 @@ fun AboutScreen() {
                 }
             }
             item {
-                CombinedCard(
-                    title = "贡献者"
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.img_lanrhyme),
-                                contentDescription = "LanRhyme avatar",
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .size(48.dp)
-                                    .clip(CircleShape)
+                CreditsCard(
+                    title = "贡献者",
+                    summary = "感谢各位对本项目的贡献",
+                    items = listOf(
+                        CreditItem(
+                            image = R.drawable.img_lanrhyme,
+                            title = "LanRhyme",
+                            summary = "项目发起者，主要开发者",
+                            actions = listOf(
+                                CreditAction(icon = Icons.Default.Code, text = "Github", url = "https://github.com/LanRhyme"),
+                                CreditAction(icon = Icons.Filled.HdrWeak, text = "个人站点", url = "https://lanrhyme.netlify.app/")
                             )
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("LanRhyme", fontWeight = FontWeight.Bold)
-                                Text(
-                                    text = "项目发起者，主要开发者",
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                            }
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                ScalingActionButton(
-                                    onClick = {
-                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/LanRhyme"))
-                                        context.startActivity(intent)
-                                    },
-                                    icon = Icons.Default.Code,
-                                    text = "Github",
-                                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
-                                )
-                                ScalingActionButton(
-                                    onClick = {
-                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://lanrhyme.netlify.app/"))
-                                        context.startActivity(intent)
-                                    },
-                                    icon = Icons.Filled.HdrWeak,
-                                    text = "个人站点",
-                                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
-                                )
-                            }
-                        }
-                    }
-                }
+                        )
+                    )
+                )
             }
             item {
-                CombinedCard(
-                    title = "鸣谢"
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("新闻主页", fontWeight = FontWeight.Bold)
-                                Text(
-                                    text = "启动器主页中的Minecraft更新卡片",
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                            }
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                ScalingActionButton(
-                                    onClick = {
-                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Light-Beacon/PCL2-NewsHomepage"))
-                                        context.startActivity(intent)
-                                    },
-                                    icon = Icons.Default.Code,
-                                    text = "Github",
-                                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
-                                )
-                                ScalingActionButton(
-                                    onClick = {
-                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://news.bugjump.net/static/"))
-                                        context.startActivity(intent)
-                                    },
-                                    icon = Icons.Filled.Link,
-                                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
-                                )
-                            }
-                        }
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("Zalith Launcher2", fontWeight = FontWeight.Bold)
-                                Text(
-                                    text = "修改使用部分控件代码，参考页面布局",
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                            }
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                ScalingActionButton(
-                                    onClick = {
-                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/ZalithLauncher/ZalithLauncher2"))
-                                        context.startActivity(intent)
-                                    },
-                                    icon = Icons.Default.Code,
-                                    text = "Github",
-                                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
-                                )
-                            }
-                        }
-                    }
-                }
+                CreditsCard(
+                    title = "鸣谢",
+                    summary = "对本项目有帮助的开源项目",
+                    items = listOf(
+                        CreditItem(
+                            image = R.drawable.img_zalithlauncher,
+                            title = "ZalithLauncher2",
+                            summary = "参考和引用了ZalithLauncher2的部分代码",
+                            actions = listOf(
+                                CreditAction(icon = Icons.Default.Code, text = "Github", url = "https://github.com/ZalithLauncher/ZalithLauncher2")
+                            )
+                        )
+                    )
+                )
+            }
+            item {
+                CreditsCard(
+                    title = "第三方API",
+                    summary = "本启动器所使用的第三方API",
+                    items = listOf(
+                        CreditItem(
+                            title = "BMCLAPI",
+                            summary = "提供Minecraft版本和资源下载服务",
+                            actions = listOf(
+                                CreditAction(icon = Icons.Filled.Link, text = "Github", url = "https://bmclapidoc.bangbang93.com/")
+                            )
+                        ),
+                        CreditItem(
+                            title = "新闻主页",
+                            summary = "启动器主页中的Minecraft更新卡片",
+                            actions = listOf(
+                                CreditAction(icon = Icons.Filled.Link, url = "https://news.bugjump.net/static/")
+                            )
+                        ),
+                        CreditItem(
+                            title = "星之阁API",
+                            summary = "提供皮肤模型图的获取服务",
+                            actions = listOf(
+                                CreditAction(icon = Icons.Filled.Link, url = "https://api.xingzhige.com/doc/35")
+                            )
+                        ),
+                        CreditItem(
+                            title = "minecraft-headshot-api",
+                            summary = "提供头像图像的获取服务",
+                            actions = listOf(
+                                CreditAction(icon = Icons.Default.Code, text = "Github", url = "https://github.com/RMS-Server/minecraft-headshot-api")
+                            )
+                        ),
+                        CreditItem(
+                            title = "crafatar.com",
+                            summary = "用于皮肤和头像的获取服务",
+                            actions = listOf(
+                                CreditAction(icon = Icons.Filled.Link, url = "https://crafatar.com/")
+                            )
+                        )
+                    )
+                )
             }
             item {
                 CombinedCard(
@@ -360,7 +320,7 @@ fun LicensesDialog(onDismiss: () -> Unit) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { 
+                            .clickable {
                                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(lib.url))
                                 context.startActivity(intent)
                             }
@@ -378,4 +338,73 @@ fun LicensesDialog(onDismiss: () -> Unit) {
             }
         }
     )
+}
+
+data class CreditAction(
+    val icon: ImageVector,
+    val text: String? = null,
+    val url: String
+)
+
+data class CreditItem(
+    @DrawableRes val image: Int? = null,
+    val title: String,
+    val summary: String,
+    val actions: List<CreditAction>
+)
+
+@Composable
+fun CreditsCard(
+    title: String,
+    summary: String? = null,
+    items: List<CreditItem>
+) {
+    val context = LocalContext.current
+    CombinedCard(
+        title = title,
+        summary = summary
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items.forEach { item ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    item.image?.let {
+                        Image(
+                            painter = painterResource(id = it),
+                            contentDescription = "${item.title} avatar",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(CircleShape)
+                        )
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        TitleAndSummary(
+                            item.title,
+                            item.summary
+                        )
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        item.actions.forEach { action ->
+                            ScalingActionButton(
+                                onClick = {
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(action.url))
+                                    context.startActivity(intent)
+                                },
+                                icon = action.icon,
+                                text = action.text,
+                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
