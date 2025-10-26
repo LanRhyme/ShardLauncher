@@ -1,5 +1,9 @@
 package com.lanrhyme.shardlauncher.ui.account
 
+import android.content.Intent
+import android.net.Uri
+import androidx.browser.customtabs.CustomTabColorSchemeParams
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,6 +36,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,10 +44,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -52,17 +56,30 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.SubcomposeAsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
+import com.lanrhyme.shardlauncher.BuildConfig
 import com.lanrhyme.shardlauncher.R
 import com.lanrhyme.shardlauncher.model.Account
 import com.lanrhyme.shardlauncher.ui.theme.ShardLauncherTheme
 
 @Composable
-fun AccountScreen(navController: NavController, accountViewModel: AccountViewModel = viewModel()) {
+fun AccountScreen(
+    navController: NavController, 
+    accountViewModel: AccountViewModel = viewModel(),
+    microsoftAuthCode: String? = null
+) {
     val accounts by accountViewModel.accounts.collectAsState()
     val selectedAccount by accountViewModel.selectedAccount.collectAsState()
     var showAddAccountDialog by remember { mutableStateOf(false) }
     var editingAccount by remember { mutableStateOf<Account?>(null) }
     val microsoftLoginState by accountViewModel.microsoftLoginState.collectAsState()
+    val context = LocalContext.current
+    val toolbarColor = MaterialTheme.colorScheme.primary.toArgb()
+
+    LaunchedEffect(microsoftAuthCode) {
+        if (!microsoftAuthCode.isNullOrBlank()) {
+            accountViewModel.loginWithMicrosoft(microsoftAuthCode)
+        }
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
@@ -79,7 +96,6 @@ fun AccountScreen(navController: NavController, accountViewModel: AccountViewMod
             IconButton(onClick = { showAddAccountDialog = true }) {
                 Icon(Icons.Default.Add, contentDescription = "Add Account")
             }
-            ShardAccountCard()
         }
 
         Row(modifier = Modifier.fillMaxSize()) {
@@ -155,26 +171,35 @@ fun AccountScreen(navController: NavController, accountViewModel: AccountViewMod
                 accountViewModel.addOfflineAccount(it)
                 showAddAccountDialog = false
             },
-            onLoginWithMicrosoft = { accountViewModel.loginWithMicrosoft() }
+            onLoginWithMicrosoft = {
+                showAddAccountDialog = false
+                val url = "https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize?client_id=${BuildConfig.CLIENT_ID}&response_type=code&redirect_uri=shardlauncher://auth/microsoft&scope=XboxLive.signin%20offline_access%20openid%20profile%20email"
+                val defaultColors = CustomTabColorSchemeParams.Builder()
+                    .setToolbarColor(toolbarColor)
+                    .build()
+                val customTabsIntent = CustomTabsIntent.Builder()
+                    .setDefaultColorSchemeParams(defaultColors)
+                    .build()
+                customTabsIntent.launchUrl(context, Uri.parse(url))
+            }
         )
     }
 
     when (val state = microsoftLoginState) {
         is MicrosoftLoginState.InProgress -> {
-            val clipboardManager = LocalClipboardManager.current
             AlertDialog(
-                onDismissRequest = { accountViewModel.resetMicrosoftLoginState() },
-                title = { Text("验证设备") },
-                text = {
-                    Column {
-                        Text("请在浏览器中打开以下链接，并输入验证码：")
-                        Text(state.deviceCodeResponse.verificationUri)
-                        TextButton(onClick = { clipboardManager.setText(AnnotatedString(state.deviceCodeResponse.userCode)) }) {
-                            Text(state.deviceCodeResponse.userCode)
-                        }
+                onDismissRequest = { /* Prevent dismissing */ },
+                title = { Text("登录中") },
+                text = { 
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        CircularProgressIndicator() 
                     }
-                 },
-                confirmButton = { TextButton(onClick = { accountViewModel.resetMicrosoftLoginState() }) { Text("完成") } }
+                },
+                confirmButton = {}
             )
         }
         is MicrosoftLoginState.Error -> {
@@ -184,6 +209,11 @@ fun AccountScreen(navController: NavController, accountViewModel: AccountViewMod
                 text = { Text(state.message) },
                 confirmButton = { TextButton(onClick = { accountViewModel.resetMicrosoftLoginState() }) { Text("确定") } }
             )
+        }
+        is MicrosoftLoginState.Success -> {
+            LaunchedEffect(state) {
+                accountViewModel.resetMicrosoftLoginState()
+            }
         }
         else -> {}
     }
@@ -202,7 +232,7 @@ fun AccountScreen(navController: NavController, accountViewModel: AccountViewMod
 
 @Composable
 fun AddAccountDialog(
-    onDismiss: () -> Unit, 
+    onDismiss: () -> Unit,
     onAddOfflineAccount: (String) -> Unit,
     onLoginWithMicrosoft: () -> Unit
 ) {
@@ -223,7 +253,10 @@ fun AddAccountDialog(
             },
             confirmButton = {
                 Button(
-                    onClick = { onAddOfflineAccount(username) }
+                    onClick = { 
+                        onAddOfflineAccount(username)
+                        onDismiss()
+                    }
                 ) {
                     Text("添加")
                 }
@@ -237,14 +270,19 @@ fun AddAccountDialog(
             text = { Text("请选择要添加的账户类型。") },
             confirmButton = {
                 OutlinedButton(
-                    onClick = { showOfflineDialog = true }
+                    onClick = { 
+                        showOfflineDialog = true
+                    }
                 ) {
                     Text("离线账户")
                 }
             },
             dismissButton = {
                 OutlinedButton(
-                    onClick = onLoginWithMicrosoft
+                    onClick = {
+                        onLoginWithMicrosoft()
+                        onDismiss()
+                    }
                 ) {
                     Text("正版账户")
                 }

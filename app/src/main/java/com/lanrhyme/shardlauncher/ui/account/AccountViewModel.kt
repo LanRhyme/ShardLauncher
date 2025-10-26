@@ -7,7 +7,6 @@ import com.lanrhyme.shardlauncher.data.AccountRepository
 import com.lanrhyme.shardlauncher.data.AuthRepository
 import com.lanrhyme.shardlauncher.model.Account
 import com.lanrhyme.shardlauncher.model.AccountType
-import com.lanrhyme.shardlauncher.model.auth.DeviceCodeResponse
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,7 +16,7 @@ import java.util.UUID
 
 sealed class MicrosoftLoginState {
     object Idle : MicrosoftLoginState()
-    data class InProgress(val deviceCodeResponse: DeviceCodeResponse) : MicrosoftLoginState()
+    object InProgress : MicrosoftLoginState()
     object Success : MicrosoftLoginState()
     data class Error(val message: String) : MicrosoftLoginState()
 }
@@ -47,13 +46,12 @@ class AccountViewModel(private val repository: AccountRepository) : ViewModel() 
         }
     }
 
-    fun loginWithMicrosoft() {
+    fun loginWithMicrosoft(code: String) {
         viewModelScope.launch {
             try {
-                val deviceCodeResponse = authRepository.getDeviceCode()
-                _microsoftLoginState.value = MicrosoftLoginState.InProgress(deviceCodeResponse)
+                _microsoftLoginState.value = MicrosoftLoginState.InProgress
 
-                val authTokenResponse = authRepository.pollForToken(deviceCodeResponse)
+                val authTokenResponse = authRepository.getAccessToken(code)
                 val minecraftAuthResponse = authRepository.getMinecraftAuth(authTokenResponse.accessToken)
                 val minecraftProfile = authRepository.getMinecraftProfile(minecraftAuthResponse.accessToken)
 

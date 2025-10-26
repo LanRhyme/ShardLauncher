@@ -1,5 +1,6 @@
 package com.lanrhyme.shardlauncher
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -75,6 +76,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import coil.compose.rememberAsyncImagePainter
 import com.lanrhyme.shardlauncher.common.SidebarPosition
 import com.lanrhyme.shardlauncher.data.AccountRepository
@@ -107,6 +109,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var settingsRepository: SettingsRepository
     private lateinit var accountRepository: AccountRepository
     private val accountViewModel: AccountViewModel by viewModels { AccountViewModelFactory(accountRepository) }
+    private val newIntentState = mutableStateOf<Intent?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -138,6 +141,15 @@ class MainActivity : ComponentActivity() {
             var useBmclapi by remember { mutableStateOf(settingsRepository.getUseBmclapi()) }
 
             val navController = rememberNavController()
+            val newIntent by newIntentState
+
+            LaunchedEffect(newIntent) {
+                newIntent?.let {
+                    navController.handleDeepLink(it)
+                    newIntentState.value = null
+                }
+            }
+            
             var showSplash by remember { mutableStateOf(true) }
 
             val scaledDensity = Density(LocalDensity.current.density * uiScale, LocalDensity.current.fontScale * uiScale)
@@ -246,6 +258,11 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        newIntentState.value = intent
     }
 }
 
@@ -551,7 +568,20 @@ fun MainContent(
                     VersionDetailScreen(navController, it.arguments?.getString("versionId"))
                 }
                 composable(Screen.Online.route) { OnlineScreen() }
-                composable(Screen.Account.route) { AccountScreen(navController = navController, accountViewModel = accountViewModel) }
+                composable(
+                    route = Screen.Account.route + "?code={code}",
+                    arguments = listOf(navArgument("code") { 
+                        type = NavType.StringType
+                        nullable = true
+                    }),
+                    deepLinks = listOf(navDeepLink { uriPattern = "shardlauncher://auth/microsoft?code={code}" })
+                ) { backStackEntry ->
+                    AccountScreen(
+                        navController = navController, 
+                        accountViewModel = accountViewModel,
+                        microsoftAuthCode = backStackEntry.arguments?.getString("code")
+                    )
+                }
                 composable(Screen.Settings.route) {
                     SettingsScreen(
                         navController = navController,

@@ -8,11 +8,9 @@ import com.lanrhyme.shardlauncher.api.MinecraftAuthService
 import com.lanrhyme.shardlauncher.api.MojangApiService
 import com.lanrhyme.shardlauncher.api.RmsApiService
 import com.lanrhyme.shardlauncher.model.auth.AuthTokenResponse
-import com.lanrhyme.shardlauncher.model.auth.DeviceCodeResponse
 import com.lanrhyme.shardlauncher.model.minecraft.MinecraftAuthResponse
 import com.lanrhyme.shardlauncher.model.minecraft.MinecraftProfile
 import com.lanrhyme.shardlauncher.model.mojang.MojangProfile
-import kotlinx.coroutines.delay
 
 class AuthRepository(
     private val microsoftAuthService: MicrosoftAuthService,
@@ -23,34 +21,12 @@ class AuthRepository(
 
     private val gson = Gson()
 
-    suspend fun getDeviceCode(): DeviceCodeResponse {
-        return microsoftAuthService.getDeviceCode(
-            BuildConfig.CLIENT_ID,
-            "XboxLive.signin offline_access"
+    suspend fun getAccessToken(code: String): AuthTokenResponse {
+        return microsoftAuthService.getAccessToken(
+            clientId = BuildConfig.CLIENT_ID,
+            code = code,
+            redirectUri = "shardlauncher://auth/microsoft"
         )
-    }
-
-    suspend fun pollForToken(deviceCodeResponse: DeviceCodeResponse): AuthTokenResponse {
-        while (true) {
-            try {
-                return microsoftAuthService.getAccessToken(
-                    BuildConfig.CLIENT_ID,
-                    "urn:ietf:params:oauth:grant-type:device_code",
-                    deviceCodeResponse.deviceCode
-                )
-            } catch (e: Exception) {
-                val error = gson.fromJson(e.message, AuthTokenResponse::class.java)
-                when (error.error) {
-                    "authorization_pending" -> {
-                        delay(deviceCodeResponse.interval * 1000L)
-                    }
-                    "slow_down" -> {
-                        delay((deviceCodeResponse.interval + 5) * 1000L)
-                    }
-                    else -> throw e
-                }
-            }
-        }
     }
 
     suspend fun getMinecraftAuth(accessToken: String): MinecraftAuthResponse {

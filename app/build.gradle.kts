@@ -1,10 +1,20 @@
 import java.io.ByteArrayOutputStream
+import java.util.Properties
+import java.io.FileInputStream
 
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
 }
+
+// --- 读取 local.properties ---
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
+}
+// --------------------------
 
 fun gitBranch(): String {
     return try {
@@ -68,7 +78,10 @@ android {
         resValue("string", "last_update_time", gitCommitDate())
         resValue("string", "build_status", buildStatus)
 
-        buildConfigField("String", "CLIENT_ID", "\"${System.getenv("CLIENT_ID") ?: ""}\"")
+
+        val clientId = localProperties.getProperty("MICROSOFT_CLIENT_ID") ?: System.getenv("CLIENT_ID") ?: ""
+        buildConfigField("String", "CLIENT_ID", "\"$clientId\"")
+
     }
 
     buildFeatures {
@@ -137,6 +150,9 @@ dependencies {
     implementation("org.apache.commons:commons-compress:1.26.1")
     implementation("org.ow2.asm:asm-all:5.0.4")
     implementation("com.github.oshi:oshi-core:6.3.0")
+    implementation("androidx.browser:browser:1.8.0")
+
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
