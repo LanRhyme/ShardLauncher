@@ -7,10 +7,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -149,7 +147,7 @@ class MainActivity : ComponentActivity() {
                     newIntentState.value = null
                 }
             }
-            
+
             var showSplash by remember { mutableStateOf(true) }
 
             val scaledDensity = Density(LocalDensity.current.density * uiScale, LocalDensity.current.fontScale * uiScale)
@@ -300,17 +298,18 @@ fun MainScreen(
     accountViewModel: AccountViewModel
 ) {
     var isSidebarExpanded by remember { mutableStateOf(false) }
+    val animationDuration = (300 / animationSpeed).toInt()
 
     val sidebarWidth by animateDpAsState(
         targetValue = if (isSidebarExpanded) 220.dp else 72.dp,
-        animationSpec = spring(stiffness = Spring.StiffnessMedium),
-        label = ""
+        animationSpec = tween(durationMillis = animationDuration),
+        label = "SidebarWidth"
     )
 
     val contentBlurRadius by animateDpAsState(
         targetValue = if (isSidebarExpanded) 8.dp else 0.dp,
-        animationSpec = spring(stiffness = Spring.StiffnessMedium),
-        label = ""
+        animationSpec = tween(durationMillis = animationDuration),
+        label = "ContentBlur"
     )
 
     val context = LocalContext.current
@@ -425,7 +424,8 @@ fun MainScreen(
                 onToggleExpand = { isSidebarExpanded = !isSidebarExpanded },
                 navController = navController,
                 position = sidebarPosition,
-                isGlowEffectEnabled = isGlowEffectEnabled
+                isGlowEffectEnabled = isGlowEffectEnabled,
+                animationSpeed = animationSpeed
             )
 
             NotificationPanel(
@@ -476,15 +476,17 @@ fun MainContent(
     accountViewModel: AccountViewModel
 ) {
     val collapsedSidebarWidth = 72.dp
+    val animationDuration = (300 / animationSpeed).toInt()
+
     val paddingStart by animateDpAsState(
         targetValue = if (sidebarPosition == SidebarPosition.Left) collapsedSidebarWidth else 0.dp,
-        animationSpec = spring(stiffness = Spring.StiffnessMedium),
-        label = ""
+        animationSpec = tween(durationMillis = animationDuration),
+        label = "ContentPaddingStart"
     )
     val paddingEnd by animateDpAsState(
         targetValue = if (sidebarPosition == SidebarPosition.Right) collapsedSidebarWidth else 0.dp,
-        animationSpec = spring(stiffness = Spring.StiffnessMedium),
-        label = ""
+        animationSpec = tween(durationMillis = animationDuration),
+        label = "ContentPaddingEnd"
     )
     val contentPadding = PaddingValues(start = paddingStart, end = paddingEnd)
 
@@ -492,7 +494,7 @@ fun MainContent(
         modifier = modifier.blur(radius = contentBlurRadius)
     ) {
         Box(modifier = Modifier.padding(contentPadding)) {
-            val animationDuration = (500 / animationSpeed).toInt()
+            val navAnimationDuration = (500 / animationSpeed).toInt()
             NavHost(
                 navController = navController,
                 startDestination = Screen.Home.route,
@@ -503,13 +505,13 @@ fun MainContent(
                     val targetIndex = navigationItems.indexOfFirst { it.route == getRootRoute(targetRoute) }
 
                     if (targetRoute == Screen.Home.route) {
-                        slideInVertically(animationSpec = tween(animationDuration)) { it } + fadeIn(animationSpec = tween(animationDuration))
+                        slideInVertically(animationSpec = tween(navAnimationDuration)) { it } + fadeIn(animationSpec = tween(navAnimationDuration))
                     } else if (initialIndex == -1 || targetIndex == -1) {
-                        slideInVertically(animationSpec = tween(animationDuration)) { it } + fadeIn(animationSpec = tween(animationDuration))
+                        slideInVertically(animationSpec = tween(navAnimationDuration)) { it } + fadeIn(animationSpec = tween(navAnimationDuration))
                     } else if (targetIndex > initialIndex) {
-                        slideInVertically(animationSpec = tween(animationDuration)) { it } + fadeIn(animationSpec = tween(animationDuration))
+                        slideInVertically(animationSpec = tween(navAnimationDuration)) { it } + fadeIn(animationSpec = tween(navAnimationDuration))
                     } else {
-                        slideInVertically(animationSpec = tween(animationDuration)) { -it } + fadeIn(animationSpec = tween(animationDuration))
+                        slideInVertically(animationSpec = tween(navAnimationDuration)) { -it } + fadeIn(animationSpec = tween(navAnimationDuration))
                     }
                  },
                 exitTransition = {
@@ -519,13 +521,13 @@ fun MainContent(
                     val targetIndex = navigationItems.indexOfFirst { it.route == getRootRoute(targetRoute) }
 
                     if (targetRoute == Screen.Home.route) {
-                        slideOutVertically(animationSpec = tween(animationDuration)) { -it } + fadeOut(animationSpec = tween(animationDuration))
+                        slideOutVertically(animationSpec = tween(navAnimationDuration)) { -it } + fadeOut(animationSpec = tween(navAnimationDuration))
                     } else if (initialIndex == -1 || targetIndex == -1) {
-                        slideOutVertically(animationSpec = tween(animationDuration)) { -it } + fadeOut(animationSpec = tween(animationDuration))
+                        slideOutVertically(animationSpec = tween(navAnimationDuration)) { -it } + fadeOut(animationSpec = tween(navAnimationDuration))
                     } else if (targetIndex > initialIndex) {
-                        slideOutVertically(animationSpec = tween(animationDuration)) { -it } + fadeOut(animationSpec = tween(animationDuration))
+                        slideOutVertically(animationSpec = tween(navAnimationDuration)) { -it } + fadeOut(animationSpec = tween(navAnimationDuration))
                     } else {
-                        slideOutVertically(animationSpec = tween(animationDuration)) { it } + fadeOut(animationSpec = tween(animationDuration))
+                        slideOutVertically(animationSpec = tween(navAnimationDuration)) { it } + fadeOut(animationSpec = tween(navAnimationDuration))
                     }
                  },
                 popEnterTransition = {
@@ -535,13 +537,13 @@ fun MainContent(
                     val targetIndex = navigationItems.indexOfFirst { it.route == getRootRoute(targetRoute) }
 
                     if (targetRoute == Screen.Home.route) {
-                        slideInVertically(animationSpec = tween(animationDuration)) { -it } + fadeIn(animationSpec = tween(animationDuration))
+                        slideInVertically(animationSpec = tween(navAnimationDuration)) { -it } + fadeIn(animationSpec = tween(navAnimationDuration))
                     } else if (initialIndex == -1 || targetIndex == -1) {
-                        slideInVertically(animationSpec = tween(animationDuration)) { -it } + fadeIn(animationSpec = tween(animationDuration))
+                        slideInVertically(animationSpec = tween(navAnimationDuration)) { -it } + fadeIn(animationSpec = tween(navAnimationDuration))
                     } else if (targetIndex > initialIndex) {
-                        slideInVertically(animationSpec = tween(animationDuration)) { -it } + fadeIn(animationSpec = tween(animationDuration))
+                        slideInVertically(animationSpec = tween(navAnimationDuration)) { -it } + fadeIn(animationSpec = tween(navAnimationDuration))
                     } else {
-                        slideInVertically(animationSpec = tween(animationDuration)) { it } + fadeIn(animationSpec = tween(animationDuration))
+                        slideInVertically(animationSpec = tween(navAnimationDuration)) { it } + fadeIn(animationSpec = tween(navAnimationDuration))
                     }
                  },
                 popExitTransition = {
@@ -551,13 +553,13 @@ fun MainContent(
                     val targetIndex = navigationItems.indexOfFirst { it.route == getRootRoute(targetRoute) }
 
                     if (targetRoute == Screen.Home.route) {
-                        slideOutVertically(animationSpec = tween(animationDuration)) { it } + fadeOut(animationSpec = tween(animationDuration))
+                        slideOutVertically(animationSpec = tween(navAnimationDuration)) { it } + fadeOut(animationSpec = tween(navAnimationDuration))
                     } else if (initialIndex == -1 || targetIndex == -1) {
-                        slideOutVertically(animationSpec = tween(animationDuration)) { it } + fadeOut(animationSpec = tween(animationDuration))
+                        slideOutVertically(animationSpec = tween(navAnimationDuration)) { it } + fadeOut(animationSpec = tween(navAnimationDuration))
                     } else if (targetIndex > initialIndex) {
-                        slideOutVertically(animationSpec = tween(animationDuration)) { it } + fadeOut(animationSpec = tween(animationDuration))
+                        slideOutVertically(animationSpec = tween(navAnimationDuration)) { it } + fadeOut(animationSpec = tween(navAnimationDuration))
                     } else {
-                        slideOutVertically(animationSpec = tween(animationDuration)) { -it } + fadeOut(animationSpec = tween(animationDuration))
+                        slideOutVertically(animationSpec = tween(navAnimationDuration)) { -it } + fadeOut(animationSpec = tween(navAnimationDuration))
                     }
                  }
             ) {
@@ -642,7 +644,8 @@ fun SideBar(
     onToggleExpand: () -> Unit,
     navController: NavController,
     position: SidebarPosition,
-    isGlowEffectEnabled: Boolean
+    isGlowEffectEnabled: Boolean,
+    animationSpeed: Float
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -661,7 +664,7 @@ fun SideBar(
                 MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
             )
     ) {
-        SideBarContent(isExpanded, onToggleExpand, navController, rootRoute, isGlowEffectEnabled)
+        SideBarContent(isExpanded, onToggleExpand, navController, rootRoute, isGlowEffectEnabled, animationSpeed)
     }
 }
 
@@ -671,7 +674,8 @@ private fun SideBarContent(
     onToggleExpand: () -> Unit,
     navController: NavController,
     currentRoute: String?,
-    isGlowEffectEnabled: Boolean
+    isGlowEffectEnabled: Boolean,
+    animationSpeed: Float
 ) {
     val notifications by NotificationManager.notifications.collectAsState()
     val hasPersistentNotifications = notifications.any { it.type != NotificationType.Temporary }
@@ -684,7 +688,12 @@ private fun SideBarContent(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         item {
-            ExpandButton(isExpanded = isExpanded, onClick = onToggleExpand, showBadge = hasPersistentNotifications)
+            ExpandButton(
+                isExpanded = isExpanded,
+                onClick = onToggleExpand,
+                showBadge = hasPersistentNotifications,
+                animationSpeed = animationSpeed
+            )
         }
         items(navigationItems) { screen ->
             val isSelected = currentRoute == screen.route
@@ -701,7 +710,8 @@ private fun SideBarContent(
                         }
                     }
                 },
-                isGlowEffectEnabled = isGlowEffectEnabled
+                isGlowEffectEnabled = isGlowEffectEnabled,
+                animationSpeed = animationSpeed
             )
         }
     }
@@ -712,20 +722,27 @@ fun ExpandButton(
     isExpanded: Boolean,
     onClick: () -> Unit,
     icon: ImageVector? = null,
-    showBadge: Boolean = false
+    showBadge: Boolean = false,
+    animationSpeed: Float
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
+    val animationDuration = (150 / animationSpeed).toInt()
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.95f else 1f,
-        animationSpec = spring(stiffness = Spring.StiffnessMedium),
+        animationSpec = tween(durationMillis = animationDuration),
         label = "ExpandButtonScale"
     )
     val shape = RoundedCornerShape(22.dp)
 
+    val buttonModifier = if (isExpanded) {
+        Modifier.fillMaxWidth().height(56.dp)
+    } else {
+        Modifier.size(56.dp)
+    }
+
     Box(
-        modifier = Modifier
-            .size(56.dp)
+        modifier = buttonModifier
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
@@ -738,7 +755,11 @@ fun ExpandButton(
             ),
         contentAlignment = Alignment.Center
     ) {
-        Crossfade(targetState = isExpanded, label = "ToggleIcon") {
+        Crossfade(
+            targetState = isExpanded,
+            label = "ToggleIcon",
+            animationSpec = tween(durationMillis = animationDuration)
+        ) {
             Icon(
                 imageVector = icon ?: if (it) Icons.Filled.ArrowBack else Icons.Filled.Menu,
                 contentDescription = if (it) "Collapse" else "Expand",
@@ -777,13 +798,15 @@ fun SideBarButton(
     isExpanded: Boolean,
     isSelected: Boolean,
     onClick: () -> Unit,
-    isGlowEffectEnabled: Boolean
+    isGlowEffectEnabled: Boolean,
+    animationSpeed: Float
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
+    val animationDuration = (150 / animationSpeed).toInt()
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.95f else 1f,
-        animationSpec = spring(stiffness = Spring.StiffnessMedium),
+        animationSpec = tween(durationMillis = animationDuration),
         label = "SidebarButtonScale"
     )
 

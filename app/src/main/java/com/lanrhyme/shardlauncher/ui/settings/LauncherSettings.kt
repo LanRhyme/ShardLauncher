@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -64,7 +65,11 @@ internal fun LauncherSettingsContent(
     isGlowEffectEnabled: Boolean,
     onIsGlowEffectEnabledChange: () -> Unit
 ) {
-    val animatedSpeed by animateFloatAsState(targetValue = animationSpeed, label = "Animation Speed")
+    val animatedSpeed by animateFloatAsState(
+        targetValue = animationSpeed,
+        label = "Animation Speed",
+        animationSpec = tween((1000 / animationSpeed).toInt())
+    )
     val context = LocalContext.current
     val backgroundFileName = "launcher_background.jpg"
     val backgroundVideoName = "launcher_background.mp4"
@@ -174,7 +179,8 @@ internal fun LauncherSettingsContent(
         item {
             CollapsibleCard(
                 title = "启动器背景",
-                summary = "自定义启动器背景"
+                summary = "自定义启动器背景",
+                animationSpeed = animationSpeed
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
@@ -182,13 +188,15 @@ internal fun LauncherSettingsContent(
                             onClick = { imagePicker.launch("image/*") },
                             modifier = Modifier.weight(1f),
                             icon = Icons.Default.Image,
-                            text = "选择图片"
+                            text = "选择图片",
+                            animationSpeed = animationSpeed
                         )
                         ScalingActionButton(
                             onClick = { videoPicker.launch("video/*") },
                             modifier = Modifier.weight(1f),
                             icon = Icons.Default.Videocam,
-                            text = "选择视频"
+                            text = "选择视频",
+                            animationSpeed = animationSpeed
                         )
                     }
                     ScalingActionButton(
@@ -205,7 +213,8 @@ internal fun LauncherSettingsContent(
                         },
                         modifier = Modifier.fillMaxWidth(),
                         icon = Icons.Default.BrokenImage,
-                        text = "清除背景"
+                        text = "清除背景",
+                        animationSpeed = animationSpeed
                     )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
@@ -249,7 +258,8 @@ internal fun LauncherSettingsContent(
         item {
             CollapsibleCard(
                 title = "背景光效",
-                summary = if (enableBackgroundLightEffect) "已开启" else "已关闭"
+                summary = if (enableBackgroundLightEffect) "已开启" else "已关闭",
+                animationSpeed = animationSpeed
             ) {
                 SwitchLayout(
                     checked = enableBackgroundLightEffect,

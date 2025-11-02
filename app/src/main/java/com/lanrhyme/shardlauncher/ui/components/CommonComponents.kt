@@ -70,9 +70,11 @@ fun CollapsibleCard(
     modifier: Modifier = Modifier,
     title: String,
     summary: String? = null,
+    animationSpeed: Float = 1.0f,
     content: @Composable () -> Unit
 ) {
     var isExpanded by remember { mutableStateOf(false) }
+    val animationDuration = (300 / animationSpeed).toInt()
 
     Card(
         modifier = modifier
@@ -96,8 +98,8 @@ fun CollapsibleCard(
             }
             AnimatedVisibility(
                 visible = isExpanded,
-                enter = expandVertically() + fadeIn(),
-                exit = shrinkVertically() + fadeOut()
+                enter = expandVertically(animationSpec = tween(animationDuration, easing = FastOutSlowInEasing)) + fadeIn(animationSpec = tween(animationDuration)),
+                exit = shrinkVertically(animationSpec = tween(animationDuration, easing = FastOutSlowInEasing)) + fadeOut(animationSpec = tween(animationDuration))
             ) {
                 Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp)) {
                     content()
@@ -136,6 +138,7 @@ fun CombinedCard(
  * @param text The text to display in the button.
  * @param enabled Controls the enabled state of the button. When `false`, this button will not be clickable
  * and will appear disabled to the user.
+ * @param animationSpeed The speed of the scaling animation.
  */
 @Composable
 fun ScalingActionButton(
@@ -144,11 +147,17 @@ fun ScalingActionButton(
     icon: ImageVector? = null,
     text: String? = null,
     enabled: Boolean = true,
+    animationSpeed: Float = 1.0f,
     contentPadding: PaddingValues = PaddingValues(horizontal = 24.dp, vertical = 4.dp)
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
-    val scale by animateFloatAsState(if (isPressed) 0.95f else 1f, label = "buttonScale")
+    val animationDuration = (150 / animationSpeed).toInt()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.95f else 1f,
+        label = "buttonScale",
+        animationSpec = tween(durationMillis = animationDuration)
+    )
 
     val backgroundBrush = Brush.horizontalGradient(
         colors = listOf(
