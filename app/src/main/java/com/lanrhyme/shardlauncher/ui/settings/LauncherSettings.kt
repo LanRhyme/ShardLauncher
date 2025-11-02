@@ -5,6 +5,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -22,8 +23,14 @@ import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.lanrhyme.shardlauncher.common.SidebarPosition
@@ -36,6 +43,35 @@ import com.lanrhyme.shardlauncher.ui.theme.ThemeColor
 import java.io.File
 import java.io.FileOutputStream
 
+@OptIn(ExperimentalFoundationApi::class)
+fun Modifier.animatedAppearance(index: Int, animationSpeed: Float): Modifier = composed {
+    var animated by remember { mutableStateOf(false) }
+    val animationDuration = (300 / animationSpeed).toInt()
+    val delay = (60 * index / animationSpeed).toInt()
+
+    val alpha by animateFloatAsState(
+        targetValue = if (animated) 1f else 0f,
+        animationSpec = tween(durationMillis = animationDuration, delayMillis = delay),
+        label = "alpha"
+    )
+    val scale by animateFloatAsState(
+        targetValue = if (animated) 1f else 0.95f,
+        animationSpec = tween(durationMillis = animationDuration, delayMillis = delay),
+        label = "scale"
+    )
+
+    LaunchedEffect(Unit) {
+        animated = true
+    }
+
+    this.graphicsLayer(
+        alpha = alpha,
+        scaleX = scale,
+        scaleY = scale
+    )
+}
+
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun LauncherSettingsContent(
     isDarkTheme: Boolean,
@@ -121,32 +157,40 @@ internal fun LauncherSettingsContent(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        item {
+        item { 
             Text(
                 text = "显示设置",
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                modifier = Modifier
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                    .animatedAppearance(0, animationSpeed)
             )
         }
-        item {
+        item { 
             SwitchLayout(
+                modifier = Modifier
+                    .animatedAppearance(1, animationSpeed),
                 title = "深色模式",
                 summary = if (isDarkTheme) "已开启" else "已关闭",
                 checked = isDarkTheme,
                 onCheckedChange = onThemeToggle
             )
         }
-        item {
+        item { 
             SwitchLayout(
+                modifier = Modifier
+                    .animatedAppearance(2, animationSpeed),
                 title = "获取Minecraft最新更新信息",
                 summary = "来源于news.bugjump.net",
                 checked = enableVersionCheck,
                 onCheckedChange = { onEnableVersionCheckChange() }
             )
         }
-        item {
+        item { 
             SimpleListLayout(
+                modifier = Modifier
+                    .animatedAppearance(3, animationSpeed),
                 title = "侧边栏位置",
                 items = SidebarPosition.entries,
                 selectedItem = sidebarPosition,
@@ -159,8 +203,10 @@ internal fun LauncherSettingsContent(
                 }
             )
         }
-        item {
+        item { 
             SimpleListLayout(
+                modifier = Modifier
+                    .animatedAppearance(4, animationSpeed),
                 title = "主题颜色",
                 items = ThemeColor.entries.toList(),
                 selectedItem = themeColor,
@@ -168,16 +214,20 @@ internal fun LauncherSettingsContent(
                 getItemText = { it.title }
             )
         }
-        item {
+        item { 
             SwitchLayout(
+                modifier = Modifier
+                    .animatedAppearance(5, animationSpeed),
                 title = "UI发光效果",
                 summary = "为部分文字和图标添加发光效果",
                 checked = isGlowEffectEnabled,
                 onCheckedChange = { onIsGlowEffectEnabledChange() }
             )
         }
-        item {
+        item { 
             CollapsibleCard(
+                modifier = Modifier
+                    .animatedAppearance(6, animationSpeed),
                 title = "启动器背景",
                 summary = "自定义启动器背景",
                 animationSpeed = animationSpeed
@@ -255,8 +305,10 @@ internal fun LauncherSettingsContent(
                 )
             }
         }
-        item {
+        item { 
             CollapsibleCard(
+                modifier = Modifier
+                    .animatedAppearance(7, animationSpeed),
                 title = "背景光效",
                 summary = if (enableBackgroundLightEffect) "已开启" else "已关闭",
                 animationSpeed = animationSpeed
@@ -280,8 +332,10 @@ internal fun LauncherSettingsContent(
                 )
             }
         }
-        item {
+        item { 
             SliderLayout(
+                modifier = Modifier
+                    .animatedAppearance(8, animationSpeed),
                 value = animationSpeed,
                 onValueChange = onAnimationSpeedChange,
                 valueRange = 0.5f..2f,
@@ -292,8 +346,10 @@ internal fun LauncherSettingsContent(
                 isGlowEffectEnabled = isGlowEffectEnabled
             )
         }
-        item {
+        item { 
             SliderLayout(
+                modifier = Modifier
+                    .animatedAppearance(9, animationSpeed),
                 value = uiScale,
                 onValueChange = onUiScaleChange,
                 valueRange = 0.8f..1.5f,
@@ -304,7 +360,7 @@ internal fun LauncherSettingsContent(
                 isGlowEffectEnabled = isGlowEffectEnabled
             )
         }
-        item {
+        item { 
             Spacer(modifier = Modifier.height(45.dp))
         }
     }
