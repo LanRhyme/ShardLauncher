@@ -23,14 +23,8 @@ import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.lanrhyme.shardlauncher.common.SidebarPosition
@@ -39,37 +33,12 @@ import com.lanrhyme.shardlauncher.ui.components.ScalingActionButton
 import com.lanrhyme.shardlauncher.ui.components.SimpleListLayout
 import com.lanrhyme.shardlauncher.ui.components.SliderLayout
 import com.lanrhyme.shardlauncher.ui.components.SwitchLayout
+import com.lanrhyme.shardlauncher.ui.components.animatedAppearance
 import com.lanrhyme.shardlauncher.ui.theme.ThemeColor
 import java.io.File
 import java.io.FileOutputStream
 
-@OptIn(ExperimentalFoundationApi::class)
-fun Modifier.animatedAppearance(index: Int, animationSpeed: Float): Modifier = composed {
-    var animated by remember { mutableStateOf(false) }
-    val animationDuration = (300 / animationSpeed).toInt()
-    val delay = (60 * index / animationSpeed).toInt()
 
-    val alpha by animateFloatAsState(
-        targetValue = if (animated) 1f else 0f,
-        animationSpec = tween(durationMillis = animationDuration, delayMillis = delay),
-        label = "alpha"
-    )
-    val scale by animateFloatAsState(
-        targetValue = if (animated) 1f else 0.95f,
-        animationSpec = tween(durationMillis = animationDuration, delayMillis = delay),
-        label = "scale"
-    )
-
-    LaunchedEffect(Unit) {
-        animated = true
-    }
-
-    this.graphicsLayer(
-        alpha = alpha,
-        scaleX = scale,
-        scaleY = scale
-    )
-}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

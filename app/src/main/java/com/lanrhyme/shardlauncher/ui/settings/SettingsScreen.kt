@@ -6,7 +6,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -15,7 +14,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.lanrhyme.shardlauncher.common.SidebarPosition
 import com.lanrhyme.shardlauncher.ui.components.SegmentedNavigationBar
@@ -109,12 +107,13 @@ fun SettingsScreen(
                 SettingsPage.Game -> {
                     GameSettingsContent(
                         useBmclapi = useBmclapi,
-                        onUseBmclapiChange = onUseBmclapiChange
+                        onUseBmclapiChange = onUseBmclapiChange,
+                        animationSpeed = animationSpeed
                     )
                 }
 
                 SettingsPage.About -> {
-                    AboutScreen()
+                    AboutScreen(animationSpeed = animationSpeed)
                 }
 
                 SettingsPage.Other -> {

@@ -563,7 +563,7 @@ fun MainContent(
                     }
                  }
             ) {
-                composable(Screen.Home.route) { HomeScreen(navController, enableVersionCheck = enableVersionCheck, accountViewModel = accountViewModel) }
+                composable(Screen.Home.route) { HomeScreen(navController, enableVersionCheck = enableVersionCheck, animationSpeed = animationSpeed, accountViewModel = accountViewModel) }
                 composable(Screen.Version.route) { VersionScreen() }
                 composable(Screen.Download.route) { DownloadScreen(navController = navController, useBmclapi = useBmclapi) }
                 composable("version_detail/{versionId}", arguments = listOf(navArgument("versionId") { type = NavType.StringType })) {

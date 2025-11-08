@@ -3,6 +3,7 @@ package com.lanrhyme.shardlauncher.ui.settings
 import android.content.Intent
 import android.net.Uri
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -50,6 +51,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.lanrhyme.shardlauncher.R
+import com.lanrhyme.shardlauncher.ui.components.animatedAppearance
 import com.lanrhyme.shardlauncher.ui.components.CombinedCard
 import com.lanrhyme.shardlauncher.ui.components.ScalingActionButton
 import com.lanrhyme.shardlauncher.ui.components.TitleAndSummary
@@ -61,8 +63,11 @@ data class OssLibrary(
     val license: String
 )
 
+
 @Composable
-fun AboutScreen() {
+fun AboutScreen(
+    animationSpeed: Float,
+) {
     val context = LocalContext.current
     var showLicensesDialog by remember { mutableStateOf(false) }
 
@@ -82,6 +87,8 @@ fun AboutScreen() {
         ) {
             item {
                 CombinedCard(
+                    modifier = Modifier
+                        .animatedAppearance(1, animationSpeed),
                     title = "关于",
                     summary = "关于ShardLauncher"
                 ) {
@@ -90,11 +97,12 @@ fun AboutScreen() {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Image(
-                                painter = painterResource(id = R.drawable.img_launchertitle),
-                                contentDescription = "Launcher Title Image"
+                                painter = painterResource(id = R.drawable.img_kotlin),
+                                contentDescription = "Launcher Title Image",
+                                modifier = Modifier.size(200.dp)
                             )
                             Spacer(Modifier.width(16.dp))
-                            Text("一款适用于Android和iOS的Minecraft:Java Edition启动器")
+                            Text("一款使用Kotlin和JetPack Compose开发的安卓Minecraft:Java Edition启动器")
                         }
                         Spacer(Modifier.padding(8.dp))
                         Row(
@@ -122,6 +130,8 @@ fun AboutScreen() {
             }
             item {
                 CreditsCard(
+                    modifier = Modifier
+                        .animatedAppearance(2, animationSpeed),
                     title = "贡献者",
                     summary = "感谢各位对本项目的贡献",
                     items = listOf(
@@ -139,6 +149,8 @@ fun AboutScreen() {
             }
             item {
                 CreditsCard(
+                    modifier = Modifier
+                        .animatedAppearance(3, animationSpeed),
                     title = "鸣谢",
                     summary = "对本项目有帮助的开源项目",
                     items = listOf(
@@ -155,6 +167,8 @@ fun AboutScreen() {
             }
             item {
                 CreditsCard(
+                    modifier = Modifier
+                        .animatedAppearance(4, animationSpeed),
                     title = "第三方API",
                     summary = "本启动器所使用的第三方API",
                     items = listOf(
@@ -198,6 +212,8 @@ fun AboutScreen() {
             }
             item {
                 CombinedCard(
+                    modifier = Modifier
+                        .animatedAppearance(5, animationSpeed),
                     title = "开源许可"
                 ) {
                     Column(
@@ -236,6 +252,8 @@ fun AboutScreen() {
             modifier = Modifier.weight(0.35f)
         ) {
             CombinedCard(
+                modifier = Modifier
+                    .animatedAppearance(1, animationSpeed),
                 title = "版本信息"
             ) {
                 Column(
@@ -353,14 +371,17 @@ data class CreditItem(
     val actions: List<CreditAction>
 )
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CreditsCard(
+    modifier: Modifier = Modifier,
     title: String,
     summary: String? = null,
     items: List<CreditItem>
 ) {
     val context = LocalContext.current
     CombinedCard(
+        modifier = modifier,
         title = title,
         summary = summary
     ) {

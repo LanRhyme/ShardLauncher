@@ -3,6 +3,8 @@ package com.lanrhyme.shardlauncher.ui.home
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
@@ -53,6 +55,7 @@ import com.lanrhyme.shardlauncher.model.VersionInfo
 import com.lanrhyme.shardlauncher.ui.account.AccountViewModel
 import com.lanrhyme.shardlauncher.ui.components.CombinedCard
 import com.lanrhyme.shardlauncher.ui.components.ScalingActionButton
+import com.lanrhyme.shardlauncher.ui.components.animatedAppearance
 import com.lanrhyme.shardlauncher.ui.custom.XamlRenderer
 import com.lanrhyme.shardlauncher.ui.custom.parseXaml
 import com.lanrhyme.shardlauncher.ui.navigation.Screen
@@ -70,6 +73,7 @@ import java.io.IOException
 fun HomeScreen(
     navController: NavController,
     enableVersionCheck: Boolean,
+    animationSpeed: Float,
     accountViewModel: AccountViewModel = viewModel()
 ) {
     val context = LocalContext.current
@@ -79,6 +83,11 @@ fun HomeScreen(
     var latestVersions by remember { mutableStateOf<LatestVersionsResponse?>(null) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val selectedAccount by accountViewModel.selectedAccount.collectAsState()
+    
+    val animatedSpeed by animateFloatAsState(
+        targetValue = animationSpeed,
+        animationSpec = tween((1000 / animationSpeed).toInt())
+    )
 
     if (enableVersionCheck) {
         LaunchedEffect(Unit) {
@@ -124,13 +133,21 @@ fun HomeScreen(
                 contentPadding = PaddingValues(12.dp)
             ) {
                 item {
-                    CombinedCard(title = "主页", summary = "欢迎回来") {
+                    CombinedCard(
+                        modifier = Modifier.animatedAppearance(0, animatedSpeed),
+                        title = "主页", 
+                        summary = "欢迎回来"
+                    ) {
                         XamlRenderer(nodes = nodes, modifier = Modifier.padding(horizontal = 20.dp))
                     }
                 }
                 if (enableVersionCheck) {
                     item {
-                        CombinedCard(title = "Minecraft更新", summary = "查看最近的更新内容") {
+                        CombinedCard(
+                            modifier = Modifier.animatedAppearance(1, animatedSpeed),
+                            title = "Minecraft更新", 
+                            summary = "查看最近的更新内容"
+                        ) {
                             when {
                                 errorMessage != null -> {
                                     Text(text = errorMessage!!, modifier = Modifier.padding(16.dp))

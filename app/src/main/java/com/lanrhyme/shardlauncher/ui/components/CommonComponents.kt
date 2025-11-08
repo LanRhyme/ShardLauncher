@@ -130,15 +130,14 @@ fun CombinedCard(
 }
 
 /**
- * An animated button that scales on press for tactile feedback, with a default gradient background.
+ * 一个带动画的按钮，在按下时会缩放以提供触觉反馈，并带有默认的渐变背景
  *
- * @param onClick The action to perform when the button is clicked.
- * @param modifier The modifier to be applied to the button.
- * @param icon The icon to display in the button.
- * @param text The text to display in the button.
- * @param enabled Controls the enabled state of the button. When `false`, this button will not be clickable
- * and will appear disabled to the user.
- * @param animationSpeed The speed of the scaling animation.
+ * @param onClick 当按钮被点击时执行的操作
+ * @param modifier 应用于按钮的修饰符
+ * @param icon 在按钮中显示的图标
+ * @param text 在按钮中显示的文本
+ * @param enabled 控制按钮的启用状态  当为 `false` 时，此按钮将不可点击，并向用户显示为禁用状态
+ * @param animationSpeed 缩放动画的速度
  */
 @Composable
 fun ScalingActionButton(
@@ -203,11 +202,11 @@ fun ScalingActionButton(
 }
 
 /**
- * A composable that displays a title with a smaller, semi-transparent summary below it.
+ * 一个可组合项，用于显示标题及其下方较小的半透明摘要
  *
- * @param title The main title text.
- * @param summary The summary text, displayed below the title.
- * @param modifier The modifier to be applied to the layout.
+ * @param title 主标题文本
+ * @param summary 摘要文本，显示在标题下方
+ * @param modifier 应用于布局的修饰符
  */
 @Composable
 fun TitleAndSummary(
@@ -332,12 +331,12 @@ fun StyledFilterChip(
 }
 
 /**
- * A modifier that applies a glow effect around the composable's bounds.
+ * 一个修饰符，用于在可组合项的边界周围应用发光效果
  *
- * @param color The color of the glow.
- * @param cornerRadius The corner radius of the glowing shape.
- * @param blurRadius The blur radius of the glow effect.
- * @param enabled Toggles the glow effect on or off.
+ * @param color 发光的颜色
+ * @param cornerRadius 发光形状的圆角半径
+ * @param blurRadius 发光效果的模糊半径
+ * @param enabled 切换发光效果的开或关
  */
 fun Modifier.glow(
     color: Color,
@@ -372,4 +371,45 @@ fun Modifier.glow(
             )
         }
     }
+}
+
+/**
+ * 为任意 Composable 添加入场动画效果
+ *
+ * 动画内容：
+ * 1. 透明度从 0 → 1（淡入）
+ * 2. 缩放从 0.95 → 1（轻微放大）
+ *
+ * 当多条目（如 LazyColumn/LazyRow）使用时，通过 [index] 错开启动时刻，形成瀑布流效果
+ * 单条目调用时 [index] 传 0 即可
+ *
+ * @param index      条目在列表中的位置，用于计算延迟（越靠后越晚开始）,单条目场景直接传 0
+ * @param animationSpeed 整体速度系数
+ */
+@OptIn(ExperimentalFoundationApi::class)
+fun Modifier.animatedAppearance(index: Int, animationSpeed: Float): Modifier = composed {
+    var animated by remember { mutableStateOf(false) }
+    val animationDuration = (300 / animationSpeed).toInt()
+    val delay = (60 * index / animationSpeed).toInt()
+
+    val alpha by animateFloatAsState(
+        targetValue = if (animated) 1f else 0f,
+        animationSpec = tween(durationMillis = animationDuration, delayMillis = delay),
+        label = "alpha"
+    )
+    val scale by animateFloatAsState(
+        targetValue = if (animated) 1f else 0.95f,
+        animationSpec = tween(durationMillis = animationDuration, delayMillis = delay),
+        label = "scale"
+    )
+
+    LaunchedEffect(Unit) {
+        animated = true
+    }
+
+    this.graphicsLayer(
+        alpha = alpha,
+        scaleX = scale,
+        scaleY = scale
+    )
 }
