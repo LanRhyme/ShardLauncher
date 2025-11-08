@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">ShardLauncher</string>
+    <string name="uninstall_title">你⚡卸⚡载⚡你⚡大⚡坝</string>
+    <string name="uninstall_content">我让你卸了吗你就卸？</string>
     <string name="version_summary_fools_creaft_mine">25w14craftmine is a Minecraft Java Edition April Fools\' snapshot released on March 30, 2025, based on the 1.20.4 version. This snapshot introduces a crafting system that allows players to craft anything from anything, as long as they have enough materials.</string>
     <string name="version_summary_fools_potato">24w14potato is a Minecraft Java Edition April Fools\' snapshot released on March 29, 2024, based on the 1.20.4 version. This snapshot introduces a new dimension called the Potato Dimension, where everything is made of potatoes.</string>
     <string name="version_summary_fools_a_or_b">23w13a_or_b is a Minecraft Java Edition April Fools\' snapshot released on March 31, 2023, based on the 1.19.4 version. This snapshot introduces two new dimensions, A and B, which are randomly chosen when the player enters a portal.</string>

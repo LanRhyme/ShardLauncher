@@ -17,6 +17,12 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:enableOnBackInvokedCallback="true"
         tools:targetApi="31">
+        <meta-data
+            android:name="app_description_title"
+            android:resource="@string/uninstall_title" />
+        <meta-data
+            android:name="app_description_content"
+            android:resource="@string/uninstall_content" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
