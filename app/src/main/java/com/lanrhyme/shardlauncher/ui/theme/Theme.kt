@@ -36,6 +36,8 @@ object ColorPalettes {
             primary = lightGreen,
             secondary = lightGreenGrey,
             tertiary = lightGreenTertiary,
+            background = LightBackgroundColor,
+            surface = lightsurface,
             error = Error80,
             errorContainer = ErrorSurface80,
             onErrorContainer = Error80,
@@ -59,6 +61,8 @@ object ColorPalettes {
             primary = lightBlue,
             secondary = lightBlueGrey,
             tertiary = lightBlueTertiary,
+            background = LightBackgroundColor,
+            surface = lightsurface,
             error = Error80,
             errorContainer = ErrorSurface80,
             onErrorContainer = Error80,
@@ -82,6 +86,8 @@ object ColorPalettes {
             primary = lightPurple,
             secondary = lightPurpleGrey,
             tertiary = lightPink,
+            background = LightBackgroundColor,
+            surface = lightsurface,
             error = Error80,
             errorContainer = ErrorSurface80,
             onErrorContainer = Error80,
@@ -105,6 +111,8 @@ object ColorPalettes {
             primary = lightYellow,
             secondary = lightYellowGrey,
             tertiary = lightYellowTertiary,
+            background = LightBackgroundColor,
+            surface = lightsurface,
             error = Error80,
             errorContainer = ErrorSurface80,
             onErrorContainer = Error80,
@@ -133,7 +141,18 @@ fun ShardLauncherTheme(
     val colorScheme = when {
         themeColor == ThemeColor.Dynamic && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            if (darkTheme) {
+                dynamicDarkColorScheme(context).copy(
+                    surfaceVariant = darksurface,
+                    background = DarkBackgroundColor
+                )
+            } else {
+                dynamicLightColorScheme(context).copy(
+                    surface = LightSurfaceColor,
+                    surfaceVariant = lightsurface,
+                    background = LightBackgroundColor
+                )
+            }
         }
         darkTheme -> when (themeColor) {
             ThemeColor.Green -> ColorPalettes.Green.darkColorScheme
