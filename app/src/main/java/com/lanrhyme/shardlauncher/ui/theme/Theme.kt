@@ -11,6 +11,7 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
@@ -23,12 +24,66 @@ enum class ThemeColor(val title: String) {
     Purple("紫晶泪"),
     Golden("黄粱残"),
     Dynamic("动态（Android 12+）"),
+    Custom("自定义"),
 }
 
 data class ColorSet(
     val lightColorScheme: ColorScheme,
     val darkColorScheme: ColorScheme
 )
+
+// Helper function to linearly interpolate between two colors
+private fun lerp(start: Color, stop: Color, fraction: Float): Color {
+    val r = start.red + fraction * (stop.red - start.red)
+    val g = start.green + fraction * (stop.green - start.green)
+    val b = start.blue + fraction * (stop.blue - start.blue)
+    val a = start.alpha + fraction * (stop.alpha - start.alpha)
+    return Color(red = r, green = g, blue = b, alpha = a)
+}
+
+/**
+ * Generates a light and dark color scheme from a given primary color.
+ * This is a simplified approach. For more advanced theming, you might use a
+ * library that can generate full tonal palettes.
+ */
+fun generateColorSetFromPrimary(primaryColor: Color): ColorSet {
+    // Light Theme Colors
+    val lightSecondary = lerp(primaryColor, Color(0xFF888888), 0.2f) // Desaturate for secondary
+    val lightTertiary = lerp(primaryColor, Color(0xFF888888), 0.4f)  // Desaturate more for tertiary
+
+    // Dark Theme Colors (generally lighter and less saturated than their light theme counterparts)
+    val darkPrimary = lerp(primaryColor, Color.White, 0.3f)
+    val darkSecondary = lerp(darkPrimary, Color.White, 0.2f)
+    val darkTertiary = lerp(darkPrimary, Color.White, 0.4f)
+
+
+    val lightScheme = lightColorScheme(
+        primary = primaryColor,
+        secondary = lightSecondary,
+        tertiary = lightTertiary,
+        background = LightBackgroundColor,
+        surface = LightSurfaceColor,
+        error = Error80,
+        errorContainer = ErrorSurface80,
+        onErrorContainer = Error80,
+        surfaceVariant = lightsurface
+    )
+
+    val darkScheme = darkColorScheme(
+        primary = darkPrimary,
+        secondary = darkSecondary,
+        tertiary = darkTertiary,
+        background = DarkBackgroundColor,
+        surface = DarkSurfaceColor,
+        error = Error40,
+        errorContainer = ErrorSurface40,
+        onErrorContainer = Error40,
+        surfaceVariant = darksurface
+    )
+
+    return ColorSet(lightScheme, darkScheme)
+}
+
 
 object ColorPalettes {
     val Green = ColorSet(
@@ -37,7 +92,7 @@ object ColorPalettes {
             secondary = lightGreenGrey,
             tertiary = lightGreenTertiary,
             background = LightBackgroundColor,
-            surface = lightsurface,
+            surface = LightSurfaceColor,
             error = Error80,
             errorContainer = ErrorSurface80,
             onErrorContainer = Error80,
@@ -62,7 +117,7 @@ object ColorPalettes {
             secondary = lightBlueGrey,
             tertiary = lightBlueTertiary,
             background = LightBackgroundColor,
-            surface = lightsurface,
+            surface = LightSurfaceColor,
             error = Error80,
             errorContainer = ErrorSurface80,
             onErrorContainer = Error80,
@@ -87,7 +142,7 @@ object ColorPalettes {
             secondary = lightPurpleGrey,
             tertiary = lightPink,
             background = LightBackgroundColor,
-            surface = lightsurface,
+            surface = LightSurfaceColor,
             error = Error80,
             errorContainer = ErrorSurface80,
             onErrorContainer = Error80,
@@ -112,7 +167,7 @@ object ColorPalettes {
             secondary = lightYellowGrey,
             tertiary = lightYellowTertiary,
             background = LightBackgroundColor,
-            surface = lightsurface,
+            surface = LightSurfaceColor,
             error = Error80,
             errorContainer = ErrorSurface80,
             onErrorContainer = Error80,
@@ -136,6 +191,7 @@ object ColorPalettes {
 fun ShardLauncherTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     themeColor: ThemeColor = ThemeColor.Green, // Default to Green
+    customPrimaryColor: Color? = null,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -154,19 +210,18 @@ fun ShardLauncherTheme(
                 )
             }
         }
-        darkTheme -> when (themeColor) {
-            ThemeColor.Green -> ColorPalettes.Green.darkColorScheme
-            ThemeColor.Blue -> ColorPalettes.Blue.darkColorScheme
-            ThemeColor.Purple -> ColorPalettes.Purple.darkColorScheme
-            ThemeColor.Golden -> ColorPalettes.Golden.darkColorScheme
-            ThemeColor.Dynamic -> ColorPalettes.Green.darkColorScheme // Fallback for older versions
+        themeColor == ThemeColor.Custom && customPrimaryColor != null -> {
+            val customColorSet = remember(customPrimaryColor) { generateColorSetFromPrimary(customPrimaryColor) }
+            if (darkTheme) customColorSet.darkColorScheme else customColorSet.lightColorScheme
         }
-        else -> when (themeColor) {
-            ThemeColor.Green -> ColorPalettes.Green.lightColorScheme
-            ThemeColor.Blue -> ColorPalettes.Blue.lightColorScheme
-            ThemeColor.Purple -> ColorPalettes.Purple.lightColorScheme
-            ThemeColor.Golden -> ColorPalettes.Golden.lightColorScheme
-            ThemeColor.Dynamic -> ColorPalettes.Green.lightColorScheme // Fallback for older versions
+        else -> {
+            val palette = when (themeColor) {
+                ThemeColor.Blue -> ColorPalettes.Blue
+                ThemeColor.Purple -> ColorPalettes.Purple
+                ThemeColor.Golden -> ColorPalettes.Golden
+                else -> ColorPalettes.Green // Green, Dynamic fallback, Custom fallback
+            }
+            if(darkTheme) palette.darkColorScheme else palette.lightColorScheme
         }
     }
     val view = LocalView.current

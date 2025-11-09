@@ -139,6 +139,15 @@ class SettingsRepository(context: Context) {
         saveProperties()
     }
 
+    fun getCustomPrimaryColor(): Int {
+        return properties.getProperty(KEY_CUSTOM_PRIMARY_COLOR, DEFAULT_CUSTOM_PRIMARY_COLOR.toString()).toIntOrNull() ?: DEFAULT_CUSTOM_PRIMARY_COLOR
+    }
+
+    fun setCustomPrimaryColor(color: Int) {
+        properties.setProperty(KEY_CUSTOM_PRIMARY_COLOR, color.toString())
+        saveProperties()
+    }
+
     fun getIsGlowEffectEnabled(): Boolean {
         return properties.getProperty(KEY_IS_GLOW_EFFECT_ENABLED, "true").toBoolean()
     }
@@ -171,6 +180,8 @@ class SettingsRepository(context: Context) {
         private const val KEY_IS_DARK_THEME = "is_dark_theme"
         private const val KEY_SIDEBAR_POSITION = "sidebar_position"
         private const val KEY_THEME_COLOR = "theme_color"
+        private const val KEY_CUSTOM_PRIMARY_COLOR = "custom_primary_color"
+        private const val DEFAULT_CUSTOM_PRIMARY_COLOR = -9859931 // 0xFF698945 in decimal
         private const val KEY_IS_GLOW_EFFECT_ENABLED = "is_glow_effect_enabled"
         private const val KEY_USE_BMCLAPI = "use_bmclapi"
     }

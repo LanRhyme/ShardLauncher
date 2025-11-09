@@ -6,7 +6,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -15,16 +17,26 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Videocam
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.lanrhyme.shardlauncher.common.SidebarPosition
@@ -34,11 +46,10 @@ import com.lanrhyme.shardlauncher.ui.components.SimpleListLayout
 import com.lanrhyme.shardlauncher.ui.components.SliderLayout
 import com.lanrhyme.shardlauncher.ui.components.SwitchLayout
 import com.lanrhyme.shardlauncher.ui.components.animatedAppearance
+import com.lanrhyme.shardlauncher.ui.composables.HsvColorPicker
 import com.lanrhyme.shardlauncher.ui.theme.ThemeColor
 import java.io.File
 import java.io.FileOutputStream
-
-
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -49,6 +60,8 @@ internal fun LauncherSettingsContent(
     onPositionChange: (SidebarPosition) -> Unit,
     themeColor: ThemeColor,
     onThemeColorChange: (ThemeColor) -> Unit,
+    customPrimaryColor: Color,
+    onCustomPrimaryColorChange: (Color) -> Unit,
     enableBackgroundLightEffect: Boolean,
     onEnableBackgroundLightEffectChange: () -> Unit,
     lightEffectAnimationSpeed: Float,
@@ -80,6 +93,53 @@ internal fun LauncherSettingsContent(
     val backgroundVideoName = "launcher_background.mp4"
 
     val isBackgroundVideo = launcherBackgroundUri?.endsWith(".mp4") == true
+
+    var showColorPickerDialog by remember { mutableStateOf(false) }
+    var tempCustomColor by remember(customPrimaryColor) { mutableStateOf(customPrimaryColor) }
+
+    if (showColorPickerDialog) {
+        AlertDialog(
+            onDismissRequest = { showColorPickerDialog = false },
+            title = { Text("选择自定义颜色") },
+            text = {
+                Row {
+                    HsvColorPicker(
+                        modifier = Modifier.weight(1f),
+                        color = tempCustomColor,
+                        onColorSelected = { color ->
+                            tempCustomColor = color
+                        }
+                    )
+                    Spacer(modifier = Modifier.size(16.dp))
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(text = "当前")
+                        Box(modifier = Modifier
+                            .size(50.dp)
+                            .background(customPrimaryColor, RoundedCornerShape(12.dp)))
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(text = "之后")
+                        Box(modifier = Modifier
+                            .size(50.dp)
+                            .background(tempCustomColor, RoundedCornerShape(12.dp)))
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    onCustomPrimaryColorChange(tempCustomColor)
+                    onThemeColorChange(ThemeColor.Custom)
+                    showColorPickerDialog = false
+                }) {
+                    Text("确定")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showColorPickerDialog = false }) {
+                    Text("取消")
+                }
+            }
+        )
+    }
 
     val imagePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
@@ -179,7 +239,14 @@ internal fun LauncherSettingsContent(
                 title = "主题颜色",
                 items = ThemeColor.entries.toList(),
                 selectedItem = themeColor,
-                onValueChange = onThemeColorChange,
+                onValueChange = { newColor ->
+                    if (newColor == ThemeColor.Custom) {
+                        tempCustomColor = customPrimaryColor // Reset temp color when opening
+                        showColorPickerDialog = true
+                    } else {
+                        onThemeColorChange(newColor)
+                    }
+                },
                 getItemText = { it.title }
             )
         }
@@ -308,7 +375,7 @@ internal fun LauncherSettingsContent(
                 value = animationSpeed,
                 onValueChange = onAnimationSpeedChange,
                 valueRange = 0.5f..2f,
-                steps = 14,
+                    steps = 14,
                 title = "动画速率",
                 summary = "控制 UI 动画的播放速度",
                 displayValue = animatedSpeed,

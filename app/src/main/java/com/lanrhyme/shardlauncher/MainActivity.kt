@@ -52,6 +52,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -126,6 +127,7 @@ class MainActivity : ComponentActivity() {
             var isDarkTheme by remember { mutableStateOf(settingsRepository.getIsDarkTheme(systemIsDark)) }
             var sidebarPosition by remember { mutableStateOf(settingsRepository.getSidebarPosition()) }
             var themeColor by remember { mutableStateOf(settingsRepository.getThemeColor()) }
+            var customPrimaryColor by remember { mutableStateOf(Color(settingsRepository.getCustomPrimaryColor())) }
             var animationSpeed by remember { mutableStateOf(settingsRepository.getAnimationSpeed()) }
             var lightEffectAnimationSpeed by remember { mutableStateOf(settingsRepository.getLightEffectAnimationSpeed()) }
             var enableBackgroundLightEffect by remember { mutableStateOf(settingsRepository.getEnableBackgroundLightEffect()) }
@@ -162,7 +164,7 @@ class MainActivity : ComponentActivity() {
                     animationSpec = tween(durationMillis = 500)
                 ) { show ->
                     if (show) {
-                        ShardLauncherTheme(darkTheme = isDarkTheme, themeColor = themeColor) {
+                        ShardLauncherTheme(darkTheme = isDarkTheme, themeColor = themeColor, customPrimaryColor = customPrimaryColor) {
                             SplashScreen(onAnimationFinished = { showSplash = false })
                         }
                     } else {
@@ -171,7 +173,7 @@ class MainActivity : ComponentActivity() {
                             label = "ThemeCrossfade",
                             animationSpec = tween(durationMillis = 500)
                         ) { isDark ->
-                            ShardLauncherTheme(darkTheme = isDark, themeColor = themeColor) {
+                            ShardLauncherTheme(darkTheme = isDark, themeColor = themeColor, customPrimaryColor = customPrimaryColor) {
                                 MainScreen(
                                     navController = navController,
                                     isDarkTheme = isDark,
@@ -189,6 +191,11 @@ class MainActivity : ComponentActivity() {
                                     onThemeColorChange = { newColor ->
                                         themeColor = newColor
                                         settingsRepository.setThemeColor(newColor)
+                                    },
+                                    customPrimaryColor = customPrimaryColor,
+                                    onCustomPrimaryColorChange = { newColor ->
+                                        customPrimaryColor = newColor
+                                        settingsRepository.setCustomPrimaryColor(newColor.toArgb())
                                     },
                                     animationSpeed = animationSpeed,
                                     onAnimationSpeedChange = { newSpeed ->
@@ -273,6 +280,8 @@ fun MainScreen(
     onPositionChange: (SidebarPosition) -> Unit,
     themeColor: ThemeColor,
     onThemeColorChange: (ThemeColor) -> Unit,
+    customPrimaryColor: Color,
+    onCustomPrimaryColorChange: (Color) -> Unit,
     animationSpeed: Float,
     onAnimationSpeedChange: (Float) -> Unit,
     lightEffectAnimationSpeed: Float,
@@ -386,6 +395,8 @@ fun MainScreen(
                 onPositionChange = onPositionChange,
                 themeColor = themeColor,
                 onThemeColorChange = onThemeColorChange,
+                customPrimaryColor = customPrimaryColor,
+                onCustomPrimaryColorChange = onCustomPrimaryColorChange,
                 animationSpeed = animationSpeed,
                 onAnimationSpeedChange = onAnimationSpeedChange,
                 lightEffectAnimationSpeed = lightEffectAnimationSpeed,
@@ -451,6 +462,8 @@ fun MainContent(
     onPositionChange: (SidebarPosition) -> Unit,
     themeColor: ThemeColor,
     onThemeColorChange: (ThemeColor) -> Unit,
+    customPrimaryColor: Color,
+    onCustomPrimaryColorChange: (Color) -> Unit,
     animationSpeed: Float,
     onAnimationSpeedChange: (Float) -> Unit,
     lightEffectAnimationSpeed: Float,
@@ -593,6 +606,8 @@ fun MainContent(
                         onPositionChange = onPositionChange,
                         themeColor = themeColor,
                         onThemeColorChange = onThemeColorChange,
+                        customPrimaryColor = customPrimaryColor,
+                        onCustomPrimaryColorChange = onCustomPrimaryColorChange,
                         enableBackgroundLightEffect = enableBackgroundLightEffect,
                         onEnableBackgroundLightEffectChange = onEnableBackgroundLightEffectChange,
                         animationSpeed = animationSpeed,

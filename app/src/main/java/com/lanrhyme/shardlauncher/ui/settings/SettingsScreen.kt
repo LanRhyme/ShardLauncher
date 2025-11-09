@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
 import com.lanrhyme.shardlauncher.common.SidebarPosition
 import com.lanrhyme.shardlauncher.ui.components.SegmentedNavigationBar
@@ -38,6 +39,8 @@ fun SettingsScreen(
     onPositionChange: (SidebarPosition) -> Unit,
     themeColor: ThemeColor, // Hoisted state for theme color
     onThemeColorChange: (ThemeColor) -> Unit, // Hoisted callback for theme color
+    customPrimaryColor: Color,
+    onCustomPrimaryColorChange: (Color) -> Unit,
     enableBackgroundLightEffect: Boolean,
     onEnableBackgroundLightEffectChange: () -> Unit,
     lightEffectAnimationSpeed: Float,
@@ -81,6 +84,8 @@ fun SettingsScreen(
                         onPositionChange = onPositionChange,
                         themeColor = themeColor,
                         onThemeColorChange = onThemeColorChange,
+                        customPrimaryColor = customPrimaryColor,
+                        onCustomPrimaryColorChange = onCustomPrimaryColorChange,
                         enableBackgroundLightEffect = enableBackgroundLightEffect,
                         onEnableBackgroundLightEffectChange = onEnableBackgroundLightEffectChange,
                         lightEffectAnimationSpeed = lightEffectAnimationSpeed,
