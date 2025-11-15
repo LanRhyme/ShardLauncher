@@ -6,7 +6,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,14 +16,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -33,12 +35,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.lanrhyme.shardlauncher.common.SidebarPosition
 import com.lanrhyme.shardlauncher.ui.components.CollapsibleCard
 import com.lanrhyme.shardlauncher.ui.components.ScalingActionButton
@@ -46,7 +48,7 @@ import com.lanrhyme.shardlauncher.ui.components.SimpleListLayout
 import com.lanrhyme.shardlauncher.ui.components.SliderLayout
 import com.lanrhyme.shardlauncher.ui.components.SwitchLayout
 import com.lanrhyme.shardlauncher.ui.components.animatedAppearance
-import com.lanrhyme.shardlauncher.ui.composables.HsvColorPicker
+import com.lanrhyme.shardlauncher.ui.composables.ThemeColorEditor
 import com.lanrhyme.shardlauncher.ui.theme.ThemeColor
 import java.io.File
 import java.io.FileOutputStream
@@ -62,6 +64,10 @@ internal fun LauncherSettingsContent(
     onThemeColorChange: (ThemeColor) -> Unit,
     customPrimaryColor: Color,
     onCustomPrimaryColorChange: (Color) -> Unit,
+    lightColorScheme: ColorScheme,
+    darkColorScheme: ColorScheme,
+    onLightColorSchemeChange: (ColorScheme) -> Unit,
+    onDarkColorSchemeChange: (ColorScheme) -> Unit,
     enableBackgroundLightEffect: Boolean,
     onEnableBackgroundLightEffectChange: () -> Unit,
     lightEffectAnimationSpeed: Float,
@@ -95,38 +101,32 @@ internal fun LauncherSettingsContent(
     val isBackgroundVideo = launcherBackgroundUri?.endsWith(".mp4") == true
 
     var showColorPickerDialog by remember { mutableStateOf(false) }
-    var tempCustomColor by remember(customPrimaryColor) { mutableStateOf(customPrimaryColor) }
+    var tempLightColorScheme by remember(lightColorScheme) { mutableStateOf(lightColorScheme) }
+    var tempDarkColorScheme by remember(darkColorScheme) { mutableStateOf(darkColorScheme) }
+
 
     if (showColorPickerDialog) {
         AlertDialog(
             onDismissRequest = { showColorPickerDialog = false },
-            title = { Text("选择自定义颜色") },
+            properties = DialogProperties(usePlatformDefaultWidth = false),
+            modifier = Modifier.width(650.dp),
+            title = { Text("自定义主题颜色") },
             text = {
-                Row {
-                    HsvColorPicker(
-                        modifier = Modifier.weight(1f),
-                        color = tempCustomColor,
-                        onColorSelected = { color ->
-                            tempCustomColor = color
-                        }
+                Box(modifier = Modifier.height(500.dp)) {
+                    ThemeColorEditor(
+                        lightColorScheme = tempLightColorScheme,
+                        darkColorScheme = tempDarkColorScheme,
+                        onLightColorSchemeChange = { tempLightColorScheme = it },
+                        onDarkColorSchemeChange = { tempDarkColorScheme = it }
                     )
-                    Spacer(modifier = Modifier.size(16.dp))
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = "当前")
-                        Box(modifier = Modifier
-                            .size(50.dp)
-                            .background(customPrimaryColor, RoundedCornerShape(12.dp)))
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(text = "之后")
-                        Box(modifier = Modifier
-                            .size(50.dp)
-                            .background(tempCustomColor, RoundedCornerShape(12.dp)))
-                    }
                 }
             },
             confirmButton = {
-                TextButton(onClick = {
-                    onCustomPrimaryColorChange(tempCustomColor)
+                Button(onClick = {
+                    onLightColorSchemeChange(tempLightColorScheme)
+                    onDarkColorSchemeChange(tempDarkColorScheme)
+                    // also update the primary color for generation logic
+                    onCustomPrimaryColorChange(tempLightColorScheme.primary)
                     onThemeColorChange(ThemeColor.Custom)
                     showColorPickerDialog = false
                 }) {
@@ -241,7 +241,8 @@ internal fun LauncherSettingsContent(
                 selectedItem = themeColor,
                 onValueChange = { newColor ->
                     if (newColor == ThemeColor.Custom) {
-                        tempCustomColor = customPrimaryColor // Reset temp color when opening
+                        tempLightColorScheme = lightColorScheme
+                        tempDarkColorScheme = darkColorScheme
                         showColorPickerDialog = true
                     } else {
                         onThemeColorChange(newColor)

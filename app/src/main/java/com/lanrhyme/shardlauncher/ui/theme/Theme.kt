@@ -191,7 +191,8 @@ object ColorPalettes {
 fun ShardLauncherTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     themeColor: ThemeColor = ThemeColor.Green, // Default to Green
-    customPrimaryColor: Color? = null,
+    lightColorScheme: ColorScheme? = null,
+    darkColorScheme: ColorScheme? = null,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -210,9 +211,8 @@ fun ShardLauncherTheme(
                 )
             }
         }
-        themeColor == ThemeColor.Custom && customPrimaryColor != null -> {
-            val customColorSet = remember(customPrimaryColor) { generateColorSetFromPrimary(customPrimaryColor) }
-            if (darkTheme) customColorSet.darkColorScheme else customColorSet.lightColorScheme
+        themeColor == ThemeColor.Custom && lightColorScheme != null && darkColorScheme != null -> {
+            if (darkTheme) darkColorScheme else lightColorScheme
         }
         else -> {
             val palette = when (themeColor) {

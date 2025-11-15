@@ -39,6 +39,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -100,6 +101,7 @@ import com.lanrhyme.shardlauncher.ui.notification.NotificationPanel
 import com.lanrhyme.shardlauncher.ui.notification.NotificationPopupHost
 import com.lanrhyme.shardlauncher.ui.notification.NotificationType
 import com.lanrhyme.shardlauncher.ui.settings.SettingsScreen
+import com.lanrhyme.shardlauncher.ui.theme.ColorPalettes
 import com.lanrhyme.shardlauncher.ui.theme.ShardLauncherTheme
 import com.lanrhyme.shardlauncher.ui.theme.ThemeColor
 
@@ -128,6 +130,8 @@ class MainActivity : ComponentActivity() {
             var sidebarPosition by remember { mutableStateOf(settingsRepository.getSidebarPosition()) }
             var themeColor by remember { mutableStateOf(settingsRepository.getThemeColor()) }
             var customPrimaryColor by remember { mutableStateOf(Color(settingsRepository.getCustomPrimaryColor())) }
+            var lightColorScheme by remember { mutableStateOf(settingsRepository.getLightColorScheme() ?: ColorPalettes.Green.lightColorScheme) }
+            var darkColorScheme by remember { mutableStateOf(settingsRepository.getDarkColorScheme() ?: ColorPalettes.Green.darkColorScheme) }
             var animationSpeed by remember { mutableStateOf(settingsRepository.getAnimationSpeed()) }
             var lightEffectAnimationSpeed by remember { mutableStateOf(settingsRepository.getLightEffectAnimationSpeed()) }
             var enableBackgroundLightEffect by remember { mutableStateOf(settingsRepository.getEnableBackgroundLightEffect()) }
@@ -164,7 +168,7 @@ class MainActivity : ComponentActivity() {
                     animationSpec = tween(durationMillis = 500)
                 ) { show ->
                     if (show) {
-                        ShardLauncherTheme(darkTheme = isDarkTheme, themeColor = themeColor, customPrimaryColor = customPrimaryColor) {
+                        ShardLauncherTheme(darkTheme = isDarkTheme, themeColor = themeColor, lightColorScheme = lightColorScheme, darkColorScheme = darkColorScheme) {
                             SplashScreen(onAnimationFinished = { showSplash = false })
                         }
                     } else {
@@ -173,7 +177,7 @@ class MainActivity : ComponentActivity() {
                             label = "ThemeCrossfade",
                             animationSpec = tween(durationMillis = 500)
                         ) { isDark ->
-                            ShardLauncherTheme(darkTheme = isDark, themeColor = themeColor, customPrimaryColor = customPrimaryColor) {
+                            ShardLauncherTheme(darkTheme = isDark, themeColor = themeColor, lightColorScheme = lightColorScheme, darkColorScheme = darkColorScheme) {
                                 MainScreen(
                                     navController = navController,
                                     isDarkTheme = isDark,
@@ -196,6 +200,16 @@ class MainActivity : ComponentActivity() {
                                     onCustomPrimaryColorChange = { newColor ->
                                         customPrimaryColor = newColor
                                         settingsRepository.setCustomPrimaryColor(newColor.toArgb())
+                                    },
+                                    lightColorScheme = lightColorScheme,
+                                    darkColorScheme = darkColorScheme,
+                                    onLightColorSchemeChange = { newScheme ->
+                                        lightColorScheme = newScheme
+                                        settingsRepository.setLightColorScheme(newScheme)
+                                    },
+                                    onDarkColorSchemeChange = { newScheme ->
+                                        darkColorScheme = newScheme
+                                        settingsRepository.setDarkColorScheme(newScheme)
                                     },
                                     animationSpeed = animationSpeed,
                                     onAnimationSpeedChange = { newSpeed ->
@@ -282,6 +296,10 @@ fun MainScreen(
     onThemeColorChange: (ThemeColor) -> Unit,
     customPrimaryColor: Color,
     onCustomPrimaryColorChange: (Color) -> Unit,
+    lightColorScheme: ColorScheme,
+    darkColorScheme: ColorScheme,
+    onLightColorSchemeChange: (ColorScheme) -> Unit,
+    onDarkColorSchemeChange: (ColorScheme) -> Unit,
     animationSpeed: Float,
     onAnimationSpeedChange: (Float) -> Unit,
     lightEffectAnimationSpeed: Float,
@@ -397,6 +415,10 @@ fun MainScreen(
                 onThemeColorChange = onThemeColorChange,
                 customPrimaryColor = customPrimaryColor,
                 onCustomPrimaryColorChange = onCustomPrimaryColorChange,
+                lightColorScheme = lightColorScheme,
+                darkColorScheme = darkColorScheme,
+                onLightColorSchemeChange = onLightColorSchemeChange,
+                onDarkColorSchemeChange = onDarkColorSchemeChange,
                 animationSpeed = animationSpeed,
                 onAnimationSpeedChange = onAnimationSpeedChange,
                 lightEffectAnimationSpeed = lightEffectAnimationSpeed,
@@ -464,6 +486,10 @@ fun MainContent(
     onThemeColorChange: (ThemeColor) -> Unit,
     customPrimaryColor: Color,
     onCustomPrimaryColorChange: (Color) -> Unit,
+    lightColorScheme: ColorScheme,
+    darkColorScheme: ColorScheme,
+    onLightColorSchemeChange: (ColorScheme) -> Unit,
+    onDarkColorSchemeChange: (ColorScheme) -> Unit,
     animationSpeed: Float,
     onAnimationSpeedChange: (Float) -> Unit,
     lightEffectAnimationSpeed: Float,
@@ -608,6 +634,10 @@ fun MainContent(
                         onThemeColorChange = onThemeColorChange,
                         customPrimaryColor = customPrimaryColor,
                         onCustomPrimaryColorChange = onCustomPrimaryColorChange,
+                        lightColorScheme = lightColorScheme,
+                        darkColorScheme = darkColorScheme,
+                        onLightColorSchemeChange = onLightColorSchemeChange,
+                        onDarkColorSchemeChange = onDarkColorSchemeChange,
                         enableBackgroundLightEffect = enableBackgroundLightEffect,
                         onEnableBackgroundLightEffectChange = onEnableBackgroundLightEffectChange,
                         animationSpeed = animationSpeed,

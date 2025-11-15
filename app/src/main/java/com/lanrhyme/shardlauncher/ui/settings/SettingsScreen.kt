@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -41,6 +42,10 @@ fun SettingsScreen(
     onThemeColorChange: (ThemeColor) -> Unit, // Hoisted callback for theme color
     customPrimaryColor: Color,
     onCustomPrimaryColorChange: (Color) -> Unit,
+    lightColorScheme: ColorScheme,
+    darkColorScheme: ColorScheme,
+    onLightColorSchemeChange: (ColorScheme) -> Unit,
+    onDarkColorSchemeChange: (ColorScheme) -> Unit,
     enableBackgroundLightEffect: Boolean,
     onEnableBackgroundLightEffectChange: () -> Unit,
     lightEffectAnimationSpeed: Float,
@@ -86,6 +91,10 @@ fun SettingsScreen(
                         onThemeColorChange = onThemeColorChange,
                         customPrimaryColor = customPrimaryColor,
                         onCustomPrimaryColorChange = onCustomPrimaryColorChange,
+                        lightColorScheme = lightColorScheme,
+                        darkColorScheme = darkColorScheme,
+                        onLightColorSchemeChange = onLightColorSchemeChange,
+                        onDarkColorSchemeChange = onDarkColorSchemeChange,
                         enableBackgroundLightEffect = enableBackgroundLightEffect,
                         onEnableBackgroundLightEffectChange = onEnableBackgroundLightEffectChange,
                         lightEffectAnimationSpeed = lightEffectAnimationSpeed,

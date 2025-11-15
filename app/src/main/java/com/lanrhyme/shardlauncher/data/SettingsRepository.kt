@@ -1,6 +1,14 @@
 package com.lanrhyme.shardlauncher.data
 
 import android.content.Context
+import androidx.compose.material3.ColorScheme
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.TypeAdapter
+import com.google.gson.stream.JsonReader
+import com.google.gson.stream.JsonWriter
 import com.lanrhyme.shardlauncher.common.SidebarPosition
 import com.lanrhyme.shardlauncher.ui.theme.ThemeColor
 import java.io.File
@@ -8,10 +16,31 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.util.Properties
 
+class ColorTypeAdapter : TypeAdapter<Color>() {
+    override fun write(out: JsonWriter, value: Color?) {
+        if (value == null) {
+            out.nullValue()
+        } else {
+            out.value(value.toArgb())
+        }
+    }
+
+    override fun read(input: JsonReader): Color? {
+        if (input.peek() == com.google.gson.stream.JsonToken.NULL) {
+            input.nextNull()
+            return null
+        }
+        return Color(input.nextLong().toInt())
+    }
+}
+
 class SettingsRepository(context: Context) {
 
     private val properties = Properties()
     private val settingsFile: File
+    private val gson: Gson = GsonBuilder()
+        .registerTypeAdapter(Color::class.java, ColorTypeAdapter())
+        .create()
 
     init {
         val dataDir = context.getExternalFilesDir(null)
@@ -148,6 +177,36 @@ class SettingsRepository(context: Context) {
         saveProperties()
     }
 
+    fun getLightColorScheme(): ColorScheme? {
+        val json = properties.getProperty(KEY_LIGHT_COLOR_SCHEME)
+        return if (json != null) {
+            gson.fromJson(json, ColorScheme::class.java)
+        } else {
+            null
+        }
+    }
+
+    fun setLightColorScheme(scheme: ColorScheme) {
+        val json = gson.toJson(scheme)
+        properties.setProperty(KEY_LIGHT_COLOR_SCHEME, json)
+        saveProperties()
+    }
+
+    fun getDarkColorScheme(): ColorScheme? {
+        val json = properties.getProperty(KEY_DARK_COLOR_SCHEME)
+        return if (json != null) {
+            gson.fromJson(json, ColorScheme::class.java)
+        } else {
+            null
+        }
+    }
+
+    fun setDarkColorScheme(scheme: ColorScheme) {
+        val json = gson.toJson(scheme)
+        properties.setProperty(KEY_DARK_COLOR_SCHEME, json)
+        saveProperties()
+    }
+
     fun getIsGlowEffectEnabled(): Boolean {
         return properties.getProperty(KEY_IS_GLOW_EFFECT_ENABLED, "true").toBoolean()
     }
@@ -184,5 +243,7 @@ class SettingsRepository(context: Context) {
         private const val DEFAULT_CUSTOM_PRIMARY_COLOR = -9859931 // 0xFF698945 in decimal
         private const val KEY_IS_GLOW_EFFECT_ENABLED = "is_glow_effect_enabled"
         private const val KEY_USE_BMCLAPI = "use_bmclapi"
+        private const val KEY_LIGHT_COLOR_SCHEME = "light_color_scheme"
+        private const val KEY_DARK_COLOR_SCHEME = "dark_color_scheme"
     }
 }
