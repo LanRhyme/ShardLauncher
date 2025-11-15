@@ -13,8 +13,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.Divider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
@@ -23,51 +25,51 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
+private data class ColorProperty(val name: String, val title: String, val summary: String)
+
 private val colorSchemeProperties = listOf(
-    "primary", "onPrimary", "primaryContainer", "onPrimaryContainer",
-    "inversePrimary", "secondary", "onSecondary", "secondaryContainer",
-    "onSecondaryContainer", "tertiary", "onTertiary", "tertiaryContainer",
-    "onTertiaryContainer", "background", "onBackground", "surface", "onSurface",
-    "surfaceVariant", "onSurfaceVariant", "surfaceTint", "inverseSurface",
-    "inverseOnSurface", "error", "onError", "errorContainer", "onErrorContainer",
-    "outline", "outlineVariant", "scrim"
+    ColorProperty("primary", "primary", "应用中最突出的颜色"),
+    ColorProperty("onPrimary", "onPrimary", "主色背景之上的文本和图标"),
+    ColorProperty("secondary", "secondary", "用于界面元素的点缀"),
+    ColorProperty("onSecondary", "onSecondary", "次要色背景之上的文本和图标"),
+    ColorProperty("tertiary", "tertiary", "用于平衡主次颜色或突出元素"),
+    ColorProperty("onTertiary", "onTertiary", "第三色背景之上的文本和图标"),
+    ColorProperty("background", "background", "可滚动内容区域的背景"),
+    ColorProperty("onBackground", "onBackground", "背景颜色之上的文本和图标"),
+    ColorProperty("surface", "surface", "组件表面的颜色，如卡片、菜单"),
+    ColorProperty("onSurface", "onSurface", "表面颜色之上的文本和图标"),
+    ColorProperty("surfaceVariant", "surfaceVariant", "用于区分UI元素的表面变体"),
+    ColorProperty("onSurfaceVariant", "onSurfaceVariant", "表面变体颜色之上的文本和图标"),
+    ColorProperty("error", "error", "用于指示错误的颜色"),
+    ColorProperty("onError", "onError", "错误颜色背景之上的文本和图标"),
+    ColorProperty("errorContainer", "errorContainer", "用于承载错误信息的容器颜色"),
+    ColorProperty("onErrorContainer", "onErrorContainer", "错误容器颜色之上的文本和图标")
 )
 
 private fun getColorByName(scheme: ColorScheme, name: String): Color {
     return when (name) {
         "primary" -> scheme.primary
         "onPrimary" -> scheme.onPrimary
-        "primaryContainer" -> scheme.primaryContainer
-        "onPrimaryContainer" -> scheme.onPrimaryContainer
-        "inversePrimary" -> scheme.inversePrimary
         "secondary" -> scheme.secondary
         "onSecondary" -> scheme.onSecondary
-        "secondaryContainer" -> scheme.secondaryContainer
-        "onSecondaryContainer" -> scheme.onSecondaryContainer
         "tertiary" -> scheme.tertiary
         "onTertiary" -> scheme.onTertiary
-        "tertiaryContainer" -> scheme.tertiaryContainer
-        "onTertiaryContainer" -> scheme.onTertiaryContainer
         "background" -> scheme.background
         "onBackground" -> scheme.onBackground
         "surface" -> scheme.surface
         "onSurface" -> scheme.onSurface
         "surfaceVariant" -> scheme.surfaceVariant
         "onSurfaceVariant" -> scheme.onSurfaceVariant
-        "surfaceTint" -> scheme.surfaceTint
-        "inverseSurface" -> scheme.inverseSurface
-        "inverseOnSurface" -> scheme.inverseOnSurface
         "error" -> scheme.error
         "onError" -> scheme.onError
         "errorContainer" -> scheme.errorContainer
         "onErrorContainer" -> scheme.onErrorContainer
-        "outline" -> scheme.outline
-        "outlineVariant" -> scheme.outlineVariant
-        "scrim" -> scheme.scrim
         else -> Color.Unspecified
     }
 }
@@ -76,33 +78,20 @@ private fun setColorByName(scheme: ColorScheme, name: String, color: Color): Col
     return when (name) {
         "primary" -> scheme.copy(primary = color)
         "onPrimary" -> scheme.copy(onPrimary = color)
-        "primaryContainer" -> scheme.copy(primaryContainer = color)
-        "onPrimaryContainer" -> scheme.copy(onPrimaryContainer = color)
-        "inversePrimary" -> scheme.copy(inversePrimary = color)
         "secondary" -> scheme.copy(secondary = color)
         "onSecondary" -> scheme.copy(onSecondary = color)
-        "secondaryContainer" -> scheme.copy(secondaryContainer = color)
-        "onSecondaryContainer" -> scheme.copy(onSecondaryContainer = color)
         "tertiary" -> scheme.copy(tertiary = color)
         "onTertiary" -> scheme.copy(onTertiary = color)
-        "tertiaryContainer" -> scheme.copy(tertiaryContainer = color)
-        "onTertiaryContainer" -> scheme.copy(onTertiaryContainer = color)
         "background" -> scheme.copy(background = color)
         "onBackground" -> scheme.copy(onBackground = color)
         "surface" -> scheme.copy(surface = color)
         "onSurface" -> scheme.copy(onSurface = color)
         "surfaceVariant" -> scheme.copy(surfaceVariant = color)
         "onSurfaceVariant" -> scheme.copy(onSurfaceVariant = color)
-        "surfaceTint" -> scheme.copy(surfaceTint = color)
-        "inverseSurface" -> scheme.copy(inverseSurface = color)
-        "inverseOnSurface" -> scheme.copy(inverseOnSurface = color)
         "error" -> scheme.copy(error = color)
         "onError" -> scheme.copy(onError = color)
         "errorContainer" -> scheme.copy(errorContainer = color)
         "onErrorContainer" -> scheme.copy(onErrorContainer = color)
-        "outline" -> scheme.copy(outline = color)
-        "outlineVariant" -> scheme.copy(outlineVariant = color)
-        "scrim" -> scheme.copy(scrim = color)
         else -> scheme
     }
 }
@@ -121,7 +110,7 @@ fun ThemeColorEditor(
         return
     }
 
-    var selectedPropertyName by remember { mutableStateOf(colorSchemeProperties.first()) }
+    var selectedPropertyName by remember { mutableStateOf(colorSchemeProperties.first().name) }
     var isDarkTheme by remember { mutableStateOf(false) }
 
     val currentColorScheme = if (isDarkTheme) darkColorScheme else lightColorScheme
@@ -131,7 +120,10 @@ fun ThemeColorEditor(
 
     Row(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.weight(1f)) {
-            TabRow(selectedTabIndex = if (isDarkTheme) 1 else 0) {
+            TabRow(
+                selectedTabIndex = if (isDarkTheme) 1 else 0,
+                modifier = Modifier.clip(RoundedCornerShape(16.dp))
+            ) {
                 Tab(
                     selected = !isDarkTheme,
                     onClick = { isDarkTheme = false },
@@ -144,17 +136,23 @@ fun ThemeColorEditor(
                 )
             }
             LazyColumn {
-                items(colorSchemeProperties) { propName ->
+                items(colorSchemeProperties) { prop ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { selectedPropertyName = propName }
+                            .clickable { selectedPropertyName = prop.name }
                             .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(propName)
-                        Canvas(modifier = Modifier.width(32.dp).height(16.dp)) {
-                            drawRect(color = getColorByName(currentColorScheme, propName))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(prop.title, style = MaterialTheme.typography.titleMedium)
+                            Text(prop.summary, style = MaterialTheme.typography.bodySmall)
+                        }
+                        Canvas(modifier = Modifier
+                            .width(32.dp)
+                            .height(16.dp)) {
+                            drawRect(color = getColorByName(currentColorScheme, prop.name))
                         }
                     }
                 }

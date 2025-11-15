@@ -1,9 +1,13 @@
 package com.lanrhyme.shardlauncher.ui.composables
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -13,6 +17,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -27,6 +32,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
@@ -34,6 +40,7 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
@@ -48,6 +55,8 @@ fun HsvColorPicker(
     color: Color,
     onColorSelected: (Color) -> Unit
 ) {
+    val initialColor = remember { color } // Remember the initial color
+
     val (h, saturation, value) = color.toHsv()
     // Remember the hue state. Initialize with the hue from the initial color.
     var hue by remember { mutableStateOf(h) }
@@ -71,7 +80,8 @@ fun HsvColorPicker(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(150.dp) // Reduced height
+                .height(150.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             HueSlider(
                 hue = hue,
@@ -96,9 +106,32 @@ fun HsvColorPicker(
                 },
                 modifier = Modifier
                     .fillMaxHeight()
-                    .aspectRatio(1f) // Make it a square
+                    .aspectRatio(1f)
                     .clip(RoundedCornerShape(12.dp))
             )
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            // Color comparison view
+            Column(
+                modifier = Modifier.fillMaxHeight(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterVertically)
+            ) {
+                Text("修改前", style = MaterialTheme.typography.bodySmall)
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(initialColor, RoundedCornerShape(16.dp))
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("修改后", style = MaterialTheme.typography.bodySmall)
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(color, RoundedCornerShape(16.dp))
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -227,11 +260,13 @@ private fun HueSlider(
             drawRect(brush = brush)
 
             val selectorY = size.height * hue / 360f
-            drawCircle(
+
+            drawLine(
                 color = Color.White,
-                radius = size.width / 2,
-                center = Offset(size.width / 2, selectorY),
-                style = Stroke(width = 2.dp.toPx())
+                start = Offset(0f, selectorY),
+                end = Offset(size.width, selectorY),
+                strokeWidth = 3.dp.toPx(),
+                cap = StrokeCap.Round
             )
         }
     }

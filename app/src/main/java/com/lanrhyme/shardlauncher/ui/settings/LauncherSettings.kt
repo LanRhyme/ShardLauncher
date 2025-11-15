@@ -24,8 +24,6 @@ import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -39,7 +37,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.lanrhyme.shardlauncher.common.SidebarPosition
 import com.lanrhyme.shardlauncher.ui.components.CollapsibleCard
@@ -49,6 +46,7 @@ import com.lanrhyme.shardlauncher.ui.components.SliderLayout
 import com.lanrhyme.shardlauncher.ui.components.SwitchLayout
 import com.lanrhyme.shardlauncher.ui.components.animatedAppearance
 import com.lanrhyme.shardlauncher.ui.composables.ThemeColorEditor
+import com.lanrhyme.shardlauncher.ui.theme.ColorPalettes
 import com.lanrhyme.shardlauncher.ui.theme.ThemeColor
 import java.io.File
 import java.io.FileOutputStream
@@ -134,8 +132,16 @@ internal fun LauncherSettingsContent(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showColorPickerDialog = false }) {
-                    Text("取消")
+                Row {
+                    TextButton(onClick = {
+                        tempLightColorScheme = ColorPalettes.Green.lightColorScheme
+                        tempDarkColorScheme = ColorPalettes.Green.darkColorScheme
+                    }) {
+                        Text("重置")
+                    }
+                    TextButton(onClick = { showColorPickerDialog = false }) {
+                        Text("取消")
+                    }
                 }
             }
         )
