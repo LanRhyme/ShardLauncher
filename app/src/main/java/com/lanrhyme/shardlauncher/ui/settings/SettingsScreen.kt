@@ -20,6 +20,7 @@ import androidx.navigation.NavController
 import com.lanrhyme.shardlauncher.common.SidebarPosition
 import com.lanrhyme.shardlauncher.ui.components.SegmentedNavigationBar
 import com.lanrhyme.shardlauncher.ui.theme.ThemeColor
+import dev.chrisbanes.haze.HazeState
 
 // 1. 定义设置页面分类
 enum class SettingsPage(val title: String) {
@@ -50,6 +51,10 @@ fun SettingsScreen(
     onEnableBackgroundLightEffectChange: () -> Unit,
     lightEffectAnimationSpeed: Float,
     onLightEffectAnimationSpeedChange: (Float) -> Unit,
+    enableBackgroundLightEffectCustomColor: Boolean,
+    onEnableBackgroundLightEffectCustomColorChange: () -> Unit,
+    backgroundLightEffectCustomColor: Color,
+    onBackgroundLightEffectCustomColorChange: (Color) -> Unit,
     animationSpeed: Float,
     onAnimationSpeedChange: (Float) -> Unit,
     launcherBackgroundUri: String?,
@@ -66,8 +71,11 @@ fun SettingsScreen(
     onUiScaleChange: (Float) -> Unit,
     isGlowEffectEnabled: Boolean,
     onIsGlowEffectEnabledChange: () -> Unit,
+    isCardBlurEnabled: Boolean,
+    onIsCardBlurEnabledChange: () -> Unit,
     useBmclapi: Boolean,
-    onUseBmclapiChange: (Boolean) -> Unit
+    onUseBmclapiChange: (Boolean) -> Unit,
+    hazeState: HazeState
 ) {
     // 2. 添加状态来管理当前选中的页面
     var selectedPage by remember { mutableStateOf(SettingsPage.Launcher) }
@@ -99,6 +107,10 @@ fun SettingsScreen(
                         onEnableBackgroundLightEffectChange = onEnableBackgroundLightEffectChange,
                         lightEffectAnimationSpeed = lightEffectAnimationSpeed,
                         onLightEffectAnimationSpeedChange = onLightEffectAnimationSpeedChange,
+                        enableBackgroundLightEffectCustomColor = enableBackgroundLightEffectCustomColor,
+                        onEnableBackgroundLightEffectCustomColorChange = onEnableBackgroundLightEffectCustomColorChange,
+                        backgroundLightEffectCustomColor = backgroundLightEffectCustomColor,
+                        onBackgroundLightEffectCustomColorChange = onBackgroundLightEffectCustomColorChange,
                         animationSpeed = animationSpeed,
                         onAnimationSpeedChange = onAnimationSpeedChange,
                         launcherBackgroundUri = launcherBackgroundUri,
@@ -114,7 +126,10 @@ fun SettingsScreen(
                         uiScale = uiScale,
                         onUiScaleChange = onUiScaleChange,
                         isGlowEffectEnabled = isGlowEffectEnabled,
-                        onIsGlowEffectEnabledChange = onIsGlowEffectEnabledChange
+                        onIsGlowEffectEnabledChange = onIsGlowEffectEnabledChange,
+                        isCardBlurEnabled = isCardBlurEnabled,
+                        onIsCardBlurEnabledChange = onIsCardBlurEnabledChange,
+                        hazeState = hazeState
                     )
                 }
 
@@ -122,16 +137,18 @@ fun SettingsScreen(
                     GameSettingsContent(
                         useBmclapi = useBmclapi,
                         onUseBmclapiChange = onUseBmclapiChange,
-                        animationSpeed = animationSpeed
+                        animationSpeed = animationSpeed,
+                        isCardBlurEnabled = isCardBlurEnabled,
+                        hazeState = hazeState
                     )
                 }
 
                 SettingsPage.About -> {
-                    AboutScreen(animationSpeed = animationSpeed)
+                    AboutScreen(animationSpeed = animationSpeed, isCardBlurEnabled = isCardBlurEnabled, hazeState = hazeState)
                 }
 
                 SettingsPage.Other -> {
-                    OtherSettingsContent(navController = navController)
+                    OtherSettingsContent(navController = navController, isCardBlurEnabled = isCardBlurEnabled, hazeState = hazeState)
                 }
                 // Other categories can be added later
                 else -> { /* Placeholder for other settings pages */ }

@@ -31,9 +31,10 @@ import com.lanrhyme.shardlauncher.ui.components.TitleAndSummary
 import com.lanrhyme.shardlauncher.ui.notification.Notification
 import com.lanrhyme.shardlauncher.ui.notification.NotificationManager
 import com.lanrhyme.shardlauncher.ui.notification.NotificationType
+import dev.chrisbanes.haze.HazeState
 
 @Composable
-fun DeveloperOptionsScreen(navController: NavController) {
+fun DeveloperOptionsScreen(navController: NavController, isCardBlurEnabled: Boolean, hazeState: HazeState) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -77,7 +78,7 @@ fun DeveloperOptionsScreen(navController: NavController) {
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(22.dp)
             ) {
-                TestNotificationSender()
+                TestNotificationSender(isCardBlurEnabled = isCardBlurEnabled, hazeState = hazeState)
             }
         }
         item {
@@ -103,7 +104,7 @@ fun DeveloperOptionsScreen(navController: NavController) {
 }
 
 @Composable
-private fun TestNotificationSender() {
+private fun TestNotificationSender(isCardBlurEnabled: Boolean, hazeState: HazeState) {
     var progress by remember { mutableStateOf(0f) }
     var progressNotificationId by remember { mutableStateOf<String?>(null) }
 
@@ -159,7 +160,9 @@ private fun TestNotificationSender() {
             },
             title = "Update Progress",
             summary = "For the last progress notification sent",
-            isGlowEffectEnabled = true
+            isGlowEffectEnabled = true,
+            isCardBlurEnabled = isCardBlurEnabled,
+            hazeState = hazeState
         )
     }
 }

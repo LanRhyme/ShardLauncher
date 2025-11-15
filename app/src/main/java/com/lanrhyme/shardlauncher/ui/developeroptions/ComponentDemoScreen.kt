@@ -32,9 +32,13 @@ import com.lanrhyme.shardlauncher.ui.components.SliderLayout
 import com.lanrhyme.shardlauncher.ui.components.StyledFilterChip
 import com.lanrhyme.shardlauncher.ui.components.SwitchLayout
 import com.lanrhyme.shardlauncher.ui.components.TitleAndSummary
+import dev.chrisbanes.haze.HazeState
 
 @Composable
-fun ComponentDemoScreen() {
+fun ComponentDemoScreen(
+    isCardBlurEnabled: Boolean,
+    hazeState: HazeState
+) {
     var textState by remember { mutableStateOf("Hello") }
     var switchState by remember { mutableStateOf(false) }
     var sliderState by remember { mutableStateOf(0.5f) }
@@ -90,11 +94,24 @@ fun ComponentDemoScreen() {
         }
         
         item {
-            SwitchLayout(checked = switchState, onCheckedChange = { switchState = !switchState }, title = "Switch Layout")
+            SwitchLayout(
+                checked = switchState, 
+                onCheckedChange = { switchState = !switchState }, 
+                title = "Switch Layout",
+                isCardBlurEnabled = isCardBlurEnabled,
+                hazeState = hazeState
+            )
         }
         
         item {
-            SliderLayout(value = sliderState, onValueChange = { sliderState = it }, title = "Slider Layout", isGlowEffectEnabled = true)
+            SliderLayout(
+                value = sliderState, 
+                onValueChange = { sliderState = it }, 
+                title = "Slider Layout", 
+                isGlowEffectEnabled = true,
+                isCardBlurEnabled = isCardBlurEnabled,
+                hazeState = hazeState
+            )
         }
         
         item {
@@ -103,7 +120,9 @@ fun ComponentDemoScreen() {
                 items = SidebarPosition.entries,
                 selectedItem = selectedListPage,
                 onValueChange = { selectedListPage = it },
-                getItemText = { pos -> pos.name  }
+                getItemText = { pos -> pos.name  },
+                isCardBlurEnabled = isCardBlurEnabled,
+                hazeState = hazeState
             )
         }
 
@@ -123,7 +142,12 @@ fun ComponentDemoScreen() {
         }
 
         item {
-            CombinedCard(title = "Combined Card", summary = "With some content") {
+            CombinedCard(
+                title = "Combined Card", 
+                summary = "With some content",
+                isCardBlurEnabled = isCardBlurEnabled,
+                hazeState = hazeState
+            ) {
                 Text("This is the content of the combined card", modifier = Modifier.padding(16.dp))
             }
         }

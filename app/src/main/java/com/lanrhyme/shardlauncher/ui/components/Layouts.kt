@@ -1,5 +1,6 @@
 package com.lanrhyme.shardlauncher.ui.components
 
+import android.os.Build
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
@@ -19,6 +20,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
@@ -26,6 +28,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.hazeChild
 
 @Composable
 fun SwitchLayout(
@@ -35,13 +39,23 @@ fun SwitchLayout(
     title: String,
     summary: String? = null,
     enabled: Boolean = true,
-    shape: Shape = RoundedCornerShape(22.0.dp)
+    shape: Shape = RoundedCornerShape(22.0.dp),
+    isCardBlurEnabled: Boolean,
+    hazeState: HazeState
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    Card(
-        modifier = modifier
+    val cardModifier = if (isCardBlurEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        modifier
             .fillMaxWidth()
             .alpha(if (enabled) 1f else 0.5f)
+            .hazeChild(state = hazeState, shape = shape)
+    } else {
+        modifier
+            .fillMaxWidth()
+            .alpha(if (enabled) 1f else 0.5f)
+    }
+    Card(
+        modifier = cardModifier
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
@@ -93,13 +107,23 @@ fun <E> SimpleListLayout(
     enabled: Boolean = true,
     autoCollapse: Boolean = true,
     shape: Shape = RoundedCornerShape(22.0.dp),
+    isCardBlurEnabled: Boolean,
+    hazeState: HazeState
 ) {
     var expanded by remember { mutableStateOf(false) }
+    val cardModifier = if (isCardBlurEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        modifier
+            .fillMaxWidth()
+            .alpha(if (enabled) 1f else 0.5f)
+            .hazeChild(state = hazeState, shape = shape)
+    } else {
+        modifier
+            .fillMaxWidth()
+            .alpha(if (enabled) 1f else 0.5f)
+    }
 
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .alpha(if (enabled) 1f else 0.5f),
+        modifier = cardModifier,
         shape = shape,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
     ) {
@@ -176,12 +200,22 @@ fun SliderLayout(
     enabled: Boolean = true,
     shape: Shape = RoundedCornerShape(28.0.dp),
     displayValue: Float = value,
-    isGlowEffectEnabled: Boolean
+    isGlowEffectEnabled: Boolean,
+    isCardBlurEnabled: Boolean,
+    hazeState: HazeState
 ) {
-    Card(
-        modifier = modifier
+    val cardModifier = if (isCardBlurEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        modifier
             .fillMaxWidth()
-            .alpha(if (enabled) 1f else 0.5f),
+            .alpha(if (enabled) 1f else 0.5f)
+            .hazeChild(state = hazeState, shape = shape)
+    } else {
+        modifier
+            .fillMaxWidth()
+            .alpha(if (enabled) 1f else 0.5f)
+    }
+    Card(
+        modifier = cardModifier,
         shape = shape,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
     ) {

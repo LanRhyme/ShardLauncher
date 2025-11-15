@@ -15,9 +15,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.lanrhyme.shardlauncher.ui.components.SimpleListLayout
 import com.lanrhyme.shardlauncher.ui.navigation.Screen
+import dev.chrisbanes.haze.HazeState
 
 @Composable
-internal fun OtherSettingsContent(navController: NavController) {
+internal fun OtherSettingsContent(navController: NavController, isCardBlurEnabled: Boolean, hazeState: HazeState) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
@@ -37,7 +38,9 @@ internal fun OtherSettingsContent(navController: NavController) {
                 items = listOf(Unit),
                 selectedItem = Unit,
                 onValueChange = { navController.navigate(Screen.DeveloperOptions.route) },
-                getItemText = { "点击进入开发者选项" }
+                getItemText = { "点击进入开发者选项" },
+                isCardBlurEnabled = isCardBlurEnabled,
+                hazeState = hazeState
             )
         }
         item {

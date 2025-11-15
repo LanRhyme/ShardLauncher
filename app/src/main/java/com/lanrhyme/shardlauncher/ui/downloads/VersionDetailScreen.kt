@@ -50,10 +50,11 @@ import com.lanrhyme.shardlauncher.ui.components.CustomTextField
 import com.lanrhyme.shardlauncher.ui.components.ScalingActionButton
 import com.lanrhyme.shardlauncher.ui.components.StyledFilterChip
 import com.lanrhyme.shardlauncher.ui.components.SubPageNavigationBar
+import dev.chrisbanes.haze.HazeState
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun VersionDetailScreen(navController: NavController, versionId: String?) {
+fun VersionDetailScreen(navController: NavController, versionId: String?, isCardBlurEnabled: Boolean, hazeState: HazeState) {
     if (versionId == null) {
         Text("Error: Version ID is missing.")
         return
@@ -107,7 +108,12 @@ fun VersionDetailScreen(navController: NavController, versionId: String?) {
                 )
             }
 
-            CombinedCard(title = "模组加载器", summary = "选择一个模组加载器 (可选)") {
+            CombinedCard(
+                title = "模组加载器", 
+                summary = "选择一个模组加载器 (可选)",
+                isCardBlurEnabled = isCardBlurEnabled,
+                hazeState = hazeState
+            ) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         StyledFilterChip(selected = selectedModLoader == ModLoader.Fabric, onClick = { viewModel.selectModLoader(ModLoader.Fabric) }, label = { Text("Fabric") })
@@ -154,7 +160,7 @@ fun VersionDetailScreen(navController: NavController, versionId: String?) {
                 }
             }
 
-            CombinedCard(title = "光影加载器", summary = "为你的游戏添加光影 (可选)") {
+            CombinedCard(title = "光影加载器", summary = "为你的游戏添加光影 (可选)", isCardBlurEnabled = isCardBlurEnabled, hazeState = hazeState) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     StyledFilterChip(
                         selected = isOptifineSelected,

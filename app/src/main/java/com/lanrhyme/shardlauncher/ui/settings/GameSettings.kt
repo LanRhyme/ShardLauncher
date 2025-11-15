@@ -9,12 +9,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lanrhyme.shardlauncher.ui.components.SwitchLayout
 import com.lanrhyme.shardlauncher.ui.components.animatedAppearance
+import dev.chrisbanes.haze.HazeState
 
 @Composable
 fun GameSettingsContent(
     useBmclapi: Boolean,
     onUseBmclapiChange: (Boolean) -> Unit,
-    animationSpeed: Float
+    animationSpeed: Float,
+    isCardBlurEnabled: Boolean,
+    hazeState: HazeState
 ) {
     Column(
         modifier = Modifier
@@ -27,7 +30,9 @@ fun GameSettingsContent(
             title = "优先使用 BMCLAPI",
             summary = "开启后将优先从 BMCLAPI 下载游戏版本，可以加快下载速度",
             checked = useBmclapi,
-            onCheckedChange = { onUseBmclapiChange(!useBmclapi) }
+            onCheckedChange = { onUseBmclapiChange(!useBmclapi) },
+            isCardBlurEnabled = isCardBlurEnabled,
+            hazeState = hazeState
         )
     }
 }

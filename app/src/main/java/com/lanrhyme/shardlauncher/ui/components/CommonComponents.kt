@@ -1,5 +1,6 @@
 package com.lanrhyme.shardlauncher.ui.components
 
+import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
@@ -62,6 +63,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.hazeChild
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,15 +74,26 @@ fun CollapsibleCard(
     title: String,
     summary: String? = null,
     animationSpeed: Float = 1.0f,
+    isCardBlurEnabled: Boolean = false,
+    hazeState: HazeState? = null,
     content: @Composable () -> Unit
 ) {
     var isExpanded by remember { mutableStateOf(false) }
     val animationDuration = (300 / animationSpeed).toInt()
+    val cardShape = RoundedCornerShape(22.dp)
+
+    val cardModifier = if (isCardBlurEnabled && hazeState != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        modifier
+            .fillMaxWidth()
+            .hazeChild(state = hazeState, shape = cardShape)
+    } else {
+        modifier
+            .fillMaxWidth()
+    }
 
     Card(
-        modifier = modifier
-            .fillMaxWidth(),
-        shape = RoundedCornerShape(22.dp),
+        modifier = cardModifier,
+        shape = cardShape,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
     ) {
         Column {
@@ -114,11 +128,22 @@ fun CombinedCard(
     modifier: Modifier = Modifier,
     title: String,
     summary: String? = null,
+    isCardBlurEnabled: Boolean = false,
+    hazeState: HazeState? = null,
     content: @Composable () -> Unit
 ) {
+    val cardShape = RoundedCornerShape(22.dp)
+    val cardModifier = if (isCardBlurEnabled && hazeState != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        modifier
+            .fillMaxWidth()
+            .hazeChild(state = hazeState, shape = cardShape)
+    } else {
+        modifier
+            .fillMaxWidth()
+    }
     Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(22.dp),
+        modifier = cardModifier,
+        shape = cardShape,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
     ) {
         Column(modifier = Modifier.padding(12.dp)) {

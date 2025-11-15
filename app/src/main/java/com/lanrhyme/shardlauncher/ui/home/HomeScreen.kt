@@ -60,6 +60,7 @@ import com.lanrhyme.shardlauncher.ui.custom.XamlRenderer
 import com.lanrhyme.shardlauncher.ui.custom.parseXaml
 import com.lanrhyme.shardlauncher.ui.navigation.Screen
 import com.lanrhyme.shardlauncher.utils.Logger
+import dev.chrisbanes.haze.HazeState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -74,7 +75,9 @@ fun HomeScreen(
     navController: NavController,
     enableVersionCheck: Boolean,
     animationSpeed: Float,
-    accountViewModel: AccountViewModel = viewModel()
+    accountViewModel: AccountViewModel = viewModel(),
+    isCardBlurEnabled: Boolean,
+    hazeState: HazeState
 ) {
     val context = LocalContext.current
     val settingsRepository = remember { SettingsRepository(context) }
@@ -136,7 +139,9 @@ fun HomeScreen(
                     CombinedCard(
                         modifier = Modifier.animatedAppearance(0, animatedSpeed),
                         title = "主页", 
-                        summary = "欢迎回来"
+                        summary = "欢迎回来",
+                        isCardBlurEnabled = isCardBlurEnabled,
+                        hazeState = hazeState
                     ) {
                         XamlRenderer(nodes = nodes, modifier = Modifier.padding(horizontal = 20.dp))
                     }
@@ -146,7 +151,9 @@ fun HomeScreen(
                         CombinedCard(
                             modifier = Modifier.animatedAppearance(1, animatedSpeed),
                             title = "Minecraft更新", 
-                            summary = "查看最近的更新内容"
+                            summary = "查看最近的更新内容",
+                            isCardBlurEnabled = isCardBlurEnabled,
+                            hazeState = hazeState
                         ) {
                             when {
                                 errorMessage != null -> {

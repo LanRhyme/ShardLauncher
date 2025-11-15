@@ -55,6 +55,7 @@ import com.lanrhyme.shardlauncher.ui.components.animatedAppearance
 import com.lanrhyme.shardlauncher.ui.components.CombinedCard
 import com.lanrhyme.shardlauncher.ui.components.ScalingActionButton
 import com.lanrhyme.shardlauncher.ui.components.TitleAndSummary
+import dev.chrisbanes.haze.HazeState
 
 data class OssLibrary(
     val name: String,
@@ -67,6 +68,8 @@ data class OssLibrary(
 @Composable
 fun AboutScreen(
     animationSpeed: Float,
+    isCardBlurEnabled: Boolean,
+    hazeState: HazeState
 ) {
     val context = LocalContext.current
     var showLicensesDialog by remember { mutableStateOf(false) }
@@ -90,7 +93,9 @@ fun AboutScreen(
                     modifier = Modifier
                         .animatedAppearance(1, animationSpeed),
                     title = "关于",
-                    summary = "关于ShardLauncher"
+                    summary = "关于ShardLauncher",
+                    isCardBlurEnabled = isCardBlurEnabled,
+                    hazeState = hazeState
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(
@@ -144,7 +149,9 @@ fun AboutScreen(
                                 CreditAction(icon = Icons.Filled.HdrWeak, text = "个人站点", url = "https://lanrhyme.netlify.app/")
                             )
                         )
-                    )
+                    ),
+                    isCardBlurEnabled = isCardBlurEnabled,
+                    hazeState = hazeState
                 )
             }
             item {
@@ -162,7 +169,9 @@ fun AboutScreen(
                                 CreditAction(icon = Icons.Default.Code, text = "Github", url = "https://github.com/ZalithLauncher/ZalithLauncher2")
                             )
                         )
-                    )
+                    ),
+                    isCardBlurEnabled = isCardBlurEnabled,
+                    hazeState = hazeState
                 )
             }
             item {
@@ -207,14 +216,18 @@ fun AboutScreen(
                                 CreditAction(icon = Icons.Filled.Link, url = "https://crafatar.com/")
                             )
                         )
-                    )
+                    ),
+                    isCardBlurEnabled = isCardBlurEnabled,
+                    hazeState = hazeState
                 )
             }
             item {
                 CombinedCard(
                     modifier = Modifier
                         .animatedAppearance(5, animationSpeed),
-                    title = "开源许可"
+                    title = "开源许可",
+                    isCardBlurEnabled = isCardBlurEnabled,
+                    hazeState = hazeState
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
@@ -254,7 +267,9 @@ fun AboutScreen(
             CombinedCard(
                 modifier = Modifier
                     .animatedAppearance(1, animationSpeed),
-                title = "版本信息"
+                title = "版本信息",
+                isCardBlurEnabled = isCardBlurEnabled,
+                hazeState = hazeState
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -377,13 +392,17 @@ fun CreditsCard(
     modifier: Modifier = Modifier,
     title: String,
     summary: String? = null,
-    items: List<CreditItem>
+    items: List<CreditItem>,
+    isCardBlurEnabled: Boolean,
+    hazeState: HazeState
 ) {
     val context = LocalContext.current
     CombinedCard(
         modifier = modifier,
         title = title,
-        summary = summary
+        summary = summary,
+        isCardBlurEnabled = isCardBlurEnabled,
+        hazeState = hazeState
     ) {
         Column(
             modifier = Modifier.padding(16.dp),

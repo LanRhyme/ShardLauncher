@@ -11,9 +11,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import com.lanrhyme.shardlauncher.ui.components.SegmentedNavigationBar
+import dev.chrisbanes.haze.HazeState
 
 @Composable
-fun DownloadScreen(navController: NavController, useBmclapi: Boolean) {
+fun DownloadScreen(
+    navController: NavController, 
+    useBmclapi: Boolean,
+    isCardBlurEnabled: Boolean,
+    hazeState: HazeState
+) {
     var selectedPage by remember { mutableStateOf(DownloadPage.Game) }
 
     Column(
@@ -28,7 +34,7 @@ fun DownloadScreen(navController: NavController, useBmclapi: Boolean) {
         )
 
         when (selectedPage) {
-            DownloadPage.Game -> GameDownloadContent(navController, useBmclapi = useBmclapi)
+            DownloadPage.Game -> GameDownloadContent(navController, useBmclapi = useBmclapi, isCardBlurEnabled = isCardBlurEnabled, hazeState = hazeState)
             DownloadPage.Mod -> ModDownloadContent()
             DownloadPage.Modpack -> ModpackDownloadContent()
         }

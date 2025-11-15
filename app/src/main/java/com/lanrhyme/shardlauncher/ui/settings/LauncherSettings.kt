@@ -1,11 +1,16 @@
 package com.lanrhyme.shardlauncher.ui.settings
 
 import android.net.Uri
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,8 +21,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material.icons.filled.Image
@@ -33,7 +40,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -45,9 +54,11 @@ import com.lanrhyme.shardlauncher.ui.components.SimpleListLayout
 import com.lanrhyme.shardlauncher.ui.components.SliderLayout
 import com.lanrhyme.shardlauncher.ui.components.SwitchLayout
 import com.lanrhyme.shardlauncher.ui.components.animatedAppearance
+import com.lanrhyme.shardlauncher.ui.composables.HsvColorPicker
 import com.lanrhyme.shardlauncher.ui.composables.ThemeColorEditor
 import com.lanrhyme.shardlauncher.ui.theme.ColorPalettes
 import com.lanrhyme.shardlauncher.ui.theme.ThemeColor
+import dev.chrisbanes.haze.HazeState
 import java.io.File
 import java.io.FileOutputStream
 
@@ -70,6 +81,10 @@ internal fun LauncherSettingsContent(
     onEnableBackgroundLightEffectChange: () -> Unit,
     lightEffectAnimationSpeed: Float,
     onLightEffectAnimationSpeedChange: (Float) -> Unit,
+    enableBackgroundLightEffectCustomColor: Boolean,
+    onEnableBackgroundLightEffectCustomColorChange: () -> Unit,
+    backgroundLightEffectCustomColor: Color,
+    onBackgroundLightEffectCustomColorChange: (Color) -> Unit,
     animationSpeed: Float,
     onAnimationSpeedChange: (Float) -> Unit,
     launcherBackgroundUri: String?,
@@ -85,7 +100,10 @@ internal fun LauncherSettingsContent(
     uiScale: Float,
     onUiScaleChange: (Float) -> Unit,
     isGlowEffectEnabled: Boolean,
-    onIsGlowEffectEnabledChange: () -> Unit
+    onIsGlowEffectEnabledChange: () -> Unit,
+    isCardBlurEnabled: Boolean,
+    onIsCardBlurEnabledChange: () -> Unit,
+    hazeState: HazeState
 ) {
     val animatedSpeed by animateFloatAsState(
         targetValue = animationSpeed,
@@ -101,6 +119,35 @@ internal fun LauncherSettingsContent(
     var showColorPickerDialog by remember { mutableStateOf(false) }
     var tempLightColorScheme by remember(lightColorScheme) { mutableStateOf(lightColorScheme) }
     var tempDarkColorScheme by remember(darkColorScheme) { mutableStateOf(darkColorScheme) }
+
+    var showLightEffectColorPickerDialog by remember { mutableStateOf(false) }
+    var tempLightEffectColor by remember(backgroundLightEffectCustomColor) { mutableStateOf(backgroundLightEffectCustomColor) }
+
+    if (showLightEffectColorPickerDialog) {
+        AlertDialog(
+            onDismissRequest = { showLightEffectColorPickerDialog = false },
+            title = { Text("自定义光效颜色") },
+            text = {
+                HsvColorPicker(
+                    color = tempLightEffectColor,
+                    onColorSelected = { tempLightEffectColor = it }
+                )
+            },
+            confirmButton = {
+                Button(onClick = {
+                    onBackgroundLightEffectCustomColorChange(tempLightEffectColor)
+                    showLightEffectColorPickerDialog = false
+                }) {
+                    Text("确定")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLightEffectColorPickerDialog = false }) {
+                    Text("取消")
+                }
+            }
+        )
+    }
 
 
     if (showColorPickerDialog) {
@@ -209,7 +256,9 @@ internal fun LauncherSettingsContent(
                 title = "深色模式",
                 summary = if (isDarkTheme) "已开启" else "已关闭",
                 checked = isDarkTheme,
-                onCheckedChange = onThemeToggle
+                onCheckedChange = onThemeToggle,
+                isCardBlurEnabled = isCardBlurEnabled,
+                hazeState = hazeState
             )
         }
         item { 
@@ -219,7 +268,9 @@ internal fun LauncherSettingsContent(
                 title = "获取Minecraft最新更新信息",
                 summary = "来源于news.bugjump.net",
                 checked = enableVersionCheck,
-                onCheckedChange = { onEnableVersionCheckChange() }
+                onCheckedChange = { onEnableVersionCheckChange() },
+                isCardBlurEnabled = isCardBlurEnabled,
+                hazeState = hazeState
             )
         }
         item { 
@@ -235,7 +286,9 @@ internal fun LauncherSettingsContent(
                         SidebarPosition.Left -> "左侧"
                         SidebarPosition.Right -> "右侧"
                     }
-                }
+                },
+                isCardBlurEnabled = isCardBlurEnabled,
+                hazeState = hazeState
             )
         }
         item { 
@@ -254,7 +307,9 @@ internal fun LauncherSettingsContent(
                         onThemeColorChange(newColor)
                     }
                 },
-                getItemText = { it.title }
+                getItemText = { it.title },
+                isCardBlurEnabled = isCardBlurEnabled,
+                hazeState = hazeState
             )
         }
         item { 
@@ -264,16 +319,33 @@ internal fun LauncherSettingsContent(
                 title = "UI发光效果",
                 summary = "为部分文字和图标添加发光效果",
                 checked = isGlowEffectEnabled,
-                onCheckedChange = { onIsGlowEffectEnabledChange() }
+                onCheckedChange = { onIsGlowEffectEnabledChange() },
+                isCardBlurEnabled = isCardBlurEnabled,
+                hazeState = hazeState
+            )
+        }
+        item {
+            SwitchLayout(
+                modifier = Modifier
+                    .animatedAppearance(6, animationSpeed),
+                title = "卡片背景启用毛玻璃效果",
+                summary = "[Beta](会出现渲染问题)对卡片背景启用毛玻璃效果(Android 12+)",
+                checked = isCardBlurEnabled,
+                onCheckedChange = { onIsCardBlurEnabledChange() },
+                enabled = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
+                isCardBlurEnabled = isCardBlurEnabled,
+                hazeState = hazeState
             )
         }
         item { 
             CollapsibleCard(
                 modifier = Modifier
-                    .animatedAppearance(6, animationSpeed),
+                    .animatedAppearance(7, animationSpeed),
                 title = "启动器背景",
                 summary = "自定义启动器背景",
-                animationSpeed = animationSpeed
+                animationSpeed = animationSpeed,
+                isCardBlurEnabled = isCardBlurEnabled,
+                hazeState = hazeState
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
@@ -320,7 +392,9 @@ internal fun LauncherSettingsContent(
                     summary = "调整背景图片的模糊程度",
                     displayValue = launcherBackgroundBlur,
                     enabled = launcherBackgroundUri != null && !isBackgroundVideo,
-                    isGlowEffectEnabled = isGlowEffectEnabled
+                    isGlowEffectEnabled = isGlowEffectEnabled,
+                    isCardBlurEnabled = isCardBlurEnabled,
+                    hazeState = hazeState
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 SliderLayout(
@@ -332,7 +406,9 @@ internal fun LauncherSettingsContent(
                     summary = "调整背景图片的明暗程度(建议还是自己先提前编辑好图片)",
                     displayValue = launcherBackgroundBrightness,
                     enabled = launcherBackgroundUri != null && !isBackgroundVideo,
-                    isGlowEffectEnabled = isGlowEffectEnabled
+                    isGlowEffectEnabled = isGlowEffectEnabled,
+                    isCardBlurEnabled = isCardBlurEnabled,
+                    hazeState = hazeState
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 SliderLayout(
@@ -344,22 +420,28 @@ internal fun LauncherSettingsContent(
                     summary = "调整背景视频的音量",
                     displayValue = launcherBackgroundVideoVolume,
                     enabled = isBackgroundVideo,
-                    isGlowEffectEnabled = isGlowEffectEnabled
+                    isGlowEffectEnabled = isGlowEffectEnabled,
+                    isCardBlurEnabled = isCardBlurEnabled,
+                    hazeState = hazeState
                 )
             }
         }
         item { 
             CollapsibleCard(
                 modifier = Modifier
-                    .animatedAppearance(7, animationSpeed),
+                    .animatedAppearance(8, animationSpeed),
                 title = "背景光效",
                 summary = if (enableBackgroundLightEffect) "已开启" else "已关闭",
-                animationSpeed = animationSpeed
+                animationSpeed = animationSpeed,
+                isCardBlurEnabled = isCardBlurEnabled,
+                hazeState = hazeState
             ) {
                 SwitchLayout(
                     checked = enableBackgroundLightEffect,
                     onCheckedChange = { onEnableBackgroundLightEffectChange() },
-                    title = "启用背景光效"
+                    title = "启用背景光效",
+                    isCardBlurEnabled = isCardBlurEnabled,
+                    hazeState = hazeState
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 SliderLayout(
@@ -371,14 +453,48 @@ internal fun LauncherSettingsContent(
                     summary = "控制背景光效的运动速度",
                     displayValue = lightEffectAnimationSpeed,
                     enabled = enableBackgroundLightEffect,
-                    isGlowEffectEnabled = isGlowEffectEnabled
+                    isGlowEffectEnabled = isGlowEffectEnabled,
+                    isCardBlurEnabled = isCardBlurEnabled,
+                    hazeState = hazeState
                 )
+                Spacer(modifier = Modifier.height(16.dp))
+                SwitchLayout(
+                    checked = enableBackgroundLightEffectCustomColor,
+                    onCheckedChange = { onEnableBackgroundLightEffectCustomColorChange() },
+                    title = "自定义光效颜色",
+                    enabled = enableBackgroundLightEffect,
+                    isCardBlurEnabled = isCardBlurEnabled,
+                    hazeState = hazeState
+                )
+                if (enableBackgroundLightEffectCustomColor) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(MaterialTheme.shapes.medium)
+                            .clickable {
+                                tempLightEffectColor = backgroundLightEffectCustomColor
+                                showLightEffectColorPickerDialog = true
+                            }
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("编辑颜色")
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(backgroundLightEffectCustomColor)
+                        )
+                    }
+                }
             }
         }
         item { 
             SliderLayout(
                 modifier = Modifier
-                    .animatedAppearance(8, animationSpeed),
+                    .animatedAppearance(9, animationSpeed),
                 value = animationSpeed,
                 onValueChange = onAnimationSpeedChange,
                 valueRange = 0.5f..2f,
@@ -386,13 +502,15 @@ internal fun LauncherSettingsContent(
                 title = "动画速率",
                 summary = "控制 UI 动画的播放速度",
                 displayValue = animatedSpeed,
-                isGlowEffectEnabled = isGlowEffectEnabled
+                isGlowEffectEnabled = isGlowEffectEnabled,
+                isCardBlurEnabled = isCardBlurEnabled,
+                hazeState = hazeState
             )
         }
         item { 
             SliderLayout(
                 modifier = Modifier
-                    .animatedAppearance(9, animationSpeed),
+                    .animatedAppearance(10, animationSpeed),
                 value = uiScale,
                 onValueChange = onUiScaleChange,
                 valueRange = 0.8f..1.5f,
@@ -400,7 +518,9 @@ internal fun LauncherSettingsContent(
                 title = "UI 缩放",
                 summary = "调整启动器整体界面的大小",
                 displayValue = uiScale,
-                isGlowEffectEnabled = isGlowEffectEnabled
+                isGlowEffectEnabled = isGlowEffectEnabled,
+                isCardBlurEnabled = isCardBlurEnabled,
+                hazeState = hazeState
             )
         }
         item { 

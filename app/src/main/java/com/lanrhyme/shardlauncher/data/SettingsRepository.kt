@@ -139,6 +139,24 @@ class SettingsRepository(context: Context) {
         saveProperties()
     }
 
+    fun getEnableBackgroundLightEffectCustomColor(): Boolean {
+        return properties.getProperty(KEY_ENABLE_BACKGROUND_LIGHT_EFFECT_CUSTOM_COLOR, "false").toBoolean()
+    }
+
+    fun setEnableBackgroundLightEffectCustomColor(enabled: Boolean) {
+        properties.setProperty(KEY_ENABLE_BACKGROUND_LIGHT_EFFECT_CUSTOM_COLOR, enabled.toString())
+        saveProperties()
+    }
+
+    fun getBackgroundLightEffectCustomColor(): Int {
+        return properties.getProperty(KEY_BACKGROUND_LIGHT_EFFECT_CUSTOM_COLOR, DEFAULT_CUSTOM_PRIMARY_COLOR.toString()).toIntOrNull() ?: DEFAULT_CUSTOM_PRIMARY_COLOR
+    }
+
+    fun setBackgroundLightEffectCustomColor(color: Int) {
+        properties.setProperty(KEY_BACKGROUND_LIGHT_EFFECT_CUSTOM_COLOR, color.toString())
+        saveProperties()
+    }
+
     fun getIsDarkTheme(systemIsDark: Boolean): Boolean {
         return properties.getProperty(KEY_IS_DARK_THEME, systemIsDark.toString()).toBoolean()
     }
@@ -216,6 +234,15 @@ class SettingsRepository(context: Context) {
         saveProperties()
     }
 
+    fun getIsCardBlurEnabled(): Boolean {
+        return properties.getProperty(KEY_IS_CARD_BLUR_ENABLED, "false").toBoolean()
+    }
+
+    fun setIsCardBlurEnabled(enabled: Boolean) {
+        properties.setProperty(KEY_IS_CARD_BLUR_ENABLED, enabled.toString())
+        saveProperties()
+    }
+
     fun getUseBmclapi(): Boolean {
         return properties.getProperty(KEY_USE_BMCLAPI, "true").toBoolean()
     }
@@ -234,6 +261,8 @@ class SettingsRepository(context: Context) {
         private const val KEY_LAUNCHER_BACKGROUND_BRIGHTNESS = "launcher_background_brightness"
         private const val KEY_LAUNCHER_BACKGROUND_VIDEO_VOLUME = "launcher_background_video_volume"
         private const val KEY_ENABLE_BACKGROUND_LIGHT_EFFECT = "enable_background_light_effect"
+        private const val KEY_ENABLE_BACKGROUND_LIGHT_EFFECT_CUSTOM_COLOR = "enable_background_light_effect_custom_color"
+        private const val KEY_BACKGROUND_LIGHT_EFFECT_CUSTOM_COLOR = "background_light_effect_custom_color"
         private const val KEY_ANIMATION_SPEED = "animation_speed"
         private const val KEY_LIGHT_EFFECT_ANIMATION_SPEED = "light_effect_animation_speed"
         private const val KEY_IS_DARK_THEME = "is_dark_theme"
@@ -242,6 +271,7 @@ class SettingsRepository(context: Context) {
         private const val KEY_CUSTOM_PRIMARY_COLOR = "custom_primary_color"
         private const val DEFAULT_CUSTOM_PRIMARY_COLOR = -9859931 // 0xFF698945 in decimal
         private const val KEY_IS_GLOW_EFFECT_ENABLED = "is_glow_effect_enabled"
+        private const val KEY_IS_CARD_BLUR_ENABLED = "is_card_blur_enabled"
         private const val KEY_USE_BMCLAPI = "use_bmclapi"
         private const val KEY_LIGHT_COLOR_SCHEME = "light_color_scheme"
         private const val KEY_DARK_COLOR_SCHEME = "dark_color_scheme"

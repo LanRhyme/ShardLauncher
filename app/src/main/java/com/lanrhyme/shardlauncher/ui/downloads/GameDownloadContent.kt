@@ -52,10 +52,11 @@ import com.lanrhyme.shardlauncher.model.BmclapiManifest
 import com.lanrhyme.shardlauncher.ui.LocalSettingsProvider
 import com.lanrhyme.shardlauncher.ui.components.CombinedCard
 import com.lanrhyme.shardlauncher.ui.components.StyledFilterChip
+import dev.chrisbanes.haze.HazeState
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun GameDownloadContent(navController: NavController, useBmclapi: Boolean) {
+fun GameDownloadContent(navController: NavController, useBmclapi: Boolean, isCardBlurEnabled: Boolean, hazeState: HazeState) {
     val viewModel: GameDownloadViewModel = viewModel()
 
     val versions by viewModel.filteredVersions.collectAsState()
@@ -81,7 +82,12 @@ fun GameDownloadContent(navController: NavController, useBmclapi: Boolean) {
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 item { ->
-                    CombinedCard(title = "版本筛选", summary = null) {
+                    CombinedCard(
+                        title = "版本筛选", 
+                        summary = null, 
+                        isCardBlurEnabled = isCardBlurEnabled, 
+                        hazeState = hazeState
+                    ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()

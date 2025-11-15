@@ -107,6 +107,9 @@ android {
     buildFeatures {
         compose = true
     }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.14"
+    }
     splits {
         abi {
             isEnable = true
@@ -151,6 +154,7 @@ dependencies {
     implementation("org.ow2.asm:asm-all:5.0.4")
     implementation("com.github.oshi:oshi-core:6.3.0")
     implementation("androidx.browser:browser:1.8.0")
+    implementation("dev.chrisbanes.haze:haze-jetpack-compose:0.5.4")
 
 
     testImplementation(libs.junit)
