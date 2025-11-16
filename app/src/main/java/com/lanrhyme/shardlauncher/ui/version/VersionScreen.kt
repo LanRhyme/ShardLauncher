@@ -59,11 +59,15 @@ fun VersionScreen(navController: NavController, animationSpeed: Float) {
 
     Row(modifier = Modifier.fillMaxSize()) {
         // Left Pane (25%)
-        Box(
+        Card(
             modifier = Modifier
                 .weight(0.25f)
                 .fillMaxHeight()
-                .padding(start = 8.dp, top = 16.dp, end = 8.dp, bottom = 16.dp)
+                .padding(start = 16.dp, top = 16.dp, end = 8.dp, bottom = 16.dp),
+            shape = RoundedCornerShape(22.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+            )
         ) {
             LeftNavigationPane(
                 selectedVersion = selectedVersion,
@@ -101,7 +105,7 @@ fun LeftNavigationPane(
     onPaneSelected: (VersionDetailPane) -> Unit
 ) {
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         AnimatedVisibility(visible = selectedVersion != null) {
