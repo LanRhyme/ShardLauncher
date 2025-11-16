@@ -2,7 +2,7 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/ZalithLauncher2" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/backend/amethyst" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/third_party/ZalithLauncher2" vcs="Git" />
   </component>
 </project>

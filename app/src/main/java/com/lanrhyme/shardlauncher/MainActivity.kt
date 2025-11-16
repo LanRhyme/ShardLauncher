@@ -106,6 +106,7 @@ import com.lanrhyme.shardlauncher.ui.settings.SettingsScreen
 import com.lanrhyme.shardlauncher.ui.theme.ColorPalettes
 import com.lanrhyme.shardlauncher.ui.theme.ShardLauncherTheme
 import com.lanrhyme.shardlauncher.ui.theme.ThemeColor
+import com.lanrhyme.shardlauncher.ui.version.VersionScreen
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.haze
 import dev.chrisbanes.haze.hazeChild
@@ -665,7 +666,7 @@ fun MainContent(
                         hazeState = hazeState
                     )
                 }
-                composable(Screen.Version.route) { VersionScreen() }
+                composable(Screen.Version.route) { VersionScreen(navController, animationSpeed) }
                 composable(Screen.Download.route) { 
                     DownloadScreen(
                         navController = navController, 
@@ -901,13 +902,6 @@ fun ExpandButton(
                     .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp))
             )
         }
-    }
-}
-
-@Composable
-fun VersionScreen() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text("版本", style = MaterialTheme.typography.headlineLarge)
     }
 }
 
