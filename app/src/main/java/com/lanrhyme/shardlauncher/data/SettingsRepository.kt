@@ -7,9 +7,11 @@ import androidx.compose.ui.graphics.toArgb
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.TypeAdapter
+import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
 import com.lanrhyme.shardlauncher.common.SidebarPosition
+import com.lanrhyme.shardlauncher.ui.settings.BackgroundItem
 import com.lanrhyme.shardlauncher.ui.theme.ThemeColor
 import java.io.File
 import java.io.FileInputStream
@@ -52,6 +54,31 @@ class SettingsRepository(context: Context) {
 
     private fun saveProperties() {
         FileOutputStream(settingsFile).use { properties.store(it, null) }
+    }
+
+    fun getBackgroundItems(): List<BackgroundItem> {
+        val json = properties.getProperty(KEY_BACKGROUND_ITEMS)
+        return if (json != null) {
+            val type = object : TypeToken<List<BackgroundItem>>() {}.type
+            gson.fromJson(json, type)
+        } else {
+            emptyList()
+        }
+    }
+
+    fun setBackgroundItems(items: List<BackgroundItem>) {
+        val json = gson.toJson(items)
+        properties.setProperty(KEY_BACKGROUND_ITEMS, json)
+        saveProperties()
+    }
+
+    fun getRandomBackground(): Boolean {
+        return properties.getProperty(KEY_RANDOM_BACKGROUND, "false").toBoolean()
+    }
+
+    fun setRandomBackground(enabled: Boolean) {
+        properties.setProperty(KEY_RANDOM_BACKGROUND, enabled.toString())
+        saveProperties()
     }
 
     fun getUiScale(): Float {
@@ -100,15 +127,6 @@ class SettingsRepository(context: Context) {
 
     fun setLauncherBackgroundBrightness(brightness: Float) {
         properties.setProperty(KEY_LAUNCHER_BACKGROUND_BRIGHTNESS, brightness.toString())
-        saveProperties()
-    }
-
-    fun getLauncherBackgroundVideoVolume(): Float {
-        return properties.getProperty(KEY_LAUNCHER_BACKGROUND_VIDEO_VOLUME, "1.0").toFloat()
-    }
-
-    fun setLauncherBackgroundVideoVolume(volume: Float) {
-        properties.setProperty(KEY_LAUNCHER_BACKGROUND_VIDEO_VOLUME, volume.toString())
         saveProperties()
     }
 
@@ -253,13 +271,12 @@ class SettingsRepository(context: Context) {
     }
 
     companion object {
-        private const val PREFS_NAME = "developer_settings.properties"
+        private const val PREFS_NAME = "launcher_settings.properties"
         private const val KEY_UI_SCALE = "ui_scale"
         private const val KEY_ENABLE_VERSION_CHECK = "enable_version_check"
         private const val KEY_LAUNCHER_BACKGROUND_URI = "launcher_background_uri"
         private const val KEY_LAUNCHER_BACKGROUND_BLUR = "launcher_background_blur"
         private const val KEY_LAUNCHER_BACKGROUND_BRIGHTNESS = "launcher_background_brightness"
-        private const val KEY_LAUNCHER_BACKGROUND_VIDEO_VOLUME = "launcher_background_video_volume"
         private const val KEY_ENABLE_BACKGROUND_LIGHT_EFFECT = "enable_background_light_effect"
         private const val KEY_ENABLE_BACKGROUND_LIGHT_EFFECT_CUSTOM_COLOR = "enable_background_light_effect_custom_color"
         private const val KEY_BACKGROUND_LIGHT_EFFECT_CUSTOM_COLOR = "background_light_effect_custom_color"
@@ -275,5 +292,7 @@ class SettingsRepository(context: Context) {
         private const val KEY_USE_BMCLAPI = "use_bmclapi"
         private const val KEY_LIGHT_COLOR_SCHEME = "light_color_scheme"
         private const val KEY_DARK_COLOR_SCHEME = "dark_color_scheme"
+        private const val KEY_BACKGROUND_ITEMS = "background_items"
+        private const val KEY_RANDOM_BACKGROUND = "random_background"
     }
 }

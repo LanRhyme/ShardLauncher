@@ -99,8 +99,8 @@ data class BackgroundItem(
 @Composable
 fun VideoPlayer(uri: String, modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    val exoPlayer = remember(uri) {
-        ExoPlayer.Builder(context).build().apply {
+    val exoPlayer = remember(uri, context) {
+        androidx.media3.exoplayer.ExoPlayer.Builder(context).build().apply {
             setMediaItem(MediaItem.fromUri(uri))
             prepare()
             playWhenReady = true
@@ -287,7 +287,7 @@ internal fun LauncherSettingsContent(
                             modifier = Modifier.border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp)).padding(8.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            items(backgroundItems) { item ->
+                            items(backgroundItems, key = { it.uri }) { item ->
                                 Box {
                                     var isPressed by remember { mutableStateOf(false) }
                                     val scale by animateFloatAsState(targetValue = if (isPressed) 0.95f else 1f, label = "")
@@ -608,7 +608,7 @@ internal fun LauncherSettingsContent(
                 title = "获取Minecraft最新更新信息",
                 summary = "来源于news.bugjump.net",
                 checked = enableVersionCheck,
-                onCheckedChange = { onEnableVersionCheckChange() },
+                onCheckedChange = onEnableVersionCheckChange,
                 isCardBlurEnabled = isCardBlurEnabled,
                 hazeState = hazeState
             )
@@ -684,7 +684,7 @@ internal fun LauncherSettingsContent(
                 title = "UI发光效果",
                 summary = "为部分文字和图标添加发光效果",
                 checked = isGlowEffectEnabled,
-                onCheckedChange = { onIsGlowEffectEnabledChange() },
+                onCheckedChange = onIsGlowEffectEnabledChange,
                 isCardBlurEnabled = isCardBlurEnabled,
                 hazeState = hazeState
             )
@@ -696,7 +696,7 @@ internal fun LauncherSettingsContent(
                 title = "卡片背景启用毛玻璃效果",
                 summary = "[Beta](会出现渲染问题)对卡片背景启用毛玻璃效果(Android 12+)",
                 checked = isCardBlurEnabled,
-                onCheckedChange = { onIsCardBlurEnabledChange() },
+                onCheckedChange = onIsCardBlurEnabledChange,
                 enabled = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
                 isCardBlurEnabled = isCardBlurEnabled,
                 hazeState = hazeState

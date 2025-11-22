@@ -147,14 +147,35 @@ class MainActivity : ComponentActivity() {
             var enableBackgroundLightEffect by remember { mutableStateOf(settingsRepository.getEnableBackgroundLightEffect()) }
             var enableBackgroundLightEffectCustomColor by remember { mutableStateOf(settingsRepository.getEnableBackgroundLightEffectCustomColor()) }
             var backgroundLightEffectCustomColor by remember { mutableStateOf(Color(settingsRepository.getBackgroundLightEffectCustomColor())) }
-            var launcherBackgroundUri by remember { mutableStateOf(settingsRepository.getLauncherBackgroundUri()) }
-            var launcherBackgroundBlur by remember { mutableStateOf(settingsRepository.getLauncherBackgroundBlur()) }
-            var launcherBackgroundBrightness by remember { mutableStateOf(settingsRepository.getLauncherBackgroundBrightness()) }
+            var launcherBackgroundUri by remember { mutableStateOf<String?>(null) }
+            var launcherBackgroundBlur by remember { mutableStateOf(0f) }
+            var launcherBackgroundBrightness by remember { mutableStateOf(0f) }
             var enableVersionCheck by remember { mutableStateOf(settingsRepository.getEnableVersionCheck()) }
             var uiScale by remember { mutableStateOf(settingsRepository.getUiScale()) }
             var isGlowEffectEnabled by remember { mutableStateOf(settingsRepository.getIsGlowEffectEnabled()) }
             var isCardBlurEnabled by remember { mutableStateOf(settingsRepository.getIsCardBlurEnabled()) }
             var useBmclapi by remember { mutableStateOf(settingsRepository.getUseBmclapi()) }
+
+            LaunchedEffect(Unit) {
+                val randomBackground = settingsRepository.getRandomBackground()
+                if (randomBackground) {
+                    val backgroundItems = settingsRepository.getBackgroundItems()
+                    if (backgroundItems.isNotEmpty()) {
+                        val randomItem = backgroundItems.random()
+                        launcherBackgroundUri = randomItem.uri
+                        launcherBackgroundBlur = randomItem.blur
+                        launcherBackgroundBrightness = randomItem.brightness
+                    } else {
+                        launcherBackgroundUri = settingsRepository.getLauncherBackgroundUri()
+                        launcherBackgroundBlur = settingsRepository.getLauncherBackgroundBlur()
+                        launcherBackgroundBrightness = settingsRepository.getLauncherBackgroundBrightness()
+                    }
+                } else {
+                    launcherBackgroundUri = settingsRepository.getLauncherBackgroundUri()
+                    launcherBackgroundBlur = settingsRepository.getLauncherBackgroundBlur()
+                    launcherBackgroundBrightness = settingsRepository.getLauncherBackgroundBrightness()
+                }
+            }
 
             val navController = rememberNavController()
             val newIntent by newIntentState
@@ -393,7 +414,7 @@ fun MainScreen(
 
                             exoPlayer.volume = 0f
 
-                            DisposableEffect(Unit) {
+                            DisposableEffect(launcherBackgroundUri) {
                                 onDispose { exoPlayer.release() }
                             }
 
