@@ -55,6 +55,22 @@ fun ComponentDemoScreen(
         }
 
         item {
+            var showDialog by remember { mutableStateOf(false) }
+            CustomButton(onClick = { showDialog = true }) {
+                Text("Show CustomDialog")
+            }
+            if (showDialog) {
+                CustomDialog(
+                    onDismissRequest = { showDialog = false },
+                ) {
+                    CustomCard(modifier = Modifier.padding(16.dp)) {
+                        Text("This is a custom dialog with custom content.", modifier = Modifier.padding(16.dp))
+                    }
+                }
+            }
+        }
+
+        item {
             ScalingActionButton(onClick = { }, text = "Scaling Action Button", icon = Icons.Default.Favorite)
         }
 
@@ -67,25 +83,6 @@ fun ComponentDemoScreen(
         item {
             CustomButton(onClick = { }) {
                 Text("Custom Button")
-            }
-        }
-
-        item {
-            var showDialog by remember { mutableStateOf(false) }
-            CustomButton(onClick = { showDialog = true }) {
-                Text("Show CustomDialog")
-            }
-            if (showDialog) {
-                CustomDialog(
-                    onDismissRequest = { showDialog = false },
-                    title = { Text("Dialog Title") },
-                    text = { Text("This is the dialog content.") },
-                    confirmButton = {
-                        CustomButton(onClick = { showDialog = false }) {
-                            Text("Confirm")
-                        }
-                    }
-                )
             }
         }
 
