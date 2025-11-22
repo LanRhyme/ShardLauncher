@@ -11,12 +11,14 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,18 +26,26 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,13 +53,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.DialogProperties
+import androidx.media3.common.MediaItem
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.PlayerView
+import coil.compose.AsyncImage
 import com.lanrhyme.shardlauncher.common.SidebarPosition
 import com.lanrhyme.shardlauncher.ui.components.CollapsibleCard
-import com.lanrhyme.shardlauncher.ui.components.ScalingActionButton
+import com.lanrhyme.shardlauncher.ui.components.CustomDialog
+import com.lanrhyme.shardlauncher.ui.components.IconSwitchLayout
 import com.lanrhyme.shardlauncher.ui.components.SimpleListLayout
 import com.lanrhyme.shardlauncher.ui.components.SliderLayout
 import com.lanrhyme.shardlauncher.ui.components.SwitchLayout
@@ -61,6 +79,40 @@ import com.lanrhyme.shardlauncher.ui.theme.ThemeColor
 import dev.chrisbanes.haze.HazeState
 import java.io.File
 import java.io.FileOutputStream
+
+data class BackgroundItem(
+    val uri: String,
+    val isVideo: Boolean
+)
+
+@Composable
+fun VideoPlayer(uri: String, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    val exoPlayer = remember {
+        ExoPlayer.Builder(context).build().apply {
+            setMediaItem(MediaItem.fromUri(uri))
+            prepare()
+            playWhenReady = true
+            volume = 0f // Mute video
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            exoPlayer.release()
+        }
+    }
+
+    AndroidView(
+        factory = { context ->
+            PlayerView(context).apply {
+                player = exoPlayer
+                useController = false
+            }
+        },
+        modifier = modifier
+    )
+}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -122,6 +174,275 @@ internal fun LauncherSettingsContent(
 
     var showLightEffectColorPickerDialog by remember { mutableStateOf(false) }
     var tempLightEffectColor by remember(backgroundLightEffectCustomColor) { mutableStateOf(backgroundLightEffectCustomColor) }
+
+    var showBackgroundDialog by remember { mutableStateOf(false) }
+
+    var backgroundItems by remember { mutableStateOf(listOf<BackgroundItem>()) }
+    var selectedBackground by remember { mutableStateOf<BackgroundItem?>(null) }
+    var showAddBackgroundMenu by remember { mutableStateOf(false) }
+    var randomBackground by remember { mutableStateOf(false) }
+    var showDeleteBackgroundMenu by remember { mutableStateOf(false) }
+    var itemToDelete by remember { mutableStateOf<BackgroundItem?>(null) }
+
+    fun addBackground(uri: String, isVideo: Boolean) {
+        val newItem = BackgroundItem(uri, isVideo)
+        backgroundItems = backgroundItems + newItem
+        selectedBackground = newItem
+    }
+
+    fun removeBackground(item: BackgroundItem) {
+        backgroundItems = backgroundItems - item
+        if (selectedBackground == item) {
+            selectedBackground = backgroundItems.firstOrNull()
+        }
+    }
+
+    val imagePicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri: Uri? ->
+            uri?.let { uri ->
+                val destinationFile = File(context.getExternalFilesDir(null), backgroundFileName)
+                try {
+                    context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                        FileOutputStream(destinationFile).use { outputStream ->
+                            inputStream.copyTo(outputStream)
+                        }
+                    }
+                    addBackground(Uri.fromFile(destinationFile).toString(), false)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    // Optionally, notify the user of the failure
+                }
+            }
+        }
+    )
+
+    val videoPicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri: Uri? ->
+            uri?.let { uri ->
+                val destinationFile = File(context.getExternalFilesDir(null), backgroundVideoName)
+                try {
+                    context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                        FileOutputStream(destinationFile).use { outputStream ->
+                            inputStream.copyTo(outputStream)
+                        }
+                    }
+                    addBackground(Uri.fromFile(destinationFile).toString(), true)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    // Optionally, notify the user of the failure
+                }
+            }
+        }
+    )
+
+    if (showBackgroundDialog) {
+        CustomDialog(
+            onDismissRequest = { showBackgroundDialog = false }
+        ) {
+            Row(modifier = Modifier.fillMaxSize()) {
+                // Left side: Scrollable settings
+                LazyColumn(modifier = Modifier.weight(2f).padding(16.dp)) {
+                    item {
+                        Text("选择背景", style = MaterialTheme.typography.titleMedium)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(backgroundItems) { item ->
+                                Box {
+                                    var isPressed by remember { mutableStateOf(false) }
+                                    val scale by animateFloatAsState(targetValue = if (isPressed) 0.95f else 1f)
+                                    // Background thumbnail card
+                                    Box(
+                                        modifier = Modifier
+                                            .scale(scale)
+                                            .size(160.dp, 90.dp)
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                                            .pointerInput(Unit) {
+                                                detectTapGestures(
+                                                    onPress = { 
+                                                        isPressed = true
+                                                        tryAwaitRelease()
+                                                        isPressed = false
+                                                    },
+                                                    onTap = { selectedBackground = item },
+                                                    onLongPress = {
+                                                        itemToDelete = item
+                                                        showDeleteBackgroundMenu = true
+                                                    }
+                                                )
+                                            }
+                                            .border(
+                                                width = 2.dp,
+                                                color = if (selectedBackground == item) MaterialTheme.colorScheme.primary else Color.Transparent,
+                                                shape = RoundedCornerShape(8.dp)
+                                            )
+                                    ) {
+                                        AsyncImage(model = item.uri, contentDescription = null, modifier = Modifier.fillMaxSize())
+                                        if (item.isVideo) {
+                                            // Video label
+                                            Text(
+                                                "Video",
+                                                modifier = Modifier
+                                                    .align(Alignment.BottomStart)
+                                                    .padding(4.dp)
+                                                    .background(
+                                                        Color.Black.copy(alpha = 0.5f),
+                                                        RoundedCornerShape(4.dp)
+                                                    )
+                                                    .padding(horizontal = 4.dp, vertical = 2.dp),
+                                                color = Color.White,
+                                                style = MaterialTheme.typography.labelSmall
+                                            )
+                                        }
+                                    }
+                                    DropdownMenu(
+                                        expanded = showDeleteBackgroundMenu && itemToDelete == item,
+                                        onDismissRequest = { showDeleteBackgroundMenu = false } 
+                                    ) {
+                                        DropdownMenuItem(
+                                            text = { Text("删除") },
+                                            onClick = { 
+                                                removeBackground(item)
+                                                showDeleteBackgroundMenu = false
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                            item {
+                                // Add background card
+                                Box(
+                                    modifier = Modifier
+                                        .size(160.dp, 90.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                                        .clickable { showAddBackgroundMenu = true },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Add,
+                                        contentDescription = "Add Background"
+                                    )
+                                }
+                            }
+                        }
+
+                        // Dropdown menu for adding image or video
+                        DropdownMenu(
+                            expanded = showAddBackgroundMenu,
+                            onDismissRequest = { showAddBackgroundMenu = false },
+                            modifier = Modifier.padding(start = 160.dp) // Adjust position
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("添加图片") },
+                                onClick = {
+                                    imagePicker.launch("image/*")
+                                    showAddBackgroundMenu = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("添加视频") },
+                                onClick = {
+                                    videoPicker.launch("video/*")
+                                    showAddBackgroundMenu = false
+                                }
+                            )
+                        }
+                    }
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text("背景设置", style = MaterialTheme.typography.titleMedium)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        // Placeholder for blur and brightness sliders
+                        SliderLayout(
+                            value = launcherBackgroundBlur,
+                            onValueChange = onLauncherBackgroundBlurChange,
+                            valueRange = 0f..25f,
+                            title = "背景模糊",
+                            displayValue = launcherBackgroundBlur,
+                            enabled = launcherBackgroundUri != null,
+                            isGlowEffectEnabled = isGlowEffectEnabled,
+                            isCardBlurEnabled = isCardBlurEnabled,
+                            hazeState = hazeState
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        SliderLayout(
+                            value = launcherBackgroundBrightness,
+                            onValueChange = onLauncherBackgroundBrightnessChange,
+                            valueRange = -100f..100f,
+                            title = "背景明度",
+                            displayValue = launcherBackgroundBrightness,
+                            enabled = launcherBackgroundUri != null,
+                            isGlowEffectEnabled = isGlowEffectEnabled,
+                            isCardBlurEnabled = isCardBlurEnabled,
+                            hazeState = hazeState
+                        )
+                    }
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text("全局配置", style = MaterialTheme.typography.titleMedium)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        // Placeholder for random background switch
+                        SwitchLayout(
+                            checked = randomBackground,
+                            onCheckedChange = { randomBackground = !randomBackground },
+                            title = "启动时随机选择背景",
+                            isCardBlurEnabled = isCardBlurEnabled,
+                            hazeState = hazeState
+                        )
+                    }
+                }
+                // Right side: Preview and actions
+                Column(
+                    modifier = Modifier.weight(1f).padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    // Preview
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(16f / 9f)
+                            .background(
+                                MaterialTheme.colorScheme.surfaceVariant,
+                                RoundedCornerShape(12.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (selectedBackground != null) {
+                            if (selectedBackground!!.isVideo) {
+                                VideoPlayer(uri = selectedBackground!!.uri, modifier = Modifier.fillMaxSize())
+                            } else {
+                                AsyncImage(model = selectedBackground!!.uri, contentDescription = null, modifier = Modifier.fillMaxSize())
+                            }
+                        } else {
+                            Text("效果预览")
+                        }
+                    }
+                    // Action Buttons
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        TextButton(onClick = { showBackgroundDialog = false }) {
+                            Text("取消")
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Button(onClick = { 
+                            onLauncherBackgroundUriChange(selectedBackground?.uri)
+                            showBackgroundDialog = false 
+                        }) {
+                            Text("确认")
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     if (showLightEffectColorPickerDialog) {
         AlertDialog(
@@ -194,45 +515,7 @@ internal fun LauncherSettingsContent(
         )
     }
 
-    val imagePicker = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
-        onResult = { uri: Uri? ->
-            if (uri != null) {
-                val destinationFile = File(context.getExternalFilesDir(null), backgroundFileName)
-                try {
-                    context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                        FileOutputStream(destinationFile).use { outputStream ->
-                            inputStream.copyTo(outputStream)
-                        }
-                    }
-                    onLauncherBackgroundUriChange(Uri.fromFile(destinationFile).toString())
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    // Optionally, notify the user of the failure
-                }
-            }
-        }
-    )
-
-    val videoPicker = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
-        onResult = { uri: Uri? ->
-            if (uri != null) {
-                val destinationFile = File(context.getExternalFilesDir(null), backgroundVideoName)
-                try {
-                    context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                        FileOutputStream(destinationFile).use { outputStream ->
-                            inputStream.copyTo(outputStream)
-                        }
-                    }
-                    onLauncherBackgroundUriChange(Uri.fromFile(destinationFile).toString())
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    // Optionally, notify the user of the failure
-                }
-            }
-        }
-    )
+    
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -312,6 +595,31 @@ internal fun LauncherSettingsContent(
                 hazeState = hazeState
             )
         }
+        item {
+            IconSwitchLayout(
+                modifier = Modifier.animatedAppearance(6, animationSpeed),
+                checked = launcherBackgroundUri != null,
+                onCheckedChange = {
+                    if (launcherBackgroundUri != null) {
+                        onLauncherBackgroundUriChange(null)
+                    } else {
+                        showBackgroundDialog = true
+                    }
+                },
+                onIconClick = { showBackgroundDialog = true },
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Background Settings",
+                        tint = if (launcherBackgroundUri != null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                    )
+                },
+                title = "自定义背景",
+                summary = if (launcherBackgroundUri != null) "已开启" else "已关闭",
+                isCardBlurEnabled = isCardBlurEnabled,
+                hazeState = hazeState
+            )
+        }
         item { 
             SwitchLayout(
                 modifier = Modifier
@@ -336,95 +644,6 @@ internal fun LauncherSettingsContent(
                 isCardBlurEnabled = isCardBlurEnabled,
                 hazeState = hazeState
             )
-        }
-        item { 
-            CollapsibleCard(
-                modifier = Modifier
-                    .animatedAppearance(7, animationSpeed),
-                title = "启动器背景",
-                summary = "自定义启动器背景",
-                animationSpeed = animationSpeed,
-                isCardBlurEnabled = isCardBlurEnabled,
-                hazeState = hazeState
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                        ScalingActionButton(
-                            onClick = { imagePicker.launch("image/*") },
-                            modifier = Modifier.weight(1f),
-                            icon = Icons.Default.Image,
-                            text = "选择图片",
-                            animationSpeed = animationSpeed
-                        )
-                        ScalingActionButton(
-                            onClick = { videoPicker.launch("video/*") },
-                            modifier = Modifier.weight(1f),
-                            icon = Icons.Default.Videocam,
-                            text = "选择视频",
-                            animationSpeed = animationSpeed
-                        )
-                    }
-                    ScalingActionButton(
-                        onClick = {
-                            val backgroundFile = File(context.getExternalFilesDir(null), backgroundFileName)
-                            if (backgroundFile.exists()) {
-                                backgroundFile.delete()
-                            }
-                            val backgroundVideoFile = File(context.getExternalFilesDir(null), backgroundVideoName)
-                            if (backgroundVideoFile.exists()) {
-                                backgroundVideoFile.delete()
-                            }
-                            onLauncherBackgroundUriChange(null)
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        icon = Icons.Default.BrokenImage,
-                        text = "清除背景",
-                        animationSpeed = animationSpeed
-                    )
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-                SliderLayout(
-                    value = launcherBackgroundBlur,
-                    onValueChange = onLauncherBackgroundBlurChange,
-                    valueRange = 0f..25f,
-                    steps = 24,
-                    title = "背景模糊",
-                    summary = "调整背景图片的模糊程度",
-                    displayValue = launcherBackgroundBlur,
-                    enabled = launcherBackgroundUri != null && !isBackgroundVideo,
-                    isGlowEffectEnabled = isGlowEffectEnabled,
-                    isCardBlurEnabled = isCardBlurEnabled,
-                    hazeState = hazeState
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                SliderLayout(
-                    value = launcherBackgroundBrightness,
-                    onValueChange = onLauncherBackgroundBrightnessChange,
-                    valueRange = -100f..100f,
-                    steps = 199,
-                    title = "背景明度",
-                    summary = "调整背景图片的明暗程度(建议还是自己先提前编辑好图片)",
-                    displayValue = launcherBackgroundBrightness,
-                    enabled = launcherBackgroundUri != null && !isBackgroundVideo,
-                    isGlowEffectEnabled = isGlowEffectEnabled,
-                    isCardBlurEnabled = isCardBlurEnabled,
-                    hazeState = hazeState
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                SliderLayout(
-                    value = launcherBackgroundVideoVolume,
-                    onValueChange = onLauncherBackgroundVideoVolumeChange,
-                    valueRange = 0f..1f,
-                    steps = 19,
-                    title = "视频音量",
-                    summary = "调整背景视频的音量",
-                    displayValue = launcherBackgroundVideoVolume,
-                    enabled = isBackgroundVideo,
-                    isGlowEffectEnabled = isGlowEffectEnabled,
-                    isCardBlurEnabled = isCardBlurEnabled,
-                    hazeState = hazeState
-                )
-            }
         }
         item { 
             CollapsibleCard(

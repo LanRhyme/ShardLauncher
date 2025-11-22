@@ -22,12 +22,17 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.media3.common.MediaItem
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.PlayerView
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeChild
 
@@ -70,6 +75,74 @@ fun SwitchLayout(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            TitleAndSummary(
+                modifier = Modifier.weight(1f),
+                title = title,
+                summary = summary
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Switch(
+                checked = checked,
+                onCheckedChange = { onCheckedChange() },
+                enabled = enabled,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = MaterialTheme.colorScheme.secondary,
+                    checkedTrackColor = MaterialTheme.colorScheme.secondaryContainer,
+                    checkedIconColor = MaterialTheme.colorScheme.onSecondary,
+                    uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                    uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant,
+                    uncheckedBorderColor = MaterialTheme.colorScheme.outline
+                )
+            )
+        }
+    }
+}
+
+@Composable
+fun IconSwitchLayout(
+    checked: Boolean,
+    onCheckedChange: () -> Unit,
+    onIconClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    icon: @Composable () -> Unit,
+    title: String,
+    summary: String? = null,
+    enabled: Boolean = true,
+    shape: Shape = RoundedCornerShape(22.0.dp),
+    isCardBlurEnabled: Boolean,
+    hazeState: HazeState
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val cardModifier = if (isCardBlurEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        modifier
+            .fillMaxWidth()
+            .alpha(if (enabled) 1f else 0.5f)
+            .hazeChild(state = hazeState, shape = shape)
+    } else {
+        modifier
+            .fillMaxWidth()
+            .alpha(if (enabled) 1f else 0.5f)
+    }
+    Card(
+        modifier = cardModifier
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                enabled = enabled,
+                onClick = onCheckedChange
+            ),
+        shape = shape,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            IconButton(onClick = onIconClick, enabled = enabled) {
+                icon()
+            }
+            Spacer(modifier = Modifier.width(8.dp))
             TitleAndSummary(
                 modifier = Modifier.weight(1f),
                 title = title,
@@ -315,4 +388,33 @@ fun SliderLayout(
             }
         }
     }
+}
+
+@Composable
+fun VideoPlayer(uri: String, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    val exoPlayer = remember {
+        ExoPlayer.Builder(context).build().apply {
+            setMediaItem(MediaItem.fromUri(uri))
+            prepare()
+            playWhenReady = true
+            volume = 0f // Mute video
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            exoPlayer.release()
+        }
+    }
+
+    AndroidView(
+        factory = { 
+            PlayerView(it).apply {
+                player = exoPlayer
+                useController = false
+            }
+        },
+        modifier = modifier
+    )
 }
