@@ -1,12 +1,11 @@
 package com.lanrhyme.shardlauncher.ui.account
 
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,7 +34,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -50,6 +48,7 @@ import coil.request.ImageRequest
 import com.lanrhyme.shardlauncher.R
 import com.lanrhyme.shardlauncher.model.Account
 import com.lanrhyme.shardlauncher.model.AccountType
+import com.lanrhyme.shardlauncher.ui.components.selectableCard
 
 
 @Composable
@@ -84,15 +83,8 @@ fun AccountCard(
     var showMenu by remember { mutableStateOf(false) }
     val cardWidth = 120.dp
     val cardHeight = 160.dp
-
-    val scale by animateFloatAsState(
-        targetValue = if (isSelected) 1.05f else 1f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
-        ),
-        label = "card-scale"
-    )
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
 
     val border = if (isSelected) {
         BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
@@ -103,7 +95,7 @@ fun AccountCard(
     Box {
         Card(
             modifier = Modifier
-                .scale(scale)
+                .selectableCard(isSelected = isSelected, isPressed = isPressed)
                 .width(cardWidth)
                 .height(cardHeight)
                 .combinedClickable(
@@ -111,7 +103,9 @@ fun AccountCard(
                     onLongClick = {
                         showMenu = true
                         onLongClick()
-                    }
+                    },
+                    interactionSource = interactionSource,
+                    indication = null
                 ),
             shape = RoundedCornerShape(22.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),

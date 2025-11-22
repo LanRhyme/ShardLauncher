@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.lanrhyme.shardlauncher.R
 import com.lanrhyme.shardlauncher.ui.components.animatedAppearance
+import com.lanrhyme.shardlauncher.ui.components.selectableCard
 
 data class GameVersion(val name: String, val icon: Int)
 
@@ -258,21 +259,13 @@ fun GameVersionCard(version: GameVersion, isSelected: Boolean, onClick: () -> Un
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.95f else if (isSelected) 1.05f else 1f,
-        animationSpec = tween(durationMillis = 150),
-        label = "CardScale"
-    )
     val shape = RoundedCornerShape(18.dp)
 
     Card(
         modifier = Modifier
             .animatedAppearance(index, animationSpeed)
             .size(150.dp)
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
-            }
+            .selectableCard(isSelected = isSelected, isPressed = isPressed)
             .clip(shape)
             .clickable(interactionSource = interactionSource, indication = null, onClick = onClick),
         shape = shape,
