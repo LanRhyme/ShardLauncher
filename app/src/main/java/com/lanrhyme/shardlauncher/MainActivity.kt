@@ -50,6 +50,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
@@ -65,9 +66,11 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -110,6 +113,7 @@ import com.lanrhyme.shardlauncher.ui.version.VersionScreen
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.haze
 import dev.chrisbanes.haze.hazeChild
+import kotlin.math.abs
 
 class MainActivity : ComponentActivity() {
     private val tag = "MainActivity"
@@ -376,34 +380,46 @@ fun MainScreen(
                 if (launcherBackgroundUri != null) {
                     val isVideo = launcherBackgroundUri.endsWith(".mp4")
                     if (isVideo) {
-                        val exoPlayer = remember {
-                            ExoPlayer.Builder(context).build().apply {
-                                setMediaItem(MediaItem.fromUri(Uri.parse(launcherBackgroundUri)))
-                                repeatMode = Player.REPEAT_MODE_ALL
-                                playWhenReady = true
-                                prepare()
+                        Box(modifier = Modifier.fillMaxSize()) {
+                            val exoPlayer = remember(launcherBackgroundUri) {
+                                ExoPlayer.Builder(context).build().apply {
+                                    setMediaItem(MediaItem.fromUri(Uri.parse(launcherBackgroundUri)))
+                                    videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
+                                    repeatMode = Player.REPEAT_MODE_ALL
+                                    playWhenReady = true
+                                    prepare()
+                                }
+                            }
+
+                            exoPlayer.volume = 0f
+
+                            DisposableEffect(Unit) {
+                                onDispose { exoPlayer.release() }
+                            }
+
+                            AndroidView(
+                                factory = { ctx ->
+                                    PlayerView(ctx).apply {
+                                        player = exoPlayer
+                                        useController = false
+                                        resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
+                                        layoutParams = android.widget.FrameLayout.LayoutParams(
+                                            android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                                            android.view.ViewGroup.LayoutParams.MATCH_PARENT
+                                        )
+                                    }
+                                },
+                                modifier = Modifier.fillMaxSize()
+                            )
+
+                            val brightnessValue = launcherBackgroundBrightness
+                            if (brightnessValue != 0f) {
+                                val color = if (brightnessValue > 0) Color.White else Color.Black
+                                Box(modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(color.copy(alpha = abs(brightnessValue) / 100f)))
                             }
                         }
-
-                        exoPlayer.volume = 0f
-
-                        DisposableEffect(Unit) {
-                            onDispose { exoPlayer.release() }
-                        }
-
-                        AndroidView(
-                            factory = { ctx ->
-                                PlayerView(ctx).apply {
-                                    player = exoPlayer
-                                    useController = false
-                                    layoutParams = android.widget.FrameLayout.LayoutParams(
-                                        android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-                                        android.view.ViewGroup.LayoutParams.MATCH_PARENT
-                                    )
-                                }
-                            },
-                            modifier = Modifier.fillMaxSize()
-                        )
                     } else {
                         val brightnessValue = launcherBackgroundBrightness
                         val colorMatrix = ColorMatrix(

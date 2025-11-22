@@ -99,7 +99,7 @@ data class BackgroundItem(
 @Composable
 fun VideoPlayer(uri: String, modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    val exoPlayer = remember {
+    val exoPlayer = remember(uri) {
         ExoPlayer.Builder(context).build().apply {
             setMediaItem(MediaItem.fromUri(uri))
             prepare()
@@ -108,7 +108,7 @@ fun VideoPlayer(uri: String, modifier: Modifier = Modifier) {
         }
     }
 
-    DisposableEffect(Unit) {
+    DisposableEffect(uri) {
         onDispose {
             exoPlayer.release()
         }
