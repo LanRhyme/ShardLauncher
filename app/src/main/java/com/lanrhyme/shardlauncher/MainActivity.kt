@@ -146,7 +146,6 @@ class MainActivity : ComponentActivity() {
             var launcherBackgroundUri by remember { mutableStateOf(settingsRepository.getLauncherBackgroundUri()) }
             var launcherBackgroundBlur by remember { mutableStateOf(settingsRepository.getLauncherBackgroundBlur()) }
             var launcherBackgroundBrightness by remember { mutableStateOf(settingsRepository.getLauncherBackgroundBrightness()) }
-            var launcherBackgroundVideoVolume by remember { mutableStateOf(settingsRepository.getLauncherBackgroundVideoVolume()) }
             var enableVersionCheck by remember { mutableStateOf(settingsRepository.getEnableVersionCheck()) }
             var uiScale by remember { mutableStateOf(settingsRepository.getUiScale()) }
             var isGlowEffectEnabled by remember { mutableStateOf(settingsRepository.getIsGlowEffectEnabled()) }
@@ -262,11 +261,6 @@ class MainActivity : ComponentActivity() {
                                         launcherBackgroundBrightness = it
                                         settingsRepository.setLauncherBackgroundBrightness(it)
                                     },
-                                    launcherBackgroundVideoVolume = launcherBackgroundVideoVolume,
-                                    onLauncherBackgroundVideoVolumeChange = {
-                                        launcherBackgroundVideoVolume = it
-                                        settingsRepository.setLauncherBackgroundVideoVolume(it)
-                                    },
                                     enableVersionCheck = enableVersionCheck,
                                     onEnableVersionCheckChange = {
                                         val newValue = !enableVersionCheck
@@ -342,8 +336,6 @@ fun MainScreen(
     onLauncherBackgroundBlurChange: (Float) -> Unit,
     launcherBackgroundBrightness: Float,
     onLauncherBackgroundBrightnessChange: (Float) -> Unit,
-    launcherBackgroundVideoVolume: Float,
-    onLauncherBackgroundVideoVolumeChange: (Float) -> Unit,
     enableVersionCheck: Boolean,
     onEnableVersionCheckChange: () -> Unit,
     uiScale: Float,
@@ -393,7 +385,7 @@ fun MainScreen(
                             }
                         }
 
-                        exoPlayer.volume = launcherBackgroundVideoVolume
+                        exoPlayer.volume = 0f
 
                         DisposableEffect(Unit) {
                             onDispose { exoPlayer.release() }
@@ -475,8 +467,6 @@ fun MainScreen(
                 onLauncherBackgroundBlurChange = onLauncherBackgroundBlurChange,
                 launcherBackgroundBrightness = launcherBackgroundBrightness,
                 onLauncherBackgroundBrightnessChange = onLauncherBackgroundBrightnessChange,
-                launcherBackgroundVideoVolume = launcherBackgroundVideoVolume,
-                onLauncherBackgroundVideoVolumeChange = onLauncherBackgroundVideoVolumeChange,
                 enableVersionCheck = enableVersionCheck,
                 onEnableVersionCheckChange = onEnableVersionCheckChange,
                 uiScale = uiScale,
@@ -553,8 +543,6 @@ fun MainContent(
     onLauncherBackgroundBlurChange: (Float) -> Unit,
     launcherBackgroundBrightness: Float,
     onLauncherBackgroundBrightnessChange: (Float) -> Unit,
-    launcherBackgroundVideoVolume: Float,
-    onLauncherBackgroundVideoVolumeChange: (Float) -> Unit,
     enableVersionCheck: Boolean,
     onEnableVersionCheckChange: () -> Unit,
     uiScale: Float,
@@ -729,8 +717,6 @@ fun MainContent(
                         onLauncherBackgroundBlurChange = onLauncherBackgroundBlurChange,
                         launcherBackgroundBrightness = launcherBackgroundBrightness,
                         onLauncherBackgroundBrightnessChange = onLauncherBackgroundBrightnessChange,
-                        launcherBackgroundVideoVolume = launcherBackgroundVideoVolume,
-                        onLauncherBackgroundVideoVolumeChange = onLauncherBackgroundVideoVolumeChange,
                         enableVersionCheck = enableVersionCheck,
                         onEnableVersionCheckChange = onEnableVersionCheckChange,
                         uiScale = uiScale,

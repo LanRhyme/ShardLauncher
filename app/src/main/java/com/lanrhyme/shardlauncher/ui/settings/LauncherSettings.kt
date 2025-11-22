@@ -1,5 +1,6 @@
 package com.lanrhyme.shardlauncher.ui.settings
 
+import android.content.Context
 import android.net.Uri
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -31,10 +33,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.BrokenImage
-import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ColorScheme
@@ -44,15 +43,19 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
@@ -64,6 +67,10 @@ import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import coil.compose.AsyncImage
+import coil.decode.VideoFrameDecoder
+import coil.request.ImageRequest
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.lanrhyme.shardlauncher.common.SidebarPosition
 import com.lanrhyme.shardlauncher.ui.components.CollapsibleCard
 import com.lanrhyme.shardlauncher.ui.components.CustomDialog
@@ -79,10 +86,14 @@ import com.lanrhyme.shardlauncher.ui.theme.ThemeColor
 import dev.chrisbanes.haze.HazeState
 import java.io.File
 import java.io.FileOutputStream
+import java.util.UUID
+import kotlin.math.abs
 
 data class BackgroundItem(
     val uri: String,
-    val isVideo: Boolean
+    val isVideo: Boolean,
+    val blur: Float = 0f,
+    val brightness: Float = 0f
 )
 
 @Composable
@@ -113,6 +124,10 @@ fun VideoPlayer(uri: String, modifier: Modifier = Modifier) {
         modifier = modifier
     )
 }
+
+private const val PREFS_NAME = "launcher_settings"
+private const val KEY_BACKGROUND_ITEMS = "background_items"
+private const val KEY_RANDOM_BACKGROUND = "random_background"
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -145,8 +160,6 @@ internal fun LauncherSettingsContent(
     onLauncherBackgroundBlurChange: (Float) -> Unit,
     launcherBackgroundBrightness: Float,
     onLauncherBackgroundBrightnessChange: (Float) -> Unit,
-    launcherBackgroundVideoVolume: Float,
-    onLauncherBackgroundVideoVolumeChange: (Float) -> Unit,
     enableVersionCheck: Boolean,
     onEnableVersionCheckChange: () -> Unit,
     uiScale: Float,
@@ -163,10 +176,6 @@ internal fun LauncherSettingsContent(
         animationSpec = tween((1000 / animationSpeed).toInt())
     )
     val context = LocalContext.current
-    val backgroundFileName = "launcher_background.jpg"
-    val backgroundVideoName = "launcher_background.mp4"
-
-    val isBackgroundVideo = launcherBackgroundUri?.endsWith(".mp4") == true
 
     var showColorPickerDialog by remember { mutableStateOf(false) }
     var tempLightColorScheme by remember(lightColorScheme) { mutableStateOf(lightColorScheme) }
@@ -184,6 +193,36 @@ internal fun LauncherSettingsContent(
     var showDeleteBackgroundMenu by remember { mutableStateOf(false) }
     var itemToDelete by remember { mutableStateOf<BackgroundItem?>(null) }
 
+    var tempBlur by remember { mutableStateOf(0f) }
+    var tempBrightness by remember { mutableStateOf(0f) }
+
+    val prefs = remember { context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE) }
+    val gson = remember { Gson() }
+
+    LaunchedEffect(Unit) {
+        val json = prefs.getString(KEY_BACKGROUND_ITEMS, null)
+        if (json != null) {
+            val type = object : TypeToken<List<BackgroundItem>>() {}.type
+            backgroundItems = gson.fromJson(json, type)
+        }
+        randomBackground = prefs.getBoolean(KEY_RANDOM_BACKGROUND, false)
+    }
+
+    LaunchedEffect(backgroundItems, randomBackground) {
+        val json = gson.toJson(backgroundItems)
+        prefs.edit()
+            .putString(KEY_BACKGROUND_ITEMS, json)
+            .putBoolean(KEY_RANDOM_BACKGROUND, randomBackground)
+            .apply()
+    }
+
+    LaunchedEffect(selectedBackground) {
+        selectedBackground?.let {
+            tempBlur = it.blur
+            tempBrightness = it.brightness
+        }
+    }
+
     fun addBackground(uri: String, isVideo: Boolean) {
         val newItem = BackgroundItem(uri, isVideo)
         backgroundItems = backgroundItems + newItem
@@ -191,8 +230,8 @@ internal fun LauncherSettingsContent(
     }
 
     fun removeBackground(item: BackgroundItem) {
-        backgroundItems = backgroundItems - item
-        if (selectedBackground == item) {
+        backgroundItems = backgroundItems.filter { it.uri != item.uri }
+        if (selectedBackground?.uri == item.uri) {
             selectedBackground = backgroundItems.firstOrNull()
         }
     }
@@ -201,7 +240,7 @@ internal fun LauncherSettingsContent(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri: Uri? ->
             uri?.let { uri ->
-                val destinationFile = File(context.getExternalFilesDir(null), backgroundFileName)
+                val destinationFile = File(context.getExternalFilesDir(null), "${UUID.randomUUID()}.jpg")
                 try {
                     context.contentResolver.openInputStream(uri)?.use { inputStream ->
                         FileOutputStream(destinationFile).use { outputStream ->
@@ -211,7 +250,6 @@ internal fun LauncherSettingsContent(
                     addBackground(Uri.fromFile(destinationFile).toString(), false)
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    // Optionally, notify the user of the failure
                 }
             }
         }
@@ -221,7 +259,7 @@ internal fun LauncherSettingsContent(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri: Uri? ->
             uri?.let { uri ->
-                val destinationFile = File(context.getExternalFilesDir(null), backgroundVideoName)
+                val destinationFile = File(context.getExternalFilesDir(null), "${UUID.randomUUID()}.mp4")
                 try {
                     context.contentResolver.openInputStream(uri)?.use { inputStream ->
                         FileOutputStream(destinationFile).use { outputStream ->
@@ -231,7 +269,6 @@ internal fun LauncherSettingsContent(
                     addBackground(Uri.fromFile(destinationFile).toString(), true)
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    // Optionally, notify the user of the failure
                 }
             }
         }
@@ -242,19 +279,18 @@ internal fun LauncherSettingsContent(
             onDismissRequest = { showBackgroundDialog = false }
         ) {
             Row(modifier = Modifier.fillMaxSize()) {
-                // Left side: Scrollable settings
                 LazyColumn(modifier = Modifier.weight(2f).padding(16.dp)) {
                     item {
                         Text("选择背景", style = MaterialTheme.typography.titleMedium)
                         Spacer(modifier = Modifier.height(8.dp))
                         LazyRow(
+                            modifier = Modifier.border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp)).padding(8.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             items(backgroundItems) { item ->
                                 Box {
                                     var isPressed by remember { mutableStateOf(false) }
-                                    val scale by animateFloatAsState(targetValue = if (isPressed) 0.95f else 1f)
-                                    // Background thumbnail card
+                                    val scale by animateFloatAsState(targetValue = if (isPressed) 0.95f else 1f, label = "")
                                     Box(
                                         modifier = Modifier
                                             .scale(scale)
@@ -263,7 +299,7 @@ internal fun LauncherSettingsContent(
                                             .background(MaterialTheme.colorScheme.surfaceVariant)
                                             .pointerInput(Unit) {
                                                 detectTapGestures(
-                                                    onPress = { 
+                                                    onPress = {
                                                         isPressed = true
                                                         tryAwaitRelease()
                                                         isPressed = false
@@ -277,13 +313,19 @@ internal fun LauncherSettingsContent(
                                             }
                                             .border(
                                                 width = 2.dp,
-                                                color = if (selectedBackground == item) MaterialTheme.colorScheme.primary else Color.Transparent,
+                                                color = if (selectedBackground?.uri == item.uri) MaterialTheme.colorScheme.primary else Color.Transparent,
                                                 shape = RoundedCornerShape(8.dp)
                                             )
                                     ) {
-                                        AsyncImage(model = item.uri, contentDescription = null, modifier = Modifier.fillMaxSize())
+                                        AsyncImage(
+                                            model = ImageRequest.Builder(LocalContext.current)
+                                                .data(item.uri)
+                                                .decoderFactory(VideoFrameDecoder.Factory())
+                                                .build(),
+                                            contentDescription = null,
+                                            modifier = Modifier.fillMaxSize()
+                                        )
                                         if (item.isVideo) {
-                                            // Video label
                                             Text(
                                                 "Video",
                                                 modifier = Modifier
@@ -300,12 +342,12 @@ internal fun LauncherSettingsContent(
                                         }
                                     }
                                     DropdownMenu(
-                                        expanded = showDeleteBackgroundMenu && itemToDelete == item,
-                                        onDismissRequest = { showDeleteBackgroundMenu = false } 
+                                        expanded = showDeleteBackgroundMenu && itemToDelete?.uri == item.uri,
+                                        onDismissRequest = { showDeleteBackgroundMenu = false }
                                     ) {
                                         DropdownMenuItem(
                                             text = { Text("删除") },
-                                            onClick = { 
+                                            onClick = {
                                                 removeBackground(item)
                                                 showDeleteBackgroundMenu = false
                                             }
@@ -314,12 +356,11 @@ internal fun LauncherSettingsContent(
                                 }
                             }
                             item {
-                                // Add background card
                                 Box(
                                     modifier = Modifier
                                         .size(160.dp, 90.dp)
                                         .clip(RoundedCornerShape(8.dp))
-                                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                                        .border(BorderStroke(1.dp, MaterialTheme.colorScheme.outline), RoundedCornerShape(8.dp))
                                         .clickable { showAddBackgroundMenu = true },
                                     contentAlignment = Alignment.Center
                                 ) {
@@ -331,11 +372,10 @@ internal fun LauncherSettingsContent(
                             }
                         }
 
-                        // Dropdown menu for adding image or video
                         DropdownMenu(
                             expanded = showAddBackgroundMenu,
                             onDismissRequest = { showAddBackgroundMenu = false },
-                            modifier = Modifier.padding(start = 160.dp) // Adjust position
+                            modifier = Modifier.padding(start = 160.dp)
                         ) {
                             DropdownMenuItem(
                                 text = { Text("添加图片") },
@@ -357,26 +397,25 @@ internal fun LauncherSettingsContent(
                         Spacer(modifier = Modifier.height(16.dp))
                         Text("背景设置", style = MaterialTheme.typography.titleMedium)
                         Spacer(modifier = Modifier.height(8.dp))
-                        // Placeholder for blur and brightness sliders
                         SliderLayout(
-                            value = launcherBackgroundBlur,
-                            onValueChange = onLauncherBackgroundBlurChange,
+                            value = tempBlur,
+                            onValueChange = { tempBlur = it },
                             valueRange = 0f..25f,
                             title = "背景模糊",
-                            displayValue = launcherBackgroundBlur,
-                            enabled = launcherBackgroundUri != null,
+                            displayValue = tempBlur,
+                            enabled = selectedBackground != null && !selectedBackground!!.isVideo,
                             isGlowEffectEnabled = isGlowEffectEnabled,
                             isCardBlurEnabled = isCardBlurEnabled,
                             hazeState = hazeState
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         SliderLayout(
-                            value = launcherBackgroundBrightness,
-                            onValueChange = onLauncherBackgroundBrightnessChange,
+                            value = tempBrightness,
+                            onValueChange = { tempBrightness = it },
                             valueRange = -100f..100f,
                             title = "背景明度",
-                            displayValue = launcherBackgroundBrightness,
-                            enabled = launcherBackgroundUri != null,
+                            displayValue = tempBrightness,
+                            enabled = selectedBackground != null,
                             isGlowEffectEnabled = isGlowEffectEnabled,
                             isCardBlurEnabled = isCardBlurEnabled,
                             hazeState = hazeState
@@ -386,7 +425,6 @@ internal fun LauncherSettingsContent(
                         Spacer(modifier = Modifier.height(16.dp))
                         Text("全局配置", style = MaterialTheme.typography.titleMedium)
                         Spacer(modifier = Modifier.height(8.dp))
-                        // Placeholder for random background switch
                         SwitchLayout(
                             checked = randomBackground,
                             onCheckedChange = { randomBackground = !randomBackground },
@@ -396,34 +434,49 @@ internal fun LauncherSettingsContent(
                         )
                     }
                 }
-                // Right side: Preview and actions
+                VerticalDivider(modifier = Modifier.fillMaxHeight(), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f))
                 Column(
-                    modifier = Modifier.weight(1f).padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.SpaceBetween
+                    modifier = Modifier.weight(1f).padding(16.dp)
                 ) {
-                    // Preview
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .aspectRatio(16f / 9f)
-                            .background(
-                                MaterialTheme.colorScheme.surfaceVariant,
-                                RoundedCornerShape(12.dp)
-                            ),
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .then(
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && selectedBackground?.isVideo == false) {
+                                    Modifier.blur(radius = tempBlur.dp)
+                                } else {
+                                    Modifier
+                                }
+                            )
+                            .drawWithContent {
+                                drawContent()
+                                if (tempBrightness != 0f) {
+                                    val color = if (tempBrightness > 0) Color.White else Color.Black
+                                    drawRect(color, alpha = abs(tempBrightness) / 100f)
+                                }
+                            },
                         contentAlignment = Alignment.Center
                     ) {
                         if (selectedBackground != null) {
                             if (selectedBackground!!.isVideo) {
                                 VideoPlayer(uri = selectedBackground!!.uri, modifier = Modifier.fillMaxSize())
                             } else {
-                                AsyncImage(model = selectedBackground!!.uri, contentDescription = null, modifier = Modifier.fillMaxSize())
+                                AsyncImage(
+                                    model = ImageRequest.Builder(LocalContext.current)
+                                        .data(selectedBackground!!.uri)
+                                        .build(),
+                                    contentDescription = null,
+                                    modifier = Modifier.fillMaxSize()
+                                )
                             }
                         } else {
                             Text("效果预览")
                         }
                     }
-                    // Action Buttons
+                    Spacer(modifier = Modifier.weight(1f))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
@@ -432,9 +485,17 @@ internal fun LauncherSettingsContent(
                             Text("取消")
                         }
                         Spacer(modifier = Modifier.width(8.dp))
-                        Button(onClick = { 
-                            onLauncherBackgroundUriChange(selectedBackground?.uri)
-                            showBackgroundDialog = false 
+                        Button(onClick = {
+                            selectedBackground?.let { current ->
+                                val updatedItem = current.copy(blur = tempBlur, brightness = tempBrightness)
+                                backgroundItems = backgroundItems.map { if (it.uri == current.uri) updatedItem else it }
+                                onLauncherBackgroundUriChange(updatedItem.uri)
+                                onLauncherBackgroundBlurChange(updatedItem.blur)
+                                onLauncherBackgroundBrightnessChange(updatedItem.brightness)
+                            } ?: run {
+                                onLauncherBackgroundUriChange(null)
+                            }
+                            showBackgroundDialog = false
                         }) {
                             Text("确认")
                         }
@@ -470,7 +531,6 @@ internal fun LauncherSettingsContent(
         )
     }
 
-
     if (showColorPickerDialog) {
         AlertDialog(
             onDismissRequest = { showColorPickerDialog = false },
@@ -491,7 +551,6 @@ internal fun LauncherSettingsContent(
                 Button(onClick = {
                     onLightColorSchemeChange(tempLightColorScheme)
                     onDarkColorSchemeChange(tempDarkColorScheme)
-                    // also update the primary color for generation logic
                     onCustomPrimaryColorChange(tempLightColorScheme.primary)
                     onThemeColorChange(ThemeColor.Custom)
                     showColorPickerDialog = false
@@ -514,8 +573,6 @@ internal fun LauncherSettingsContent(
             }
         )
     }
-
-    
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
