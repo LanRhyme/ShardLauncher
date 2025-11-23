@@ -64,7 +64,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.DialogProperties
 import androidx.media3.common.MediaItem
-import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import coil.compose.AsyncImage
 import coil.decode.VideoFrameDecoder
@@ -78,6 +77,7 @@ import com.lanrhyme.shardlauncher.ui.components.IconSwitchLayout
 import com.lanrhyme.shardlauncher.ui.components.SimpleListLayout
 import com.lanrhyme.shardlauncher.ui.components.SliderLayout
 import com.lanrhyme.shardlauncher.ui.components.SwitchLayout
+import com.lanrhyme.shardlauncher.ui.components.TitleAndSummary
 import com.lanrhyme.shardlauncher.ui.components.animatedAppearance
 import com.lanrhyme.shardlauncher.ui.composables.HsvColorPicker
 import com.lanrhyme.shardlauncher.ui.composables.ThemeColorEditor
@@ -281,10 +281,11 @@ internal fun LauncherSettingsContent(
             Row(modifier = Modifier.fillMaxSize()) {
                 LazyColumn(modifier = Modifier.weight(2f).padding(16.dp)) {
                     item {
-                        Text("选择背景", style = MaterialTheme.typography.titleMedium)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        TitleAndSummary(title = "选择背景", summary = "选择自定义背景以使用")
                         Spacer(modifier = Modifier.height(8.dp))
                         LazyRow(
-                            modifier = Modifier.border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp)).padding(8.dp),
+                            modifier = Modifier.border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(16.dp)).padding(8.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             items(backgroundItems, key = { it.uri }) { item ->
@@ -295,7 +296,7 @@ internal fun LauncherSettingsContent(
                                         modifier = Modifier
                                             .scale(scale)
                                             .size(160.dp, 90.dp)
-                                            .clip(RoundedCornerShape(8.dp))
+                                            .clip(RoundedCornerShape(16.dp))
                                             .background(MaterialTheme.colorScheme.surfaceVariant)
                                             .pointerInput(Unit) {
                                                 detectTapGestures(
@@ -314,7 +315,7 @@ internal fun LauncherSettingsContent(
                                             .border(
                                                 width = 2.dp,
                                                 color = if (selectedBackground?.uri == item.uri) MaterialTheme.colorScheme.primary else Color.Transparent,
-                                                shape = RoundedCornerShape(8.dp)
+                                                shape = RoundedCornerShape(16.dp)
                                             )
                                     ) {
                                         AsyncImage(
@@ -359,8 +360,8 @@ internal fun LauncherSettingsContent(
                                 Box(
                                     modifier = Modifier
                                         .size(160.dp, 90.dp)
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .border(BorderStroke(1.dp, MaterialTheme.colorScheme.outline), RoundedCornerShape(8.dp))
+                                        .clip(RoundedCornerShape(16.dp))
+                                        .border(BorderStroke(1.dp, MaterialTheme.colorScheme.outline), RoundedCornerShape(16.dp))
                                         .clickable { showAddBackgroundMenu = true },
                                     contentAlignment = Alignment.Center
                                 ) {
@@ -375,7 +376,7 @@ internal fun LauncherSettingsContent(
                         DropdownMenu(
                             expanded = showAddBackgroundMenu,
                             onDismissRequest = { showAddBackgroundMenu = false },
-                            modifier = Modifier.padding(start = 160.dp)
+                            modifier = Modifier.padding(all = 8.dp)
                         ) {
                             DropdownMenuItem(
                                 text = { Text("添加图片") },
@@ -408,7 +409,7 @@ internal fun LauncherSettingsContent(
                             isCardBlurEnabled = isCardBlurEnabled,
                             hazeState = hazeState
                         )
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
                         SliderLayout(
                             value = tempBrightness,
                             onValueChange = { tempBrightness = it },
@@ -422,9 +423,9 @@ internal fun LauncherSettingsContent(
                         )
                     }
                     item {
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
                         Text("全局配置", style = MaterialTheme.typography.titleMedium)
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
                         SwitchLayout(
                             checked = randomBackground,
                             onCheckedChange = { randomBackground = !randomBackground },
@@ -442,7 +443,7 @@ internal fun LauncherSettingsContent(
                         modifier = Modifier
                             .fillMaxWidth()
                             .aspectRatio(16f / 9f)
-                            .clip(RoundedCornerShape(12.dp))
+                            .clip(RoundedCornerShape(16.dp))
                             .background(MaterialTheme.colorScheme.surfaceVariant)
                             .then(
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && selectedBackground?.isVideo == false) {

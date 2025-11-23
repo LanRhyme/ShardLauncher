@@ -20,19 +20,13 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.media3.common.MediaItem
-import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.ui.PlayerView
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeChild
 
@@ -139,16 +133,15 @@ fun IconSwitchLayout(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            IconButton(onClick = onIconClick, enabled = enabled) {
-                icon()
-            }
-            Spacer(modifier = Modifier.width(8.dp))
             TitleAndSummary(
                 modifier = Modifier.weight(1f),
                 title = title,
                 summary = summary
             )
             Spacer(modifier = Modifier.width(8.dp))
+            IconButton(onClick = onIconClick, enabled = enabled) {
+                icon()
+            }
             Switch(
                 checked = checked,
                 onCheckedChange = { onCheckedChange() },
@@ -310,7 +303,7 @@ fun SliderLayout(
                     onValueChange = onValueChange,
                     modifier = Modifier.weight(1f),
                     valueRange = valueRange,
-                    steps = 0, // Per user request for a continuous slider.
+                    steps = 0,
                     enabled = enabled,
                     interactionSource = interactionSource,
                     thumb = {
@@ -390,31 +383,3 @@ fun SliderLayout(
     }
 }
 
-@Composable
-fun VideoPlayer(uri: String, modifier: Modifier = Modifier) {
-    val context = LocalContext.current
-    val exoPlayer = remember {
-        ExoPlayer.Builder(context).build().apply {
-            setMediaItem(MediaItem.fromUri(uri))
-            prepare()
-            playWhenReady = true
-            volume = 0f // Mute video
-        }
-    }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            exoPlayer.release()
-        }
-    }
-
-    AndroidView(
-        factory = { 
-            PlayerView(it).apply {
-                player = exoPlayer
-                useController = false
-            }
-        },
-        modifier = modifier
-    )
-}
