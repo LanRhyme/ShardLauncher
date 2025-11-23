@@ -231,6 +231,7 @@ internal fun LauncherSettingsContent(
     
     LaunchedEffect(showBackgroundDialog) {
         if (showBackgroundDialog) {
+            selectedBackground = backgroundItems.find { it.uri == launcherBackgroundUri }
             tempEnableParallax = enableParallax
             tempParallaxMagnitude = parallaxMagnitude
         }
