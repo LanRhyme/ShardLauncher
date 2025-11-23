@@ -93,7 +93,9 @@ data class BackgroundItem(
     val uri: String,
     val isVideo: Boolean,
     val blur: Float = 0f,
-    val brightness: Float = 0f
+    val brightness: Float = 0f,
+    val enableParallax: Boolean = false,
+    val parallaxMagnitude: Float = 1f
 )
 
 @Composable
@@ -160,6 +162,10 @@ internal fun LauncherSettingsContent(
     onLauncherBackgroundBlurChange: (Float) -> Unit,
     launcherBackgroundBrightness: Float,
     onLauncherBackgroundBrightnessChange: (Float) -> Unit,
+    enableParallax: Boolean,
+    onEnableParallaxChange: (Boolean) -> Unit,
+    parallaxMagnitude: Float,
+    onParallaxMagnitudeChange: (Float) -> Unit,
     enableVersionCheck: Boolean,
     onEnableVersionCheckChange: () -> Unit,
     uiScale: Float,
@@ -195,6 +201,8 @@ internal fun LauncherSettingsContent(
 
     var tempBlur by remember { mutableStateOf(0f) }
     var tempBrightness by remember { mutableStateOf(0f) }
+    var tempEnableParallax by remember { mutableStateOf(false) }
+    var tempParallaxMagnitude by remember { mutableStateOf(1f) }
 
     val prefs = remember { context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE) }
     val gson = remember { Gson() }
@@ -220,6 +228,8 @@ internal fun LauncherSettingsContent(
         selectedBackground?.let {
             tempBlur = it.blur
             tempBrightness = it.brightness
+            tempEnableParallax = it.enableParallax
+            tempParallaxMagnitude = it.parallaxMagnitude
         }
     }
 
@@ -433,6 +443,25 @@ internal fun LauncherSettingsContent(
                             isCardBlurEnabled = isCardBlurEnabled,
                             hazeState = hazeState
                         )
+                        SwitchLayout(
+                            checked = tempEnableParallax,
+                            onCheckedChange = { tempEnableParallax = !tempEnableParallax },
+                            title = "启用背景视差效果",
+                            isCardBlurEnabled = isCardBlurEnabled,
+                            hazeState = hazeState
+                        )
+                        if (tempEnableParallax) {
+                            SliderLayout(
+                                value = tempParallaxMagnitude,
+                                onValueChange = { tempParallaxMagnitude = it },
+                                valueRange = 1f..40f,
+                                title = "视差幅度",
+                                displayValue = tempParallaxMagnitude,
+                                isGlowEffectEnabled = isGlowEffectEnabled,
+                                isCardBlurEnabled = isCardBlurEnabled,
+                                hazeState = hazeState
+                            )
+                        }
                     }
                 }
                 VerticalDivider(modifier = Modifier.fillMaxHeight(), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f))
@@ -462,15 +491,16 @@ internal fun LauncherSettingsContent(
                         contentAlignment = Alignment.Center
                     ) {
                         if (selectedBackground != null) {
+                            val parallaxScale = if (tempEnableParallax) 1f + (tempParallaxMagnitude - 1f) / 20f else 1f
                             if (selectedBackground!!.isVideo) {
-                                VideoPlayer(uri = selectedBackground!!.uri, modifier = Modifier.fillMaxSize())
+                                VideoPlayer(uri = selectedBackground!!.uri, modifier = Modifier.fillMaxSize().scale(parallaxScale))
                             } else {
                                 AsyncImage(
                                     model = ImageRequest.Builder(LocalContext.current)
                                         .data(selectedBackground!!.uri)
                                         .build(),
                                     contentDescription = null,
-                                    modifier = Modifier.fillMaxSize()
+                                    modifier = Modifier.fillMaxSize().scale(parallaxScale)
                                 )
                             }
                         } else {
@@ -488,11 +518,18 @@ internal fun LauncherSettingsContent(
                         Spacer(modifier = Modifier.width(8.dp))
                         Button(onClick = {
                             selectedBackground?.let { current ->
-                                val updatedItem = current.copy(blur = tempBlur, brightness = tempBrightness)
+                                val updatedItem = current.copy(
+                                    blur = tempBlur,
+                                    brightness = tempBrightness,
+                                    enableParallax = tempEnableParallax,
+                                    parallaxMagnitude = tempParallaxMagnitude
+                                )
                                 backgroundItems = backgroundItems.map { if (it.uri == current.uri) updatedItem else it }
                                 onLauncherBackgroundUriChange(updatedItem.uri)
                                 onLauncherBackgroundBlurChange(updatedItem.blur)
                                 onLauncherBackgroundBrightnessChange(updatedItem.brightness)
+                                onEnableParallaxChange(updatedItem.enableParallax)
+                                onParallaxMagnitudeChange(updatedItem.parallaxMagnitude)
                             } ?: run {
                                 onLauncherBackgroundUriChange(null)
                             }
@@ -597,7 +634,7 @@ internal fun LauncherSettingsContent(
                 title = "深色模式",
                 summary = if (isDarkTheme) "已开启" else "已关闭",
                 checked = isDarkTheme,
-                onCheckedChange = onThemeToggle,
+                onCheckedChange = { onThemeToggle() },
                 isCardBlurEnabled = isCardBlurEnabled,
                 hazeState = hazeState
             )
@@ -609,7 +646,7 @@ internal fun LauncherSettingsContent(
                 title = "获取Minecraft最新更新信息",
                 summary = "来源于news.bugjump.net",
                 checked = enableVersionCheck,
-                onCheckedChange = onEnableVersionCheckChange,
+                onCheckedChange = { onEnableVersionCheckChange() },
                 isCardBlurEnabled = isCardBlurEnabled,
                 hazeState = hazeState
             )
@@ -685,7 +722,7 @@ internal fun LauncherSettingsContent(
                 title = "UI发光效果",
                 summary = "为部分文字和图标添加发光效果",
                 checked = isGlowEffectEnabled,
-                onCheckedChange = onIsGlowEffectEnabledChange,
+                onCheckedChange = { onIsGlowEffectEnabledChange() },
                 isCardBlurEnabled = isCardBlurEnabled,
                 hazeState = hazeState
             )
@@ -697,7 +734,7 @@ internal fun LauncherSettingsContent(
                 title = "卡片背景启用毛玻璃效果",
                 summary = "[Beta](会出现渲染问题)对卡片背景启用毛玻璃效果(Android 12+)",
                 checked = isCardBlurEnabled,
-                onCheckedChange = onIsCardBlurEnabledChange,
+                onCheckedChange = { onIsCardBlurEnabledChange() },
                 enabled = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
                 isCardBlurEnabled = isCardBlurEnabled,
                 hazeState = hazeState

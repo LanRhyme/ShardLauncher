@@ -110,6 +110,7 @@ import com.lanrhyme.shardlauncher.ui.theme.ColorPalettes
 import com.lanrhyme.shardlauncher.ui.theme.ShardLauncherTheme
 import com.lanrhyme.shardlauncher.ui.theme.ThemeColor
 import com.lanrhyme.shardlauncher.ui.version.VersionScreen
+import com.lanrhyme.shardlauncher.utils.rememberParallaxSensorHelper
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.haze
 import dev.chrisbanes.haze.hazeChild
@@ -150,6 +151,8 @@ class MainActivity : ComponentActivity() {
             var launcherBackgroundUri by remember { mutableStateOf<String?>(null) }
             var launcherBackgroundBlur by remember { mutableStateOf(0f) }
             var launcherBackgroundBrightness by remember { mutableStateOf(0f) }
+            var enableParallax by remember { mutableStateOf(settingsRepository.getEnableParallax()) }
+            var parallaxMagnitude by remember { mutableStateOf(settingsRepository.getParallaxMagnitude()) }
             var enableVersionCheck by remember { mutableStateOf(settingsRepository.getEnableVersionCheck()) }
             var uiScale by remember { mutableStateOf(settingsRepository.getUiScale()) }
             var isGlowEffectEnabled by remember { mutableStateOf(settingsRepository.getIsGlowEffectEnabled()) }
@@ -165,15 +168,21 @@ class MainActivity : ComponentActivity() {
                         launcherBackgroundUri = randomItem.uri
                         launcherBackgroundBlur = randomItem.blur
                         launcherBackgroundBrightness = randomItem.brightness
+                        enableParallax = randomItem.enableParallax
+                        parallaxMagnitude = randomItem.parallaxMagnitude
                     } else {
                         launcherBackgroundUri = settingsRepository.getLauncherBackgroundUri()
                         launcherBackgroundBlur = settingsRepository.getLauncherBackgroundBlur()
                         launcherBackgroundBrightness = settingsRepository.getLauncherBackgroundBrightness()
+                        enableParallax = settingsRepository.getEnableParallax()
+                        parallaxMagnitude = settingsRepository.getParallaxMagnitude()
                     }
                 } else {
                     launcherBackgroundUri = settingsRepository.getLauncherBackgroundUri()
                     launcherBackgroundBlur = settingsRepository.getLauncherBackgroundBlur()
                     launcherBackgroundBrightness = settingsRepository.getLauncherBackgroundBrightness()
+                    enableParallax = settingsRepository.getEnableParallax()
+                    parallaxMagnitude = settingsRepository.getParallaxMagnitude()
                 }
             }
 
@@ -286,6 +295,16 @@ class MainActivity : ComponentActivity() {
                                         launcherBackgroundBrightness = it
                                         settingsRepository.setLauncherBackgroundBrightness(it)
                                     },
+                                    enableParallax = enableParallax,
+                                    onEnableParallaxChange = {
+                                        enableParallax = it
+                                        settingsRepository.setEnableParallax(it)
+                                    },
+                                    parallaxMagnitude = parallaxMagnitude,
+                                    onParallaxMagnitudeChange = {
+                                        parallaxMagnitude = it
+                                        settingsRepository.setParallaxMagnitude(it)
+                                    },
                                     enableVersionCheck = enableVersionCheck,
                                     onEnableVersionCheckChange = {
                                         val newValue = !enableVersionCheck
@@ -361,6 +380,10 @@ fun MainScreen(
     onLauncherBackgroundBlurChange: (Float) -> Unit,
     launcherBackgroundBrightness: Float,
     onLauncherBackgroundBrightnessChange: (Float) -> Unit,
+    enableParallax: Boolean,
+    onEnableParallaxChange: (Boolean) -> Unit,
+    parallaxMagnitude: Float,
+    onParallaxMagnitudeChange: (Float) -> Unit,
     enableVersionCheck: Boolean,
     onEnableVersionCheckChange: () -> Unit,
     uiScale: Float,
@@ -376,6 +399,7 @@ fun MainScreen(
     var isSidebarExpanded by remember { mutableStateOf(false) }
     val animationDuration = (300 / animationSpeed).toInt()
     val hazeState = remember { HazeState() }
+    val parallaxState by rememberParallaxSensorHelper(enableParallax, parallaxMagnitude)
 
     val sidebarWidth by animateDpAsState(
         targetValue = if (isSidebarExpanded) 220.dp else 72.dp,
@@ -399,6 +423,7 @@ fun MainScreen(
                     .haze(state = hazeState)
             ) {
                 if (launcherBackgroundUri != null) {
+                    val parallaxScale = if (enableParallax) 1f + (parallaxMagnitude - 1f) / 20f else 1f
                     val isVideo = launcherBackgroundUri.endsWith(".mp4")
                     if (isVideo) {
                         Box(modifier = Modifier.fillMaxSize()) {
@@ -430,7 +455,14 @@ fun MainScreen(
                                         )
                                     }
                                 },
-                                modifier = Modifier.fillMaxSize()
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .graphicsLayer {
+                                        scaleX = parallaxScale
+                                        scaleY = parallaxScale
+                                        translationX = parallaxState.x
+                                        translationY = parallaxState.y
+                                    }
                             )
 
                             val brightnessValue = launcherBackgroundBrightness
@@ -456,7 +488,13 @@ fun MainScreen(
                             contentDescription = "Launcher Background",
                             modifier = Modifier
                                 .fillMaxSize()
-                                .blur(launcherBackgroundBlur.dp),
+                                .blur(launcherBackgroundBlur.dp)
+                                .graphicsLayer {
+                                    scaleX = parallaxScale
+                                    scaleY = parallaxScale
+                                    translationX = parallaxState.x
+                                    translationY = parallaxState.y
+                                },
                             contentScale = ContentScale.Crop,
                             colorFilter = ColorFilter.colorMatrix(colorMatrix)
                         )
@@ -504,6 +542,10 @@ fun MainScreen(
                 onLauncherBackgroundBlurChange = onLauncherBackgroundBlurChange,
                 launcherBackgroundBrightness = launcherBackgroundBrightness,
                 onLauncherBackgroundBrightnessChange = onLauncherBackgroundBrightnessChange,
+                enableParallax = enableParallax,
+                onEnableParallaxChange = onEnableParallaxChange,
+                parallaxMagnitude = parallaxMagnitude,
+                onParallaxMagnitudeChange = onParallaxMagnitudeChange,
                 enableVersionCheck = enableVersionCheck,
                 onEnableVersionCheckChange = onEnableVersionCheckChange,
                 uiScale = uiScale,
@@ -580,6 +622,10 @@ fun MainContent(
     onLauncherBackgroundBlurChange: (Float) -> Unit,
     launcherBackgroundBrightness: Float,
     onLauncherBackgroundBrightnessChange: (Float) -> Unit,
+    enableParallax: Boolean,
+    onEnableParallaxChange: (Boolean) -> Unit,
+    parallaxMagnitude: Float,
+    onParallaxMagnitudeChange: (Float) -> Unit,
     enableVersionCheck: Boolean,
     onEnableVersionCheckChange: () -> Unit,
     uiScale: Float,
@@ -754,6 +800,10 @@ fun MainContent(
                         onLauncherBackgroundBlurChange = onLauncherBackgroundBlurChange,
                         launcherBackgroundBrightness = launcherBackgroundBrightness,
                         onLauncherBackgroundBrightnessChange = onLauncherBackgroundBrightnessChange,
+                        enableParallax = enableParallax,
+                        onEnableParallaxChange = onEnableParallaxChange,
+                        parallaxMagnitude = parallaxMagnitude,
+                        onParallaxMagnitudeChange = onParallaxMagnitudeChange,
                         enableVersionCheck = enableVersionCheck,
                         onEnableVersionCheckChange = onEnableVersionCheckChange,
                         uiScale = uiScale,

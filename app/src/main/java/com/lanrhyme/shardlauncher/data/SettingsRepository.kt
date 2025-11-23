@@ -130,6 +130,24 @@ class SettingsRepository(context: Context) {
         saveProperties()
     }
 
+    fun getEnableParallax(): Boolean {
+        return properties.getProperty(KEY_ENABLE_PARALLAX, "false").toBoolean()
+    }
+
+    fun setEnableParallax(enabled: Boolean) {
+        properties.setProperty(KEY_ENABLE_PARALLAX, enabled.toString())
+        saveProperties()
+    }
+
+    fun getParallaxMagnitude(): Float {
+        return properties.getProperty(KEY_PARALLAX_MAGNITUDE, "1.0").toFloat()
+    }
+
+    fun setParallaxMagnitude(magnitude: Float) {
+        properties.setProperty(KEY_PARALLAX_MAGNITUDE, magnitude.toString())
+        saveProperties()
+    }
+
     fun getEnableBackgroundLightEffect(): Boolean {
         return properties.getProperty(KEY_ENABLE_BACKGROUND_LIGHT_EFFECT, "true").toBoolean()
     }
@@ -277,6 +295,8 @@ class SettingsRepository(context: Context) {
         private const val KEY_LAUNCHER_BACKGROUND_URI = "launcher_background_uri"
         private const val KEY_LAUNCHER_BACKGROUND_BLUR = "launcher_background_blur"
         private const val KEY_LAUNCHER_BACKGROUND_BRIGHTNESS = "launcher_background_brightness"
+        private const val KEY_ENABLE_PARALLAX = "enable_parallax"
+        private const val KEY_PARALLAX_MAGNITUDE = "parallax_magnitude"
         private const val KEY_ENABLE_BACKGROUND_LIGHT_EFFECT = "enable_background_light_effect"
         private const val KEY_ENABLE_BACKGROUND_LIGHT_EFFECT_CUSTOM_COLOR = "enable_background_light_effect_custom_color"
         private const val KEY_BACKGROUND_LIGHT_EFFECT_CUSTOM_COLOR = "background_light_effect_custom_color"
