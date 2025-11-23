@@ -168,8 +168,6 @@ class MainActivity : ComponentActivity() {
                         launcherBackgroundUri = randomItem.uri
                         launcherBackgroundBlur = randomItem.blur
                         launcherBackgroundBrightness = randomItem.brightness
-                        enableParallax = randomItem.enableParallax
-                        parallaxMagnitude = randomItem.parallaxMagnitude
                     } else {
                         launcherBackgroundUri = settingsRepository.getLauncherBackgroundUri()
                         launcherBackgroundBlur = settingsRepository.getLauncherBackgroundBlur()

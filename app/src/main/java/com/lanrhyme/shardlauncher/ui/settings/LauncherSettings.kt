@@ -93,9 +93,7 @@ data class BackgroundItem(
     val uri: String,
     val isVideo: Boolean,
     val blur: Float = 0f,
-    val brightness: Float = 0f,
-    val enableParallax: Boolean = false,
-    val parallaxMagnitude: Float = 1f
+    val brightness: Float = 0f
 )
 
 @Composable
@@ -201,8 +199,8 @@ internal fun LauncherSettingsContent(
 
     var tempBlur by remember { mutableStateOf(0f) }
     var tempBrightness by remember { mutableStateOf(0f) }
-    var tempEnableParallax by remember { mutableStateOf(false) }
-    var tempParallaxMagnitude by remember { mutableStateOf(1f) }
+    var tempEnableParallax by remember { mutableStateOf(enableParallax) }
+    var tempParallaxMagnitude by remember { mutableStateOf(parallaxMagnitude) }
 
     val prefs = remember { context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE) }
     val gson = remember { Gson() }
@@ -228,8 +226,13 @@ internal fun LauncherSettingsContent(
         selectedBackground?.let {
             tempBlur = it.blur
             tempBrightness = it.brightness
-            tempEnableParallax = it.enableParallax
-            tempParallaxMagnitude = it.parallaxMagnitude
+        }
+    }
+    
+    LaunchedEffect(showBackgroundDialog) {
+        if (showBackgroundDialog) {
+            tempEnableParallax = enableParallax
+            tempParallaxMagnitude = parallaxMagnitude
         }
     }
 
@@ -521,18 +524,16 @@ internal fun LauncherSettingsContent(
                                 val updatedItem = current.copy(
                                     blur = tempBlur,
                                     brightness = tempBrightness,
-                                    enableParallax = tempEnableParallax,
-                                    parallaxMagnitude = tempParallaxMagnitude
                                 )
                                 backgroundItems = backgroundItems.map { if (it.uri == current.uri) updatedItem else it }
                                 onLauncherBackgroundUriChange(updatedItem.uri)
                                 onLauncherBackgroundBlurChange(updatedItem.blur)
                                 onLauncherBackgroundBrightnessChange(updatedItem.brightness)
-                                onEnableParallaxChange(updatedItem.enableParallax)
-                                onParallaxMagnitudeChange(updatedItem.parallaxMagnitude)
                             } ?: run {
                                 onLauncherBackgroundUriChange(null)
                             }
+                            onEnableParallaxChange(tempEnableParallax)
+                            onParallaxMagnitudeChange(tempParallaxMagnitude)
                             showBackgroundDialog = false
                         }) {
                             Text("确认")
