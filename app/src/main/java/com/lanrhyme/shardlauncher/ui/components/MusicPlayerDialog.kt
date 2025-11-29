@@ -7,6 +7,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -58,6 +59,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -83,7 +85,7 @@ import com.lanrhyme.shardlauncher.model.MusicItem
 import com.lanrhyme.shardlauncher.ui.music.MusicPlayerViewModel
 import dev.chrisbanes.haze.HazeState
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch 
+import kotlinx.coroutines.launch
 
 @Composable
 fun MusicPlayerDialog(
@@ -148,6 +150,26 @@ fun MusicListPage(musicPlayerViewModel: MusicPlayerViewModel) {
 
     val musicList by musicPlayerViewModel.musicList.collectAsState()
     val mediaController by musicPlayerViewModel.mediaController.collectAsState()
+    var currentMediaItem by remember { mutableStateOf(mediaController?.currentMediaItem) }
+
+    DisposableEffect(mediaController) {
+        val listener = object : Player.Listener {
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                currentMediaItem = mediaItem
+            }
+
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                if (playbackState == Player.STATE_READY) {
+                    currentMediaItem = mediaController?.currentMediaItem
+                }
+            }
+        }
+        mediaController?.addListener(listener)
+
+        onDispose {
+            mediaController?.removeListener(listener)
+        }
+    }
 
     val pickAudioLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
@@ -232,7 +254,7 @@ fun MusicListPage(musicPlayerViewModel: MusicPlayerViewModel) {
             items(musicList) { item ->
                 MusicCard(
                     item = item,
-                    isSelected = item.mediaUri == mediaController?.currentMediaItem?.mediaId,
+                    isSelected = item.mediaUri == currentMediaItem?.mediaId,
                     onCLick = {
                         val mediaItems = musicList.map { musicItem ->
                             MediaItem.Builder()
@@ -416,7 +438,7 @@ fun MusicPlayerSettingsPage(
         item {
             SwitchLayout(
                 checked = autoPlay,
-                onCheckedChange = { 
+                onCheckedChange = {
                     val newCheckedState = !autoPlay
                     autoPlay = newCheckedState
                     scope.launch {
@@ -439,20 +461,24 @@ fun MusicCard(
     onCLick: () -> Unit,
     onDelete: () -> Unit,
 ) {
-    var showDeleteMenu by remember { mutableStateOf(false) }
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
+    var showDeleteMenu by remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .height(IntrinsicSize.Min)
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onTap = { onCLick() },
-                    onLongPress = { showDeleteMenu = true }
-                )
-            }
+            .pointerInput(Unit) { detectTapGestures(onLongPress = { showDeleteMenu = true }) }
+            .clickable(onClick = onCLick)
+            .selectableCard(isSelected, isPressed)
+            .combinedClickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onCLick,
+                onLongClick = { showDeleteMenu = true }
+            ),
+        border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
     ) {
         Row(
             modifier = Modifier.fillMaxSize()
