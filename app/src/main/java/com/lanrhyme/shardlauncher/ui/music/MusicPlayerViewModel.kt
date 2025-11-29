@@ -69,15 +69,12 @@ class MusicPlayerViewModel(
             }
         }
         viewModelScope.launch {
-            _currentScanDirectory.collect { directory ->
-                // When directory changes, reload music files and then filter
-                _musicList.value = musicRepository.getMusicFiles(directory)
-                filterMusicList(_searchQuery.value, _musicList.value)
-            }
+            // Load the initial list from the repository
+            _musicList.value = musicRepository.loadMusicList()
         }
         viewModelScope.launch {
             _musicList.collect {
-                // When _musicList changes (due to initial load or directory change), filter it
+                // When _musicList changes, filter it
                 filterMusicList(_searchQuery.value, it)
             }
         }
@@ -94,9 +91,8 @@ class MusicPlayerViewModel(
     }
 
     fun loadMusicFiles() {
-        // This will trigger _currentScanDirectory.collect, which in turn reloads and filters
         viewModelScope.launch {
-            _currentScanDirectory.value = _currentScanDirectory.value // Trigger collection
+            _musicList.value = musicRepository.getMusicFiles(_currentScanDirectory.value)
         }
     }
 
@@ -108,7 +104,9 @@ class MusicPlayerViewModel(
         viewModelScope.launch {
             val musicItem = musicRepository.getMusicItemFromUri(uri)
             musicItem?.let {
-                _musicList.value = _musicList.value + it
+                val updatedList = _musicList.value + it
+                _musicList.value = updatedList
+                musicRepository.saveMusicList(updatedList)
             }
         }
     }
@@ -119,7 +117,12 @@ class MusicPlayerViewModel(
     }
 
     fun deleteMusicItem(musicItem: MusicItem) {
-        _musicList.value = _musicList.value.filter { it != musicItem }
+        viewModelScope.launch {
+            musicRepository.deleteMusicFile(musicItem.mediaUri)
+            val updatedList = _musicList.value.filter { it != musicItem }
+            _musicList.value = updatedList
+            musicRepository.saveMusicList(updatedList)
+        }
     }
 
     override fun onCleared() {
