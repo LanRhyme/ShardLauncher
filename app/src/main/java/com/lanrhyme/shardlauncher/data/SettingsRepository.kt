@@ -45,7 +45,10 @@ class SettingsRepository(context: Context) {
         .create()
 
     init {
-        val dataDir = context.getExternalFilesDir(null)
+        val dataDir = File(context.getExternalFilesDir(null), ".shardlauncher")
+        if (!dataDir.exists()) {
+            dataDir.mkdirs()
+        }
         settingsFile = File(dataDir, PREFS_NAME)
         if (settingsFile.exists()) {
             FileInputStream(settingsFile).use { properties.load(it) }

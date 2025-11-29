@@ -239,7 +239,7 @@ fun MusicListPage(musicPlayerViewModel: MusicPlayerViewModel) {
                     })
                 }
             }
-            IconButton(onClick = { pickAudioLauncher.launch("audio/*") }) {
+            IconButton(onClick = { pickAudioLauncher.launch("audio/flac,audio/wav,audio/ogg,audio/*") }) {
                 Icon(Icons.Default.Add, contentDescription = "Add Music")
             }
             IconButton(onClick = { showSelectDirectoryDialog = true }) {

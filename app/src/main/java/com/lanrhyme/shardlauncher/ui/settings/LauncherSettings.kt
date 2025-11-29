@@ -260,7 +260,11 @@ internal fun LauncherSettingsContent(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri: Uri? ->
             uri?.let { uri ->
-                val destinationFile = File(context.getExternalFilesDir(null), "${UUID.randomUUID()}.jpg")
+                val backgroundsDir = File(context.getExternalFilesDir(null), ".shardlauncher/backgrounds")
+                if (!backgroundsDir.exists()) {
+                    backgroundsDir.mkdirs()
+                }
+                val destinationFile = File(backgroundsDir, "${UUID.randomUUID()}.jpg")
                 try {
                     context.contentResolver.openInputStream(uri)?.use { inputStream ->
                         FileOutputStream(destinationFile).use { outputStream ->
@@ -279,7 +283,11 @@ internal fun LauncherSettingsContent(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri: Uri? ->
             uri?.let { uri ->
-                val destinationFile = File(context.getExternalFilesDir(null), "${UUID.randomUUID()}.mp4")
+                val backgroundsDir = File(context.getExternalFilesDir(null), ".shardlauncher/backgrounds")
+                if (!backgroundsDir.exists()) {
+                    backgroundsDir.mkdirs()
+                }
+                val destinationFile = File(backgroundsDir, "${UUID.randomUUID()}.mp4")
                 try {
                     context.contentResolver.openInputStream(uri)?.use { inputStream ->
                         FileOutputStream(destinationFile).use { outputStream ->

@@ -310,7 +310,11 @@ fun VersionInfoCard(versionInfo: VersionInfo) {
 }
 
 fun loadXaml(context: Context, fileName: String): String {
-    val externalFile = File(context.getExternalFilesDir(null), fileName)
+    val homesDir = File(context.getExternalFilesDir(null), ".shardlauncher/homes")
+    if (!homesDir.exists()) {
+        homesDir.mkdirs()
+    }
+    val externalFile = File(homesDir, fileName)
 
     if (externalFile.exists()) {
         return try {
