@@ -82,6 +82,7 @@ import com.lanrhyme.shardlauncher.ui.components.TitleAndSummary
 import com.lanrhyme.shardlauncher.ui.components.animatedAppearance
 import com.lanrhyme.shardlauncher.ui.composables.HsvColorPicker
 import com.lanrhyme.shardlauncher.ui.composables.ThemeColorEditor
+import com.lanrhyme.shardlauncher.ui.music.MusicPlayerViewModel
 import com.lanrhyme.shardlauncher.ui.theme.ColorPalettes
 import com.lanrhyme.shardlauncher.ui.theme.ThemeColor
 import dev.chrisbanes.haze.HazeState
@@ -175,6 +176,7 @@ internal fun LauncherSettingsContent(
     onIsCardBlurEnabledChange: () -> Unit,
     isMusicPlayerEnabled: Boolean,
     onIsMusicPlayerEnabledChange: () -> Unit,
+    musicPlayerViewModel: MusicPlayerViewModel,
     hazeState: HazeState
 ) {
     val animatedSpeed by animateFloatAsState(
@@ -553,7 +555,8 @@ internal fun LauncherSettingsContent(
         MusicPlayerDialog(
             onDismissRequest = { showMusicPlayerDialog = false },
             isCardBlurEnabled = isCardBlurEnabled,
-            hazeState = hazeState
+            hazeState = hazeState,
+            musicPlayerViewModel = musicPlayerViewModel
         )
     }
 

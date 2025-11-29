@@ -288,41 +288,180 @@ class SettingsRepository(context: Context) {
         saveProperties()
     }
 
-    fun getIsMusicPlayerEnabled(): Boolean {
-        return properties.getProperty(KEY_IS_MUSIC_PLAYER_ENABLED, "false").toBoolean()
-    }
+        fun getIsMusicPlayerEnabled(): Boolean {
 
-    fun setIsMusicPlayerEnabled(enabled: Boolean) {
-        properties.setProperty(KEY_IS_MUSIC_PLAYER_ENABLED, enabled.toString())
-        saveProperties()
-    }
+            return properties.getProperty(KEY_IS_MUSIC_PLAYER_ENABLED, "false").toBoolean()
 
-    companion object {
-        private const val PREFS_NAME = "launcher_settings.properties"
-        private const val KEY_UI_SCALE = "ui_scale"
-        private const val KEY_ENABLE_VERSION_CHECK = "enable_version_check"
-        private const val KEY_LAUNCHER_BACKGROUND_URI = "launcher_background_uri"
-        private const val KEY_LAUNCHER_BACKGROUND_BLUR = "launcher_background_blur"
-        private const val KEY_LAUNCHER_BACKGROUND_BRIGHTNESS = "launcher_background_brightness"
-        private const val KEY_ENABLE_PARALLAX = "enable_parallax"
-        private const val KEY_PARALLAX_MAGNITUDE = "parallax_magnitude"
-        private const val KEY_ENABLE_BACKGROUND_LIGHT_EFFECT = "enable_background_light_effect"
-        private const val KEY_ENABLE_BACKGROUND_LIGHT_EFFECT_CUSTOM_COLOR = "enable_background_light_effect_custom_color"
-        private const val KEY_BACKGROUND_LIGHT_EFFECT_CUSTOM_COLOR = "background_light_effect_custom_color"
-        private const val KEY_ANIMATION_SPEED = "animation_speed"
-        private const val KEY_LIGHT_EFFECT_ANIMATION_SPEED = "light_effect_animation_speed"
-        private const val KEY_IS_DARK_THEME = "is_dark_theme"
-        private const val KEY_SIDEBAR_POSITION = "sidebar_position"
-        private const val KEY_THEME_COLOR = "theme_color"
-        private const val KEY_CUSTOM_PRIMARY_COLOR = "custom_primary_color"
-        private const val DEFAULT_CUSTOM_PRIMARY_COLOR = -9859931 // 0xFF698945 in decimal
-        private const val KEY_IS_GLOW_EFFECT_ENABLED = "is_glow_effect_enabled"
-        private const val KEY_IS_CARD_BLUR_ENABLED = "is_card_blur_enabled"
-        private const val KEY_USE_BMCLAPI = "use_bmclapi"
-        private const val KEY_LIGHT_COLOR_SCHEME = "light_color_scheme"
-        private const val KEY_DARK_COLOR_SCHEME = "dark_color_scheme"
-        private const val KEY_BACKGROUND_ITEMS = "background_items"
-        private const val KEY_RANDOM_BACKGROUND = "random_background"
-        private const val KEY_IS_MUSIC_PLAYER_ENABLED = "is_music_player_enabled"
+        }
+
+    
+
+        fun setIsMusicPlayerEnabled(enabled: Boolean) {
+
+            properties.setProperty(KEY_IS_MUSIC_PLAYER_ENABLED, enabled.toString())
+
+            saveProperties()
+
+        }
+
+    
+
+        fun getAutoPlayMusic(): Boolean {
+
+            return properties.getProperty(KEY_AUTO_PLAY_MUSIC, "true").toBoolean()
+
+        }
+
+    
+
+        fun setAutoPlayMusic(enabled: Boolean) {
+
+            properties.setProperty(KEY_AUTO_PLAY_MUSIC, enabled.toString())
+
+            saveProperties()
+
+        }
+
+    
+
+        fun getMusicDirectories(): List<String> {
+
+            val json = properties.getProperty(KEY_MUSIC_DIRECTORIES)
+
+            return if (json != null) {
+
+                val type = object : TypeToken<List<String>>() {}.type
+
+                gson.fromJson(json, type)
+
+            } else {
+
+                emptyList()
+
+            }
+
+        }
+
+    
+
+        fun setMusicDirectories(directories: List<String>) {
+
+            val json = gson.toJson(directories)
+
+            properties.setProperty(KEY_MUSIC_DIRECTORIES, json)
+
+            saveProperties()
+
+        }
+
+    
+
+        fun getLastSelectedMusicDirectory(): String? {
+
+            return properties.getProperty(KEY_LAST_SELECTED_MUSIC_DIRECTORY)
+
+        }
+
+    
+
+        fun setLastSelectedMusicDirectory(directory: String?) {
+
+            if (directory != null) {
+
+                properties.setProperty(KEY_LAST_SELECTED_MUSIC_DIRECTORY, directory)
+
+            } else {
+
+                properties.remove(KEY_LAST_SELECTED_MUSIC_DIRECTORY)
+
+            }
+
+            saveProperties()
+
+        }
+
+    
+
+        fun getMusicRepeatMode(): Int {
+
+            return properties.getProperty(KEY_MUSIC_REPEAT_MODE, "0").toInt()
+
+        }
+
+    
+
+        fun setMusicRepeatMode(mode: Int) {
+
+            properties.setProperty(KEY_MUSIC_REPEAT_MODE, mode.toString())
+
+            saveProperties()
+
+        }
+
+    
+
+        companion object {
+
+            private const val PREFS_NAME = "launcher_settings.properties"
+
+            private const val KEY_UI_SCALE = "ui_scale"
+
+            private const val KEY_ENABLE_VERSION_CHECK = "enable_version_check"
+
+            private const val KEY_LAUNCHER_BACKGROUND_URI = "launcher_background_uri"
+
+            private const val KEY_LAUNCHER_BACKGROUND_BLUR = "launcher_background_blur"
+
+            private const val KEY_LAUNCHER_BACKGROUND_BRIGHTNESS = "launcher_background_brightness"
+
+            private const val KEY_ENABLE_PARALLAX = "enable_parallax"
+
+            private const val KEY_PARALLAX_MAGNITUDE = "parallax_magnitude"
+
+            private const val KEY_ENABLE_BACKGROUND_LIGHT_EFFECT = "enable_background_light_effect"
+
+            private const val KEY_ENABLE_BACKGROUND_LIGHT_EFFECT_CUSTOM_COLOR = "enable_background_light_effect_custom_color"
+
+            private const val KEY_BACKGROUND_LIGHT_EFFECT_CUSTOM_COLOR = "background_light_effect_custom_color"
+
+            private const val KEY_ANIMATION_SPEED = "animation_speed"
+
+            private const val KEY_LIGHT_EFFECT_ANIMATION_SPEED = "light_effect_animation_speed"
+
+            private const val KEY_IS_DARK_THEME = "is_dark_theme"
+
+            private const val KEY_SIDEBAR_POSITION = "sidebar_position"
+
+            private const val KEY_THEME_COLOR = "theme_color"
+
+            private const val KEY_CUSTOM_PRIMARY_COLOR = "custom_primary_color"
+
+            private const val DEFAULT_CUSTOM_PRIMARY_COLOR = -9859931 // 0xFF698945 in decimal
+
+            private const val KEY_IS_GLOW_EFFECT_ENABLED = "is_glow_effect_enabled"
+
+            private const val KEY_IS_CARD_BLUR_ENABLED = "is_card_blur_enabled"
+
+            private const val KEY_USE_BMCLAPI = "use_bmclapi"
+
+            private const val KEY_LIGHT_COLOR_SCHEME = "light_color_scheme"
+
+            private const val KEY_DARK_COLOR_SCHEME = "dark_color_scheme"
+
+            private const val KEY_BACKGROUND_ITEMS = "background_items"
+
+            private const val KEY_RANDOM_BACKGROUND = "random_background"
+
+            private const val KEY_IS_MUSIC_PLAYER_ENABLED = "is_music_player_enabled"
+
+            private const val KEY_AUTO_PLAY_MUSIC = "auto_play_music"
+
+            private const val KEY_MUSIC_DIRECTORIES = "music_directories"
+
+            private const val KEY_LAST_SELECTED_MUSIC_DIRECTORY = "last_selected_music_directory"
+
+            private const val KEY_MUSIC_REPEAT_MODE = "music_repeat_mode"
+
+        }
+
     }
-}

@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
 import com.lanrhyme.shardlauncher.common.SidebarPosition
 import com.lanrhyme.shardlauncher.ui.components.SegmentedNavigationBar
+import com.lanrhyme.shardlauncher.ui.music.MusicPlayerViewModel
 import com.lanrhyme.shardlauncher.ui.theme.ThemeColor
 import dev.chrisbanes.haze.HazeState
 
@@ -74,87 +75,84 @@ fun SettingsScreen(
     isGlowEffectEnabled: Boolean,
     onIsGlowEffectEnabledChange: () -> Unit,
     isCardBlurEnabled: Boolean,
-        onIsCardBlurEnabledChange: () -> Unit,
-        useBmclapi: Boolean,
-        onUseBmclapiChange: (Boolean) -> Unit,
-        isMusicPlayerEnabled: Boolean,
-        onIsMusicPlayerEnabledChange: () -> Unit,
-        hazeState: HazeState
-    ) {
-        // 2. 添加状态来管理当前选中的页面
-        var selectedPage by remember { mutableStateOf(SettingsPage.Launcher) }
-        val pages = SettingsPage.entries
-    
-        Box(modifier = Modifier.fillMaxSize()) {
-            // 4. 根据选中的页面显示不同的内容
-            AnimatedContent(
-                targetState = selectedPage,
-                label = "Settings Page Animation",
-                transitionSpec = { fadeIn() togetherWith fadeOut() }
-            ) { page ->
-                when (page) {
-                    SettingsPage.Launcher -> {
-                        LauncherSettingsContent(
-                            isDarkTheme = isDarkTheme,
-                            onThemeToggle = onThemeToggle,
-                            sidebarPosition = sidebarPosition,
-                            onPositionChange = onPositionChange,
-                            themeColor = themeColor,
-                            onThemeColorChange = onThemeColorChange,
-                            customPrimaryColor = customPrimaryColor,
-                            onCustomPrimaryColorChange = onCustomPrimaryColorChange,
-                            lightColorScheme = lightColorScheme,
-                            darkColorScheme = darkColorScheme,
-                            onLightColorSchemeChange = onLightColorSchemeChange,
-                            onDarkColorSchemeChange = onDarkColorSchemeChange,
-                            enableBackgroundLightEffect = enableBackgroundLightEffect,
-                            onEnableBackgroundLightEffectChange = onEnableBackgroundLightEffectChange,
-                            lightEffectAnimationSpeed = lightEffectAnimationSpeed,
-                            onLightEffectAnimationSpeedChange = onLightEffectAnimationSpeedChange,
-                            enableBackgroundLightEffectCustomColor = enableBackgroundLightEffectCustomColor,
-                            onEnableBackgroundLightEffectCustomColorChange = onEnableBackgroundLightEffectCustomColorChange,
-                            backgroundLightEffectCustomColor = backgroundLightEffectCustomColor,
-                            onBackgroundLightEffectCustomColorChange = onBackgroundLightEffectCustomColorChange,
-                            animationSpeed = animationSpeed,
-                            onAnimationSpeedChange = onAnimationSpeedChange,
-                            launcherBackgroundUri = launcherBackgroundUri,
-                            onLauncherBackgroundUriChange = onLauncherBackgroundUriChange,
-                            launcherBackgroundBlur = launcherBackgroundBlur,
-                            onLauncherBackgroundBlurChange = onLauncherBackgroundBlurChange,
-                            launcherBackgroundBrightness = launcherBackgroundBrightness,
-                            onLauncherBackgroundBrightnessChange = onLauncherBackgroundBrightnessChange,
-                            enableParallax = enableParallax,
-                            onEnableParallaxChange = onEnableParallaxChange,
-                            parallaxMagnitude = parallaxMagnitude,
-                            onParallaxMagnitudeChange = onParallaxMagnitudeChange,
-                            enableVersionCheck = enableVersionCheck,
-                            onEnableVersionCheckChange = onEnableVersionCheckChange,
-                            uiScale = uiScale,
-                            onUiScaleChange = onUiScaleChange,
-                            isGlowEffectEnabled = isGlowEffectEnabled,
-                            onIsGlowEffectEnabledChange = onIsGlowEffectEnabledChange,
-                            isCardBlurEnabled = isCardBlurEnabled,
-                            onIsCardBlurEnabledChange = onIsCardBlurEnabledChange,
-                            isMusicPlayerEnabled = isMusicPlayerEnabled,
-                            onIsMusicPlayerEnabledChange = onIsMusicPlayerEnabledChange,
-                            hazeState = hazeState
-                        )
-                    }
-    
-                    SettingsPage.Game -> {
-                        GameSettingsContent(
-                            useBmclapi = useBmclapi,
-                            onUseBmclapiChange = onUseBmclapiChange,
-                            animationSpeed = animationSpeed,
-                            isCardBlurEnabled = isCardBlurEnabled,
-                            hazeState = hazeState
-                        )
-                    }
+    onIsCardBlurEnabledChange: () -> Unit,
+    useBmclapi: Boolean,
+    onUseBmclapiChange: (Boolean) -> Unit,
+    isMusicPlayerEnabled: Boolean,
+    onIsMusicPlayerEnabledChange: () -> Unit,
+    musicPlayerViewModel: MusicPlayerViewModel,
+    hazeState: HazeState
+) {
+    var selectedPage by remember { mutableStateOf(SettingsPage.Launcher) }
+    val pages = SettingsPage.entries
 
+    Box(modifier = Modifier.fillMaxSize()) {
+        AnimatedContent(
+            targetState = selectedPage,
+            label = "Settings Page Animation",
+            transitionSpec = { fadeIn() togetherWith fadeOut() }
+        ) { page ->
+            when (page) {
+                SettingsPage.Launcher -> {
+                    LauncherSettingsContent(
+                        isDarkTheme = isDarkTheme,
+                        onThemeToggle = onThemeToggle,
+                        sidebarPosition = sidebarPosition,
+                        onPositionChange = onPositionChange,
+                        themeColor = themeColor,
+                        onThemeColorChange = onThemeColorChange,
+                        customPrimaryColor = customPrimaryColor,
+                        onCustomPrimaryColorChange = onCustomPrimaryColorChange,
+                        lightColorScheme = lightColorScheme,
+                        darkColorScheme = darkColorScheme,
+                        onLightColorSchemeChange = onLightColorSchemeChange,
+                        onDarkColorSchemeChange = onDarkColorSchemeChange,
+                        enableBackgroundLightEffect = enableBackgroundLightEffect,
+                        onEnableBackgroundLightEffectChange = onEnableBackgroundLightEffectChange,
+                        lightEffectAnimationSpeed = lightEffectAnimationSpeed,
+                        onLightEffectAnimationSpeedChange = onLightEffectAnimationSpeedChange,
+                        enableBackgroundLightEffectCustomColor = enableBackgroundLightEffectCustomColor,
+                        onEnableBackgroundLightEffectCustomColorChange = onEnableBackgroundLightEffectCustomColorChange,
+                        backgroundLightEffectCustomColor = backgroundLightEffectCustomColor,
+                        onBackgroundLightEffectCustomColorChange = onBackgroundLightEffectCustomColorChange,
+                        animationSpeed = animationSpeed,
+                        onAnimationSpeedChange = onAnimationSpeedChange,
+                        launcherBackgroundUri = launcherBackgroundUri,
+                        onLauncherBackgroundUriChange = onLauncherBackgroundUriChange,
+                        launcherBackgroundBlur = launcherBackgroundBlur,
+                        onLauncherBackgroundBlurChange = onLauncherBackgroundBlurChange,
+                        launcherBackgroundBrightness = launcherBackgroundBrightness,
+                        onLauncherBackgroundBrightnessChange = onLauncherBackgroundBrightnessChange,
+                        enableParallax = enableParallax,
+                        onEnableParallaxChange = onEnableParallaxChange,
+                        parallaxMagnitude = parallaxMagnitude,
+                        onParallaxMagnitudeChange = onParallaxMagnitudeChange,
+                        enableVersionCheck = enableVersionCheck,
+                        onEnableVersionCheckChange = onEnableVersionCheckChange,
+                        uiScale = uiScale,
+                        onUiScaleChange = onUiScaleChange,
+                        isGlowEffectEnabled = isGlowEffectEnabled,
+                        onIsGlowEffectEnabledChange = onIsGlowEffectEnabledChange,
+                        isCardBlurEnabled = isCardBlurEnabled,
+                        onIsCardBlurEnabledChange = onIsCardBlurEnabledChange,
+                        isMusicPlayerEnabled = isMusicPlayerEnabled,
+                        onIsMusicPlayerEnabledChange = onIsMusicPlayerEnabledChange,
+                        musicPlayerViewModel = musicPlayerViewModel,
+                        hazeState = hazeState
+                    )
+                }
+                SettingsPage.Game -> {
+                    GameSettingsContent(
+                        useBmclapi = useBmclapi,
+                        onUseBmclapiChange = onUseBmclapiChange,
+                        animationSpeed = animationSpeed,
+                        isCardBlurEnabled = isCardBlurEnabled,
+                        hazeState = hazeState
+                    )
+                }
                 SettingsPage.About -> {
                     AboutScreen(animationSpeed = animationSpeed, isCardBlurEnabled = isCardBlurEnabled, hazeState = hazeState)
                 }
-
                 SettingsPage.Other -> {
                     OtherSettingsContent(navController = navController, isCardBlurEnabled = isCardBlurEnabled, hazeState = hazeState)
                 }

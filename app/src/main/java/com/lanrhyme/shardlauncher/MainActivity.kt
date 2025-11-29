@@ -85,6 +85,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.lanrhyme.shardlauncher.common.SidebarPosition
 import com.lanrhyme.shardlauncher.data.AccountRepository
 import com.lanrhyme.shardlauncher.data.SettingsRepository
+import com.lanrhyme.shardlauncher.service.MusicPlayerService
 import com.lanrhyme.shardlauncher.ui.LocalSettingsProvider
 import com.lanrhyme.shardlauncher.ui.SplashScreen
 import com.lanrhyme.shardlauncher.ui.account.AccountScreen
@@ -116,11 +117,14 @@ import dev.chrisbanes.haze.haze
 import dev.chrisbanes.haze.hazeChild
 import kotlin.math.abs
 
+import com.lanrhyme.shardlauncher.ui.music.MusicPlayerViewModel
+
 class MainActivity : ComponentActivity() {
     private val tag = "MainActivity"
     private lateinit var settingsRepository: SettingsRepository
     private lateinit var accountRepository: AccountRepository
     private val accountViewModel: AccountViewModel by viewModels { AccountViewModelFactory(accountRepository) }
+    private val musicPlayerViewModel: MusicPlayerViewModel by viewModels { MusicPlayerViewModel.Factory(application, settingsRepository) }
     private val newIntentState = mutableStateOf<Intent?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -327,26 +331,37 @@ class MainActivity : ComponentActivity() {
                                         isCardBlurEnabled = newValue
                                         settingsRepository.setIsCardBlurEnabled(newValue)
                                     },
-                                                                         useBmclapi = useBmclapi,
-                                                                        onUseBmclapiChange = { newValue ->
-                                                                            useBmclapi = newValue
-                                                                            settingsRepository.setUseBmclapi(newValue)
-                                                                        },
-                                                                        isMusicPlayerEnabled = isMusicPlayerEnabled,
-                                                                        onIsMusicPlayerEnabledChange = {
-                                                                            val newValue = !isMusicPlayerEnabled
-                                                                            isMusicPlayerEnabled = newValue
-                                                                            settingsRepository.setIsMusicPlayerEnabled(newValue)
-                                                                        },
-                                                                        accountViewModel = accountViewModel
-                                                                    )
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
+                                    useBmclapi = useBmclapi,
+                                    onUseBmclapiChange = { newValue ->
+                                        useBmclapi = newValue
+                                        settingsRepository.setUseBmclapi(newValue)
+                                    },
+                                    isMusicPlayerEnabled = isMusicPlayerEnabled,
+                                    onIsMusicPlayerEnabledChange = {
+                                        val newValue = !isMusicPlayerEnabled
+                                        isMusicPlayerEnabled = newValue
+                                        settingsRepository.setIsMusicPlayerEnabled(newValue)
+                                    },
+                                    accountViewModel = accountViewModel,
+                                    musicPlayerViewModel = musicPlayerViewModel
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            LaunchedEffect(isMusicPlayerEnabled) {
+                if (isMusicPlayerEnabled && settingsRepository.getAutoPlayMusic()) {
+                    val intent = Intent(this@MainActivity, MusicPlayerService::class.java)
+                    startService(intent)
+                } else {
+                    val intent = Intent(this@MainActivity, MusicPlayerService::class.java)
+                    stopService(intent)
+                }
+            }
+        }
+    }
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         newIntentState.value = intent
@@ -400,7 +415,8 @@ fun MainScreen(
     onUseBmclapiChange: (Boolean) -> Unit,
     isMusicPlayerEnabled: Boolean,
     onIsMusicPlayerEnabledChange: () -> Unit,
-    accountViewModel: AccountViewModel
+    accountViewModel: AccountViewModel,
+    musicPlayerViewModel: MusicPlayerViewModel
 ) {
     var isSidebarExpanded by remember { mutableStateOf(false) }
     val animationDuration = (300 / animationSpeed).toInt()
@@ -565,6 +581,7 @@ fun MainScreen(
                 isMusicPlayerEnabled = isMusicPlayerEnabled,
                 onIsMusicPlayerEnabledChange = onIsMusicPlayerEnabledChange,
                 accountViewModel = accountViewModel,
+                musicPlayerViewModel = musicPlayerViewModel,
                 hazeState = hazeState
             )
 
@@ -647,6 +664,7 @@ fun MainContent(
     isMusicPlayerEnabled: Boolean,
     onIsMusicPlayerEnabledChange: () -> Unit,
     accountViewModel: AccountViewModel,
+    musicPlayerViewModel: MusicPlayerViewModel,
     hazeState: HazeState
 ) {
     val collapsedSidebarWidth = 72.dp
@@ -826,6 +844,7 @@ fun MainContent(
                         onUseBmclapiChange = onUseBmclapiChange,
                         isMusicPlayerEnabled = isMusicPlayerEnabled,
                         onIsMusicPlayerEnabledChange = onIsMusicPlayerEnabledChange,
+                        musicPlayerViewModel = musicPlayerViewModel,
                         hazeState = hazeState
                     )
                 }
