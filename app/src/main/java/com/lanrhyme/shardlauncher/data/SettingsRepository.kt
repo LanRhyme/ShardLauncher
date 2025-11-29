@@ -288,6 +288,15 @@ class SettingsRepository(context: Context) {
         saveProperties()
     }
 
+    fun getIsMusicPlayerEnabled(): Boolean {
+        return properties.getProperty(KEY_IS_MUSIC_PLAYER_ENABLED, "false").toBoolean()
+    }
+
+    fun setIsMusicPlayerEnabled(enabled: Boolean) {
+        properties.setProperty(KEY_IS_MUSIC_PLAYER_ENABLED, enabled.toString())
+        saveProperties()
+    }
+
     companion object {
         private const val PREFS_NAME = "launcher_settings.properties"
         private const val KEY_UI_SCALE = "ui_scale"
@@ -314,5 +323,6 @@ class SettingsRepository(context: Context) {
         private const val KEY_DARK_COLOR_SCHEME = "dark_color_scheme"
         private const val KEY_BACKGROUND_ITEMS = "background_items"
         private const val KEY_RANDOM_BACKGROUND = "random_background"
+        private const val KEY_IS_MUSIC_PLAYER_ENABLED = "is_music_player_enabled"
     }
 }

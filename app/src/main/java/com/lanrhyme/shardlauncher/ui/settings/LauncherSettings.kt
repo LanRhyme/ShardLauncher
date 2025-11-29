@@ -74,6 +74,7 @@ import com.lanrhyme.shardlauncher.common.SidebarPosition
 import com.lanrhyme.shardlauncher.ui.components.CollapsibleCard
 import com.lanrhyme.shardlauncher.ui.components.CustomDialog
 import com.lanrhyme.shardlauncher.ui.components.IconSwitchLayout
+import com.lanrhyme.shardlauncher.ui.components.MusicPlayerDialog
 import com.lanrhyme.shardlauncher.ui.components.SimpleListLayout
 import com.lanrhyme.shardlauncher.ui.components.SliderLayout
 import com.lanrhyme.shardlauncher.ui.components.SwitchLayout
@@ -172,6 +173,8 @@ internal fun LauncherSettingsContent(
     onIsGlowEffectEnabledChange: () -> Unit,
     isCardBlurEnabled: Boolean,
     onIsCardBlurEnabledChange: () -> Unit,
+    isMusicPlayerEnabled: Boolean,
+    onIsMusicPlayerEnabledChange: () -> Unit,
     hazeState: HazeState
 ) {
     val animatedSpeed by animateFloatAsState(
@@ -189,6 +192,7 @@ internal fun LauncherSettingsContent(
     var tempLightEffectColor by remember(backgroundLightEffectCustomColor) { mutableStateOf(backgroundLightEffectCustomColor) }
 
     var showBackgroundDialog by remember { mutableStateOf(false) }
+    var showMusicPlayerDialog by remember { mutableStateOf(false) }
 
     var backgroundItems by remember { mutableStateOf(listOf<BackgroundItem>()) }
     var selectedBackground by remember { mutableStateOf<BackgroundItem?>(null) }
@@ -545,6 +549,14 @@ internal fun LauncherSettingsContent(
         }
     }
 
+    if (showMusicPlayerDialog) {
+        MusicPlayerDialog(
+            onDismissRequest = { showMusicPlayerDialog = false },
+            isCardBlurEnabled = isCardBlurEnabled,
+            hazeState = hazeState
+        )
+    }
+
     if (showLightEffectColorPickerDialog) {
         AlertDialog(
             onDismissRequest = { showLightEffectColorPickerDialog = false },
@@ -717,7 +729,26 @@ internal fun LauncherSettingsContent(
                 hazeState = hazeState
             )
         }
-        item { 
+        item {
+            IconSwitchLayout(
+                modifier = Modifier.animatedAppearance(7, animationSpeed),
+                checked = isMusicPlayerEnabled,
+                onCheckedChange = { onIsMusicPlayerEnabledChange() },
+                onIconClick = { showMusicPlayerDialog = true },
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Music Player Settings",
+                        tint = if (isMusicPlayerEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                    )
+                },
+                title = "启用音乐播放器",
+                summary = if (isMusicPlayerEnabled) "已开启" else "已关闭",
+                isCardBlurEnabled = isCardBlurEnabled,
+                hazeState = hazeState
+            )
+        }
+        item {
             SwitchLayout(
                 modifier = Modifier
                     .animatedAppearance(5, animationSpeed),
@@ -742,7 +773,7 @@ internal fun LauncherSettingsContent(
                 hazeState = hazeState
             )
         }
-        item { 
+        item {
             CollapsibleCard(
                 modifier = Modifier
                     .animatedAppearance(8, animationSpeed),
@@ -807,7 +838,7 @@ internal fun LauncherSettingsContent(
                 }
             }
         }
-        item { 
+        item {
             SliderLayout(
                 modifier = Modifier
                     .animatedAppearance(9, animationSpeed),
@@ -823,7 +854,7 @@ internal fun LauncherSettingsContent(
                 hazeState = hazeState
             )
         }
-        item { 
+        item {
             SliderLayout(
                 modifier = Modifier
                     .animatedAppearance(10, animationSpeed),

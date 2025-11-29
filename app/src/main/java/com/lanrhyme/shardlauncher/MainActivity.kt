@@ -158,6 +158,7 @@ class MainActivity : ComponentActivity() {
             var isGlowEffectEnabled by remember { mutableStateOf(settingsRepository.getIsGlowEffectEnabled()) }
             var isCardBlurEnabled by remember { mutableStateOf(settingsRepository.getIsCardBlurEnabled()) }
             var useBmclapi by remember { mutableStateOf(settingsRepository.getUseBmclapi()) }
+            var isMusicPlayerEnabled by remember { mutableStateOf(settingsRepository.getIsMusicPlayerEnabled()) }
 
             LaunchedEffect(Unit) {
                 val randomBackground = settingsRepository.getRandomBackground()
@@ -326,21 +327,26 @@ class MainActivity : ComponentActivity() {
                                         isCardBlurEnabled = newValue
                                         settingsRepository.setIsCardBlurEnabled(newValue)
                                     },
-                                    useBmclapi = useBmclapi,
-                                    onUseBmclapiChange = { newValue ->
-                                        useBmclapi = newValue
-                                        settingsRepository.setUseBmclapi(newValue)
-                                    },
-                                    accountViewModel = accountViewModel
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
+                                                                         useBmclapi = useBmclapi,
+                                                                        onUseBmclapiChange = { newValue ->
+                                                                            useBmclapi = newValue
+                                                                            settingsRepository.setUseBmclapi(newValue)
+                                                                        },
+                                                                        isMusicPlayerEnabled = isMusicPlayerEnabled,
+                                                                        onIsMusicPlayerEnabledChange = {
+                                                                            val newValue = !isMusicPlayerEnabled
+                                                                            isMusicPlayerEnabled = newValue
+                                                                            settingsRepository.setIsMusicPlayerEnabled(newValue)
+                                                                        },
+                                                                        accountViewModel = accountViewModel
+                                                                    )
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         newIntentState.value = intent
@@ -392,6 +398,8 @@ fun MainScreen(
     onIsCardBlurEnabledChange: () -> Unit,
     useBmclapi: Boolean,
     onUseBmclapiChange: (Boolean) -> Unit,
+    isMusicPlayerEnabled: Boolean,
+    onIsMusicPlayerEnabledChange: () -> Unit,
     accountViewModel: AccountViewModel
 ) {
     var isSidebarExpanded by remember { mutableStateOf(false) }
@@ -554,6 +562,8 @@ fun MainScreen(
                 onIsCardBlurEnabledChange = onIsCardBlurEnabledChange,
                 useBmclapi = useBmclapi,
                 onUseBmclapiChange = onUseBmclapiChange,
+                isMusicPlayerEnabled = isMusicPlayerEnabled,
+                onIsMusicPlayerEnabledChange = onIsMusicPlayerEnabledChange,
                 accountViewModel = accountViewModel,
                 hazeState = hazeState
             )
@@ -634,6 +644,8 @@ fun MainContent(
     onIsCardBlurEnabledChange: () -> Unit,
     useBmclapi: Boolean,
     onUseBmclapiChange: (Boolean) -> Unit,
+    isMusicPlayerEnabled: Boolean,
+    onIsMusicPlayerEnabledChange: () -> Unit,
     accountViewModel: AccountViewModel,
     hazeState: HazeState
 ) {
@@ -812,6 +824,8 @@ fun MainContent(
                         onIsCardBlurEnabledChange = onIsCardBlurEnabledChange,
                         useBmclapi = useBmclapi,
                         onUseBmclapiChange = onUseBmclapiChange,
+                        isMusicPlayerEnabled = isMusicPlayerEnabled,
+                        onIsMusicPlayerEnabledChange = onIsMusicPlayerEnabledChange,
                         hazeState = hazeState
                     )
                 }
