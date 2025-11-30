@@ -398,10 +398,16 @@ class SettingsRepository(context: Context) {
             properties.setProperty(KEY_MUSIC_REPEAT_MODE, mode.toString())
 
             saveProperties()
-
         }
 
-    
+        fun getMusicVolume(): Float {
+            return properties.getProperty(KEY_MUSIC_VOLUME, "1.0").toFloat()
+        }
+
+        fun setMusicVolume(volume: Float) {
+            properties.setProperty(KEY_MUSIC_VOLUME, volume.toString())
+            saveProperties()
+        }
 
         companion object {
 
@@ -464,6 +470,8 @@ class SettingsRepository(context: Context) {
             private const val KEY_LAST_SELECTED_MUSIC_DIRECTORY = "last_selected_music_directory"
 
             private const val KEY_MUSIC_REPEAT_MODE = "music_repeat_mode"
+
+            private const val KEY_MUSIC_VOLUME = "music_volume"
 
         }
 

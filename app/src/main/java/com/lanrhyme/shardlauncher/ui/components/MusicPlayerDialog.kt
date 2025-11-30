@@ -125,7 +125,8 @@ fun MusicPlayerDialog(
                         MusicPlayerTab.MusicList -> MusicListPage(musicPlayerViewModel = musicPlayerViewModel)
                         MusicPlayerTab.Settings -> MusicPlayerSettingsPage(
                             isCardBlurEnabled = isCardBlurEnabled,
-                            hazeState = hazeState
+                            hazeState = hazeState,
+                            musicPlayerViewModel = musicPlayerViewModel
                         )
                     }
                 }
@@ -309,15 +310,28 @@ fun MusicListPage(musicPlayerViewModel: MusicPlayerViewModel) {
 @Composable
 fun MusicPlayerSettingsPage(
     isCardBlurEnabled: Boolean,
-    hazeState: HazeState
+    hazeState: HazeState,
+    musicPlayerViewModel: MusicPlayerViewModel
 ) {
     val context = LocalContext.current
     val settingsRepository = remember { SettingsRepository(context) }
     var autoPlay by remember { mutableStateOf(false) }
+    var volume by remember { mutableStateOf(1f) }
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(settingsRepository) {
         autoPlay = settingsRepository.getAutoPlayMusic()
+        volume = settingsRepository.getMusicVolume()
+
+        // Ensure the MusicPlayerService is started so its ExoPlayer instance exists
+        try {
+            val intent = android.content.Intent(context.applicationContext, com.lanrhyme.shardlauncher.service.MusicPlayerService::class.java)
+            // Start service (dialog runs in foreground; startService is fine here)
+            context.applicationContext.startService(intent)
+            android.util.Log.d("MusicPlayerDialog", "Started MusicPlayerService to ensure player exists")
+         } catch (e: Exception) {
+             android.util.Log.w("MusicPlayerDialog", "Failed to start MusicPlayerService: ${e.message}")
+         }
     }
 
     LazyColumn(
@@ -335,6 +349,64 @@ fun MusicPlayerSettingsPage(
                     }
                  },
                 title = "启动启动器时自动播放",
+                isCardBlurEnabled = isCardBlurEnabled,
+                hazeState = hazeState
+            )
+        }
+
+        item {
+            SliderLayout(
+                value = volume,
+                onValueChange = { newValue ->
+                    volume = newValue
+                    scope.launch {
+                        settingsRepository.setMusicVolume(newValue)
+                    }
+
+                    // Send an intent to the MusicPlayerService to update the player volume reliably
+                    try {
+                        val ctx = context.applicationContext
+                        val intent = android.content.Intent(ctx, com.lanrhyme.shardlauncher.service.MusicPlayerService::class.java).apply {
+                            action = com.lanrhyme.shardlauncher.service.MusicPlayerService.ACTION_SET_VOLUME
+                            putExtra(com.lanrhyme.shardlauncher.service.MusicPlayerService.EXTRA_VOLUME, newValue)
+                        }
+                        ctx.startService(intent)
+                    } catch (e: Exception) {
+                        android.util.Log.w("MusicPlayerDialog", "Failed to send volume intent: ${e.message}")
+                    }
+
+                    // Also try updating the MediaController's underlying player directly (if available) as a fallback
+                    try {
+                        val controller = musicPlayerViewModel.mediaController.value
+                        if (controller != null) {
+                            val getPlayerMethod = controller.javaClass.getMethod("getPlayer")
+                            val playerObj = getPlayerMethod.invoke(controller)
+                            playerObj?.let { pObj ->
+                                try {
+                                    val setVol = pObj.javaClass.getMethod("setVolume", java.lang.Float.TYPE)
+                                    setVol.invoke(pObj, newValue)
+                                    android.util.Log.d("MusicPlayerDialog", "Set player volume via reflection: $newValue")
+                                } catch (ignored: NoSuchMethodException) {
+                                    try {
+                                        val setVol = pObj.javaClass.getMethod("setVolume", java.lang.Float::class.java)
+                                        setVol.invoke(pObj, java.lang.Float.valueOf(newValue))
+                                        android.util.Log.d("MusicPlayerDialog", "Set player volume via reflection (boxed): $newValue")
+                                    } catch (ignored2: Exception) {
+                                        // ignored
+                                    }
+                                }
+                            }
+                        }
+                    } catch (ignored: Exception) {
+                        // ignore reflection failures
+                    }
+                },
+                title = "音乐音量",
+                summary = "调整播放器音量",
+                valueRange = 0f..1f,
+                steps = 0,
+                enabled = true,
+                isGlowEffectEnabled = true,
                 isCardBlurEnabled = isCardBlurEnabled,
                 hazeState = hazeState
             )
