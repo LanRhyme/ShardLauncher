@@ -27,9 +27,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.LibraryMusic
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -37,12 +38,11 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.RepeatOne
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -52,11 +52,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
-import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -79,7 +76,6 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import coil.compose.AsyncImage
-import com.lanrhyme.shardlauncher.data.MusicRepository
 import com.lanrhyme.shardlauncher.data.SettingsRepository
 import com.lanrhyme.shardlauncher.model.MusicItem
 import com.lanrhyme.shardlauncher.ui.music.MusicPlayerViewModel
@@ -146,8 +142,6 @@ enum class MusicPlayerTab {
 
 @Composable
 fun MusicListPage(musicPlayerViewModel: MusicPlayerViewModel) {
-    var showSelectDirectoryDialog by remember { mutableStateOf(false) }
-
     val musicList by musicPlayerViewModel.musicList.collectAsState()
     val mediaController by musicPlayerViewModel.mediaController.collectAsState()
     var currentMediaItem by remember { mutableStateOf(mediaController?.currentMediaItem) }
@@ -180,31 +174,63 @@ fun MusicListPage(musicPlayerViewModel: MusicPlayerViewModel) {
         }
     )
 
-    if (showSelectDirectoryDialog) {
-        SelectDirectoryDialog(
-            onDismissRequest = { showSelectDirectoryDialog = false },
-            musicPlayerViewModel = musicPlayerViewModel
-        )
-    }
-
     Column(modifier = Modifier.fillMaxSize()) {
         val searchQuery by musicPlayerViewModel.searchQuery.collectAsState()
 
         // Top action bar
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(36.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             var showPlayModeMenu by remember { mutableStateOf(false) }
             val repeatMode by musicPlayerViewModel.repeatMode.collectAsState()
 
-            OutlinedTextField(
+            BasicTextField(
                 value = searchQuery,
                 onValueChange = { musicPlayerViewModel.searchMusic(it) },
-                label = { Text("搜索音乐") },
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxSize(),
+                textStyle = MaterialTheme.typography.bodySmall.copy(
+                    color = MaterialTheme.colorScheme.onSurface
+                ),
                 singleLine = true,
-                modifier = Modifier.weight(1f)
+                decorationBox = { innerTextField ->
+                    Row(
+                        modifier = Modifier
+                            .background(
+                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                                RoundedCornerShape(22.dp)
+                            )
+                            .padding(horizontal = 8.dp)
+                            .fillMaxSize(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Search,
+                            contentDescription = "Search",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Box(
+                            modifier = Modifier
+                                .padding(start = 4.dp)
+                                .weight(1f),
+                            contentAlignment = Alignment.CenterStart
+                        ) {
+                            if (searchQuery.isEmpty()) {
+                                Text(
+                                    "搜索音乐",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            innerTextField()
+                        }
+                    }
+                }
             )
             IconButton(onClick = { musicPlayerViewModel.loadMusicFiles() }) {
                 Icon(Icons.Default.Refresh, contentDescription = "Refresh")
@@ -242,9 +268,6 @@ fun MusicListPage(musicPlayerViewModel: MusicPlayerViewModel) {
             IconButton(onClick = { pickAudioLauncher.launch("audio/flac,audio/wav,audio/ogg,audio/*") }) {
                 Icon(Icons.Default.Add, contentDescription = "Add Music")
             }
-            IconButton(onClick = { showSelectDirectoryDialog = true }) {
-                Icon(Icons.Default.FolderOpen, contentDescription = "Select Directory")
-            }
         }
         // Music list
         LazyColumn(
@@ -281,140 +304,6 @@ fun MusicListPage(musicPlayerViewModel: MusicPlayerViewModel) {
             }
         }
     }
-}
-
-@Composable
-fun SelectDirectoryDialog(
-    onDismissRequest: () -> Unit,
-    musicPlayerViewModel: MusicPlayerViewModel
-) {
-    val context = LocalContext.current
-    val musicRepository = remember { MusicRepository(context) }
-    val settingsRepository = remember { SettingsRepository(context) }
-    var directories by remember { mutableStateOf(emptyList<String>()) }
-    var tempSelectedDirectory by remember { mutableStateOf<String?>(null) } // Use temp state
-    var showAddCustomDirectoryDialog by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
-
-    LaunchedEffect(Unit) {
-        val savedDirectories = settingsRepository.getMusicDirectories()
-        directories = (listOf("内置目录") + savedDirectories).distinct()
-        tempSelectedDirectory = settingsRepository.getLastSelectedMusicDirectory() ?: directories.firstOrNull()
-    }
-
-    if (showAddCustomDirectoryDialog) {
-        AddCustomDirectoryDialog(
-            onDismissRequest = { showAddCustomDirectoryDialog = false },
-            onAddDirectory = { newPath ->
-                val newDirectories = (directories + newPath).distinct()
-                directories = newDirectories
-                tempSelectedDirectory = newPath
-                scope.launch {
-                    settingsRepository.setMusicDirectories(newDirectories.filter { it != "内置目录" })
-                }
-                showAddCustomDirectoryDialog = false
-            }
-        )
-    }
-
-    AlertDialog(
-        onDismissRequest = onDismissRequest,
-        title = { Text("选择音乐目录") },
-        text = {
-            Column {
-                LazyColumn(modifier = Modifier.weight(1f)) {
-                    items(directories) { directory ->
-                        OutlinedCard( // Using OutlinedCard for better visual
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp)
-                                .clickable { tempSelectedDirectory = directory },
-                            colors = CardDefaults.cardColors(
-                                containerColor = if (tempSelectedDirectory == directory) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
-                            ),
-                            border = BorderStroke(1.dp, if (tempSelectedDirectory == directory) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline)
-                        ) {
-                            Column(modifier = Modifier.padding(16.dp)) {
-                                Text(text = directory.substringAfterLast('/'), style = MaterialTheme.typography.titleMedium)
-                                Text(text = directory, style = MaterialTheme.typography.bodySmall)
-                            }
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Button(onClick = {
-                        scope.launch {
-                            directories = listOf("内置目录") + musicRepository.getMusicDirectories()
-                        }
-                    }) {
-                        Text("搜索")
-                    }
-                    Button(onClick = { showAddCustomDirectoryDialog = true }) {
-                        Text("添加目录")
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            Button(onClick = {
-                tempSelectedDirectory?.let {
-                    scope.launch {
-                        settingsRepository.setLastSelectedMusicDirectory(it)
-                    }
-                    musicPlayerViewModel.setMusicScanDirectory(it)
-                    musicPlayerViewModel.loadMusicFiles()
-                }
-                onDismissRequest()
-            }) {
-                Text("确认")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismissRequest) {
-                Text("取消")
-            }
-        }
-    )
-}
-
-@Composable
-fun AddCustomDirectoryDialog(
-    onDismissRequest: () -> Unit,
-    onAddDirectory: (String) -> Unit
-) {
-    var newDirectoryPath by remember { mutableStateOf("") }
-    AlertDialog(
-        onDismissRequest = onDismissRequest,
-        title = { Text("添加自定义目录") },
-        text = {
-            OutlinedTextField(
-                value = newDirectoryPath,
-                onValueChange = { newDirectoryPath = it },
-                label = { Text("目录路径") },
-                modifier = Modifier.fillMaxWidth()
-            )
-        },
-        confirmButton = {
-            Button(onClick = {
-                if (newDirectoryPath.isNotBlank()) {
-                    onAddDirectory(newDirectoryPath)
-                }
-            }) {
-                Text("添加")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismissRequest) {
-                Text("取消")
-            }
-        }
-    )
 }
 
 @Composable
