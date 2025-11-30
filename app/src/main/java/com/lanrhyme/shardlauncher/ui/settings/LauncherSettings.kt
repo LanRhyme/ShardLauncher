@@ -302,257 +302,256 @@ internal fun LauncherSettingsContent(
         }
     )
 
-    if (showBackgroundDialog) {
-        CustomDialog(
-            onDismissRequest = { showBackgroundDialog = false }
-        ) {
-            Row(modifier = Modifier.fillMaxSize()) {
-                LazyColumn(modifier = Modifier.weight(2f).padding(16.dp)) {
-                    item {
-                        Spacer(modifier = Modifier.height(16.dp))
-                        TitleAndSummary(title = "选择背景", summary = "选择自定义背景以使用")
-                        Spacer(modifier = Modifier.height(8.dp))
-                        LazyRow(
-                            modifier = Modifier.border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(16.dp)).padding(8.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            items(backgroundItems, key = { it.uri }) { item ->
-                                Box {
-                                    var isPressed by remember { mutableStateOf(false) }
-                                    val scale by animateFloatAsState(targetValue = if (isPressed) 0.95f else 1f, label = "")
-                                    Box(
-                                        modifier = Modifier
-                                            .scale(scale)
-                                            .size(160.dp, 90.dp)
-                                            .clip(RoundedCornerShape(16.dp))
-                                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                                            .pointerInput(Unit) {
-                                                detectTapGestures(
-                                                    onPress = {
-                                                        isPressed = true
-                                                        tryAwaitRelease()
-                                                        isPressed = false
-                                                    },
-                                                    onTap = { selectedBackground = item },
-                                                    onLongPress = {
-                                                        itemToDelete = item
-                                                        showDeleteBackgroundMenu = true
-                                                    }
-                                                )
-                                            }
-                                            .border(
-                                                width = 2.dp,
-                                                color = if (selectedBackground?.uri == item.uri) MaterialTheme.colorScheme.primary else Color.Transparent,
-                                                shape = RoundedCornerShape(16.dp)
-                                            )
-                                    ) {
-                                        AsyncImage(
-                                            model = ImageRequest.Builder(LocalContext.current)
-                                                .data(item.uri)
-                                                .decoderFactory(VideoFrameDecoder.Factory())
-                                                .build(),
-                                            contentDescription = null,
-                                            modifier = Modifier.fillMaxSize()
-                                        )
-                                        if (item.isVideo) {
-                                            Text(
-                                                "Video",
-                                                modifier = Modifier
-                                                    .align(Alignment.BottomStart)
-                                                    .padding(4.dp)
-                                                    .background(
-                                                        Color.Black.copy(alpha = 0.5f),
-                                                        RoundedCornerShape(4.dp)
-                                                    )
-                                                    .padding(horizontal = 4.dp, vertical = 2.dp),
-                                                color = Color.White,
-                                                style = MaterialTheme.typography.labelSmall
+    CustomDialog(
+        visible = showBackgroundDialog,
+        onDismissRequest = { showBackgroundDialog = false }
+    ) {
+        Row(modifier = Modifier.fillMaxSize()) {
+            LazyColumn(modifier = Modifier.weight(2f).padding(16.dp)) {
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    TitleAndSummary(title = "选择背景", summary = "选择自定义背景以使用")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    LazyRow(
+                        modifier = Modifier.border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(16.dp)).padding(8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(backgroundItems, key = { it.uri }) { item ->
+                            Box {
+                                var isPressed by remember { mutableStateOf(false) }
+                                val scale by animateFloatAsState(targetValue = if (isPressed) 0.95f else 1f, label = "")
+                                Box(
+                                    modifier = Modifier
+                                        .scale(scale)
+                                        .size(160.dp, 90.dp)
+                                        .clip(RoundedCornerShape(16.dp))
+                                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                                        .pointerInput(Unit) {
+                                            detectTapGestures(
+                                                onPress = {
+                                                    isPressed = true
+                                                    tryAwaitRelease()
+                                                    isPressed = false
+                                                },
+                                                onTap = { selectedBackground = item },
+                                                onLongPress = {
+                                                    itemToDelete = item
+                                                    showDeleteBackgroundMenu = true
+                                                }
                                             )
                                         }
-                                    }
-                                    DropdownMenu(
-                                        expanded = showDeleteBackgroundMenu && itemToDelete?.uri == item.uri,
-                                        onDismissRequest = { showDeleteBackgroundMenu = false }
-                                    ) {
-                                        DropdownMenuItem(
-                                            text = { Text("删除") },
-                                            onClick = {
-                                                removeBackground(item)
-                                                showDeleteBackgroundMenu = false
-                                            }
+                                        .border(
+                                            width = 2.dp,
+                                            color = if (selectedBackground?.uri == item.uri) MaterialTheme.colorScheme.primary else Color.Transparent,
+                                            shape = RoundedCornerShape(16.dp)
+                                        )
+                                ) {
+                                    AsyncImage(
+                                        model = ImageRequest.Builder(LocalContext.current)
+                                            .data(item.uri)
+                                            .decoderFactory(VideoFrameDecoder.Factory())
+                                            .build(),
+                                        contentDescription = null,
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                    if (item.isVideo) {
+                                        Text(
+                                            "Video",
+                                            modifier = Modifier
+                                                .align(Alignment.BottomStart)
+                                                .padding(4.dp)
+                                                .background(
+                                                    Color.Black.copy(alpha = 0.5f),
+                                                    RoundedCornerShape(4.dp)
+                                                )
+                                                .padding(horizontal = 4.dp, vertical = 2.dp),
+                                            color = Color.White,
+                                            style = MaterialTheme.typography.labelSmall
                                         )
                                     }
                                 }
-                            }
-                            item {
-                                Box(
-                                    modifier = Modifier
-                                        .size(160.dp, 90.dp)
-                                        .clip(RoundedCornerShape(16.dp))
-                                        .border(BorderStroke(1.dp, MaterialTheme.colorScheme.outline), RoundedCornerShape(16.dp))
-                                        .clickable { showAddBackgroundMenu = true },
-                                    contentAlignment = Alignment.Center
+                                DropdownMenu(
+                                    expanded = showDeleteBackgroundMenu && itemToDelete?.uri == item.uri,
+                                    onDismissRequest = { showDeleteBackgroundMenu = false }
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Add,
-                                        contentDescription = "Add Background"
+                                    DropdownMenuItem(
+                                        text = { Text("删除") },
+                                        onClick = {
+                                            removeBackground(item)
+                                            showDeleteBackgroundMenu = false
+                                        }
                                     )
                                 }
                             }
                         }
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .size(160.dp, 90.dp)
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .border(BorderStroke(1.dp, MaterialTheme.colorScheme.outline), RoundedCornerShape(16.dp))
+                                    .clickable { showAddBackgroundMenu = true },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = "Add Background"
+                                )
+                            }
+                        }
+                    }
 
-                        DropdownMenu(
-                            expanded = showAddBackgroundMenu,
-                            onDismissRequest = { showAddBackgroundMenu = false },
-                            modifier = Modifier.padding(all = 8.dp)
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text("添加图片") },
-                                onClick = {
-                                    imagePicker.launch("image/*")
-                                    showAddBackgroundMenu = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("添加视频") },
-                                onClick = {
-                                    videoPicker.launch("video/*")
-                                    showAddBackgroundMenu = false
-                                }
-                            )
-                        }
-                    }
-                    item {
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text("背景设置", style = MaterialTheme.typography.titleMedium)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        SliderLayout(
-                            value = tempBlur,
-                            onValueChange = { tempBlur = it },
-                            valueRange = 0f..25f,
-                            title = "背景模糊",
-                            displayValue = tempBlur,
-                            enabled = selectedBackground != null && !selectedBackground!!.isVideo,
-                            isGlowEffectEnabled = isGlowEffectEnabled,
-                            isCardBlurEnabled = isCardBlurEnabled,
-                            hazeState = hazeState
+                    DropdownMenu(
+                        expanded = showAddBackgroundMenu,
+                        onDismissRequest = { showAddBackgroundMenu = false },
+                        modifier = Modifier.padding(all = 8.dp)
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("添加图片") },
+                            onClick = {
+                                imagePicker.launch("image/*")
+                                showAddBackgroundMenu = false
+                            }
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        SliderLayout(
-                            value = tempBrightness,
-                            onValueChange = { tempBrightness = it },
-                            valueRange = -100f..100f,
-                            title = "背景明度",
-                            displayValue = tempBrightness,
-                            enabled = selectedBackground != null,
-                            isGlowEffectEnabled = isGlowEffectEnabled,
-                            isCardBlurEnabled = isCardBlurEnabled,
-                            hazeState = hazeState
+                        DropdownMenuItem(
+                            text = { Text("添加视频") },
+                            onClick = {
+                                videoPicker.launch("video/*")
+                                showAddBackgroundMenu = false
+                            }
                         )
-                    }
-                    item {
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Text("全局配置", style = MaterialTheme.typography.titleMedium)
-                        Spacer(modifier = Modifier.height(4.dp))
-                        SwitchLayout(
-                            checked = randomBackground,
-                            onCheckedChange = { randomBackground = !randomBackground },
-                            title = "启动时随机选择背景",
-                            isCardBlurEnabled = isCardBlurEnabled,
-                            hazeState = hazeState
-                        )
-                        SwitchLayout(
-                            checked = tempEnableParallax,
-                            onCheckedChange = { tempEnableParallax = !tempEnableParallax },
-                            title = "启用背景视差效果",
-                            isCardBlurEnabled = isCardBlurEnabled,
-                            hazeState = hazeState
-                        )
-                        if (tempEnableParallax) {
-                            SliderLayout(
-                                value = tempParallaxMagnitude,
-                                onValueChange = { tempParallaxMagnitude = it },
-                                valueRange = 1f..40f,
-                                title = "视差幅度",
-                                displayValue = tempParallaxMagnitude,
-                                isGlowEffectEnabled = isGlowEffectEnabled,
-                                isCardBlurEnabled = isCardBlurEnabled,
-                                hazeState = hazeState
-                            )
-                        }
                     }
                 }
-                VerticalDivider(modifier = Modifier.fillMaxHeight(), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f))
-                Column(
-                    modifier = Modifier.weight(1f).padding(16.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(16f / 9f)
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                            .then(
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && selectedBackground?.isVideo == false) {
-                                    Modifier.blur(radius = tempBlur.dp)
-                                } else {
-                                    Modifier
-                                }
-                            )
-                            .drawWithContent {
-                                drawContent()
-                                if (tempBrightness != 0f) {
-                                    val color = if (tempBrightness > 0) Color.White else Color.Black
-                                    drawRect(color, alpha = abs(tempBrightness) / 100f)
-                                }
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (selectedBackground != null) {
-                            val parallaxScale = if (tempEnableParallax) 1f + (tempParallaxMagnitude - 1f) / 20f else 1f
-                            if (selectedBackground!!.isVideo) {
-                                VideoPlayer(uri = selectedBackground!!.uri, modifier = Modifier.fillMaxSize().scale(parallaxScale))
-                            } else {
-                                AsyncImage(
-                                    model = ImageRequest.Builder(LocalContext.current)
-                                        .data(selectedBackground!!.uri)
-                                        .build(),
-                                    contentDescription = null,
-                                    modifier = Modifier.fillMaxSize().scale(parallaxScale)
-                                )
-                            }
-                        } else {
-                            Text("效果预览")
-                        }
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("背景设置", style = MaterialTheme.typography.titleMedium)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    SliderLayout(
+                        value = tempBlur,
+                        onValueChange = { tempBlur = it },
+                        valueRange = 0f..25f,
+                        title = "背景模糊",
+                        displayValue = tempBlur,
+                        enabled = selectedBackground != null && !selectedBackground!!.isVideo,
+                        isGlowEffectEnabled = isGlowEffectEnabled,
+                        isCardBlurEnabled = isCardBlurEnabled,
+                        hazeState = hazeState
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    SliderLayout(
+                        value = tempBrightness,
+                        onValueChange = { tempBrightness = it },
+                        valueRange = -100f..100f,
+                        title = "背景明度",
+                        displayValue = tempBrightness,
+                        enabled = selectedBackground != null,
+                        isGlowEffectEnabled = isGlowEffectEnabled,
+                        isCardBlurEnabled = isCardBlurEnabled,
+                        hazeState = hazeState
+                    )
+                }
+                item {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text("全局配置", style = MaterialTheme.typography.titleMedium)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    SwitchLayout(
+                        checked = randomBackground,
+                        onCheckedChange = { randomBackground = !randomBackground },
+                        title = "启动时随机选择背景",
+                        isCardBlurEnabled = isCardBlurEnabled,
+                        hazeState = hazeState
+                    )
+                    SwitchLayout(
+                        checked = tempEnableParallax,
+                        onCheckedChange = { tempEnableParallax = !tempEnableParallax },
+                        title = "启用背景视差效果",
+                        isCardBlurEnabled = isCardBlurEnabled,
+                        hazeState = hazeState
+                    )
+                    if (tempEnableParallax) {
+                        SliderLayout(
+                            value = tempParallaxMagnitude,
+                            onValueChange = { tempParallaxMagnitude = it },
+                            valueRange = 1f..40f,
+                            title = "视差幅度",
+                            displayValue = tempParallaxMagnitude,
+                            isGlowEffectEnabled = isGlowEffectEnabled,
+                            isCardBlurEnabled = isCardBlurEnabled,
+                            hazeState = hazeState
+                        )
                     }
-                    Spacer(modifier = Modifier.weight(1f))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        TextButton(onClick = { showBackgroundDialog = false }) {
-                            Text("取消")
-                        }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Button(onClick = {
-                            selectedBackground?.let { current ->
-                                val updatedItem = current.copy(
-                                    blur = tempBlur,
-                                    brightness = tempBrightness,
-                                )
-                                backgroundItems = backgroundItems.map { if (it.uri == current.uri) updatedItem else it }
-                                onLauncherBackgroundUriChange(updatedItem.uri)
-                                onLauncherBackgroundBlurChange(updatedItem.blur)
-                                onLauncherBackgroundBrightnessChange(updatedItem.brightness)
-                            } ?: run {
-                                onLauncherBackgroundUriChange(null)
+                }
+            }
+            VerticalDivider(modifier = Modifier.fillMaxHeight(), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f))
+            Column(
+                modifier = Modifier.weight(1f).padding(16.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(16f / 9f)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .then(
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && selectedBackground?.isVideo == false) {
+                                Modifier.blur(radius = tempBlur.dp)
+                            } else {
+                                Modifier
                             }
-                            onEnableParallaxChange(tempEnableParallax)
-                            onParallaxMagnitudeChange(tempParallaxMagnitude)
-                            showBackgroundDialog = false
-                        }) {
-                            Text("确认")
+                        )
+                        .drawWithContent {
+                            drawContent()
+                            if (tempBrightness != 0f) {
+                                val color = if (tempBrightness > 0) Color.White else Color.Black
+                                drawRect(color, alpha = abs(tempBrightness) / 100f)
+                            }
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (selectedBackground != null) {
+                        val parallaxScale = if (tempEnableParallax) 1f + (tempParallaxMagnitude - 1f) / 20f else 1f
+                        if (selectedBackground!!.isVideo) {
+                            VideoPlayer(uri = selectedBackground!!.uri, modifier = Modifier.fillMaxSize().scale(parallaxScale))
+                        } else {
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(selectedBackground!!.uri)
+                                    .build(),
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize().scale(parallaxScale)
+                            )
                         }
+                    } else {
+                        Text("效果预览")
+                    }
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(onClick = { showBackgroundDialog = false }) {
+                        Text("取消")
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(onClick = {
+                        selectedBackground?.let { current ->
+                            val updatedItem = current.copy(
+                                blur = tempBlur,
+                                brightness = tempBrightness,
+                            )
+                            backgroundItems = backgroundItems.map { if (it.uri == current.uri) updatedItem else it }
+                            onLauncherBackgroundUriChange(updatedItem.uri)
+                            onLauncherBackgroundBlurChange(updatedItem.blur)
+                            onLauncherBackgroundBrightnessChange(updatedItem.brightness)
+                        } ?: run {
+                            onLauncherBackgroundUriChange(null)
+                        }
+                        onEnableParallaxChange(tempEnableParallax)
+                        onParallaxMagnitudeChange(tempParallaxMagnitude)
+                        showBackgroundDialog = false
+                    }) {
+                        Text("确认")
                     }
                 }
             }

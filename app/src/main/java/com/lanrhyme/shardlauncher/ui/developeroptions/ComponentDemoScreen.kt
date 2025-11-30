@@ -59,13 +59,12 @@ fun ComponentDemoScreen(
             CustomButton(onClick = { showDialog = true }) {
                 Text("Show CustomDialog")
             }
-            if (showDialog) {
-                CustomDialog(
-                    onDismissRequest = { showDialog = false },
-                ) {
-                    CustomCard(modifier = Modifier.padding(16.dp)) {
-                        Text("This is a custom dialog with custom content.", modifier = Modifier.padding(16.dp))
-                    }
+            CustomDialog(
+                visible = showDialog,
+                onDismissRequest = { showDialog = false }
+            ) {
+                CustomCard(modifier = Modifier.padding(16.dp)) {
+                    Text("This is a custom dialog with custom content.", modifier = Modifier.padding(16.dp))
                 }
             }
         }

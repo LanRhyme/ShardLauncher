@@ -92,7 +92,7 @@ fun MusicPlayerDialog(
 ) {
     var selectedTab by remember { mutableStateOf(MusicPlayerTab.MusicList) }
 
-    CustomDialog(onDismissRequest = onDismissRequest) {
+    CustomDialog(visible = true, onDismissRequest = onDismissRequest) {
         Column {
             Row(modifier = Modifier.weight(1f)) {
                 NavigationRail(
